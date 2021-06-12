@@ -126,7 +126,7 @@ pairs_only <- function(household_info){
 }
 
 find_kinship <- function(household_pairs, relatives){
-
+  pairs <- household_pairs
   pairs$kinship <- 0
   for (i in 1:dim(relatives)[1])
   {
