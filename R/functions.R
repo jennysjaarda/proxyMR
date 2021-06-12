@@ -98,11 +98,8 @@ pairs_only <- function(household_info){
   household_info <- household_info %>% mutate(group_count = ave(household_info$group, household_info$group,  FUN = length))
   #table(household_info$group_count) ## number of individuals in each group household sizes
   household_info <- household_info[which(household_info$group_count==2),]
-  return(household_info)
-}
 
-find_kinship <- function(household_pairs, relatives){
-
+  household_pairs <- household_info
 
   household_list <- unique(household_pairs$group)
   pairs <- numeric()
@@ -125,6 +122,11 @@ find_kinship <- function(household_pairs, relatives){
   colnames(pairs)[3] <- "HOUSE_ID"  ##Household member
 
   pairs <- as.data.frame(pairs)
+  return(pairs)
+}
+
+find_kinship <- function(household_pairs, relatives){
+
   pairs$kinship <- 0
   for (i in 1:dim(relatives)[1])
   {

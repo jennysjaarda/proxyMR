@@ -119,14 +119,8 @@ list(
   ),
 
   tar_target(
-    group_hh_pairs, 
-    hh_pairs, 
-    pattern = map(hh_pairs)),
-
-  tar_target(
     hh_pairs_kin,
-    find_kinship(group_hh_pairs, data_relatives), pattern = map(group_hh_pairs)
-
+    find_kinship(hh_pairs, data_relatives), pattern = map(hh_pairs)
   ),
 
   tar_target(
