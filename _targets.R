@@ -5,6 +5,8 @@ source("R/functions.R")
 options(tidyverse.quiet = TRUE)
 tar_option_set(packages = c("biglm", "tidyverse", "data.table"))
 
+tar_option_set(error = "workspace")
+
 UKBB_dir <- "/data/sgg2/jenny/data/UKBB_raw/"
 UKBB_processed <- "/data/sgg2/jenny/data/UKBB_processed/"
 Neale_summary_dir <- "/data/sgg2/jenny/data/Neale_UKBB_GWAS/"
@@ -26,7 +28,7 @@ household_correlation_threshold <-0.1
 
 input_data <- tar_map(
   values = list(
-    custom_names = c("household_info", "phesant_directory", "relatives", "sqc", "fam", "time_at_address", "time_at_address_raw", "UKBB_directory", "Neale_SGG_dir"),
+    custom_names = c("household_info", "phesant_directory", "relatives", "fam", "sqc", "time_at_address", "time_at_address_raw", "UKBB_directory", "Neale_SGG_dir"),
     files = c(paste0(UKBB_dir,"/pheno/ukb6881.csv"), paste0(UKBB_processed,"/PHESANT/","PHESANT_file_directory.txt"),
               paste0(UKBB_dir,"/geno/","ukb1638_rel_s488366.dat"),  paste0(UKBB_dir,"/plink/_001_ukb_cal_chr9_v2.fam"),
               paste0(UKBB_dir,"/geno/ukb_sqc_v2.txt"),
@@ -62,7 +64,7 @@ list(
 
   tar_target(
     data_household_info,
-    read.table(path_household_info, header=T),
+    read.csv(path_household_info, header=T),
   ),
   tar_target(
     data_relatives,
@@ -110,14 +112,21 @@ list(
   ### MAKE HOUSEHOLD PAIRS FILE ####
   ##################################
 
-  tar_target(
+  tar_group_count(
     hh_pairs,
     pairs_only(data_household_info),
+    count=20
   ),
 
   tar_target(
+    group_hh_pairs, 
+    hh_pairs, 
+    pattern = map(hh_pairs)),
+
+  tar_target(
     hh_pairs_kin,
-    find_kinship(hh_pairs, data_relatives),
+    find_kinship(group_hh_pairs, data_relatives), pattern = map(group_hh_pairs)
+
   ),
 
   tar_target(
