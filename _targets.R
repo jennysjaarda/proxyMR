@@ -6,7 +6,10 @@ options(tidyverse.quiet = TRUE)
 tar_option_set(packages = c("biglm", "tidyverse", "data.table"))
 
 UKBB_dir <- "/data/sgg2/jenny/data/UKBB_raw/"
+UKBB_processed <- "/data/sgg2/jenny/data/UKBB_processed/"
+Neale_summary_dir <- "/data/sgg2/jenny/data/Neale_UKBB_GWAS/"
 
+Neale_SGG_dir_cp <- "data/Neale_SGG_directory_12_06_2021.csv"
 household_relationships_field <- "6141_1"
 #time_at_address_file <- "/data/sgg2/jenny/data/UKBB_processed/PHESANT/ukb31459/bin1/out_bin1..tsv"
 #time_at_address_raw_file <- "/data/sgg2/jenny/data/UKBB_raw/pheno/ukb31459.csv"
@@ -15,59 +18,113 @@ time_at_address_raw_field <- "699-0.0"
 
 source("code/settings.R")
 
+household_correlation_threshold <-0.1
+
+##################################
+### INPUT DATA ####
+##################################
+
+input_data <- tar_map(
+  values = list(
+    custom_names = c("household_info", "phesant_directory", "relatives", "sqc", "fam", "time_at_address", "time_at_address_raw", "UKBB_directory", "Neale_SGG_dir"),
+    files = c(paste0(UKBB_dir,"/pheno/ukb6881.csv"), paste0(UKBB_processed,"/PHESANT/","PHESANT_file_directory.txt"),
+              paste0(UKBB_dir,"/geno/","ukb1638_rel_s488366.dat"),  paste0(UKBB_dir,"/plink/_001_ukb_cal_chr9_v2.fam"),
+              paste0(UKBB_dir,"/geno/ukb_sqc_v2.txt"),
+              paste0(UKBB_processed, "PHESANT/ukb31459/bin1/out_bin1..tsv"), paste0(UKBB_dir, "pheno/ukb31459.csv"),
+              paste0(UKBB_processed,"/UKBB_pheno_directory.csv"),
+              Neale_SGG_dir_cp)
+  ),
+  names = custom_names,
+  unlist = FALSE,
+  tar_target(path, files, format = "file")
+)
+
+
 list(
+
+  input_data,
+
+  tar_target(
+    path_household_relationships,
+    as.character(data_phesant_directory[which(data_phesant_directory[,2]==household_relationships_field),"File"]),
+    format = "file"
+  ),
+  tar_target(
+    path_first_phesant_file,
+    as.character(data_phesant_directory[1,"File"]),
+    format = "file"
+  ),
+  tar_files(path_phesant, as.character(unique(data_phesant_directory$File))),
+
+  ##################################
+  ### READ DATA ####################
+  ##################################
+
+  tar_target(
+    data_household_info,
+    read.table(path_household_info, header=T),
+  ),
+  tar_target(
+    data_relatives,
+    read.table(path_relatives),
+  ),
+  tar_target(
+    data_phesant_directory,
+    read.table(path_phesant_directory, header=T),
+  ),
+  tar_target(
+    data_household_relationships,
+    fread(path_household_relationships, header=T, select=c("userId","sex",household_relationships_field), data.table=F),
+  ),
+  tar_target(
+    data_id_age,
+    fread(path_first_phesant_file, header=T, select=c("userId","age"), data.table=F),
+  ),
+  tar_target(
+    data_sqc,
+    fread(path_sqc, header=F, data.table=F),
+  ),
+  tar_target(
+    data_fam,
+    fread(path_fam, header=F, data.table=F),
+  ),
+  tar_target(
+    data_time_at_address,
+    fread(path_time_at_address,  select=c("userId",time_at_address_field), data.table=F)
+  ),
+  tar_target(
+    data_time_at_address_raw,
+    fread(path_time_at_address_raw, data.table=F)
+  ),
+  tar_target(
+    data_UKBB_directory,
+    read.csv(path_UKBB_directory, header=T)
+  ),
+  tar_target(
+    data_Neale_SGG_dir,
+    read.csv(path_Neale_SGG_dir, header=T)
+  ),
+
 
   ##################################
   ### MAKE HOUSEHOLD PAIRS FILE ####
   ##################################
-  tar_target(
-    household_info_file,
-    paste0(UKBB_dir,"/pheno/ukb6881.csv"),
-    format = "file"
-  ),
-  tar_target(
-    household_info,
-    read.table(household_info_file, header=T),
-  ),
-  tar_target(
-    relatives_file,
-    paste0(UKBB_dir,"/geno/","ukb1638_rel_s488366.dat", header=T),
-    format = "file"
-  ),
-  tar_target(
-    relatives,
-    read.table(relatives_file),
-  ),
-  tar_target(
-    phesant_directory_file,
-    paste0(UKBB_processed,"/PHESANT/","PHESANT_file_directory.txt"),
-    format = "file"
-  ),
-  tar_target(
-    phesant_directory,
-    read.table(phesant_directory_file, header=T),
-  ),
+
   tar_target(
     hh_pairs,
-    pairs_only(household_info),
+    pairs_only(data_household_info),
   ),
+
   tar_target(
     hh_pairs_kin,
-    find_kinship(hh_pairs, relatives),
+    find_kinship(hh_pairs, data_relatives),
   ),
-  tar_target(
-    household_relationships_file,
-    as.character(phesant_directory[which(phesant_directory[,2]==household_relationships_field),"File"]),
-    format = "file"
-  ),
-  tar_target(
-    household_relationships,
-    fread(household_relationships_file, header=T, select=c("userId","sex",household_relationships_field), data.table=F),
-  ),
+
   tar_target(
     hh_pairs_filter,
-    filter_pairs(hh_pairs_kin, household_relationships, household_relationships_field),
+    filter_pairs(hh_pairs_kin, data_household_relationships, household_relationships_field),
   ),
+
 
   # write_hh_pairs = write.csv(hh_pairs_filter, file_out("analysis/data_setup/household_pairs.csv"),row.names=F, quote=T ),
 
@@ -76,41 +133,15 @@ list(
   ######## CREATE PHENO FILE #####
   ################################
 
-  tar_target(
-    first_phesant_file,
-    as.character(phesant_directory[1,"File"]),
-    format = "file"
-  ),
-  tar_target(
-    pheno,
-    fread(first_phesant_file, header=T, select=c("userId","age"), data.table=F),
-  ),
-  tar_target(
-    sqc_file,
-    paste0(UKBB_dir,"/geno/ukb_sqc_v2.txt"),
-    format = "file"
-  ),
-  tar_target(
-    sqc,
-    fread(sqc_file, header=F, data.table=F),
-  ),
-  tar_target(
-    fam_file,
-    paste0(UKBB_dir,"/plink/_001_ukb_cal_chr9_v2.fam"),
-    format = "file"
-  ),
-  tar_target(
-    fam,
-    fread(fam_file, header=F, data.table=F),
-  ),
+
   tar_target(
     sqc_munge,
-    munge_sqc(sqc, fam),
+    munge_sqc(data_sqc, data_fam),
   ),
 
   tar_target(
     model_adjustments,
-    add_pcs(hh_pairs_filter, pheno, sqc_munge),
+    add_pcs(hh_pairs_filter, data_id_age, sqc_munge),
   ),
   tar_target(
     joint_model_adjustments,
@@ -128,27 +159,10 @@ list(
   #### ADD TIME AT HOUSEHOLD ##########
   #####################################
 
-  tar_target(
-    time_at_address_file,
-    "/data/sgg2/jenny/data/UKBB_processed/PHESANT/ukb31459/bin1/out_bin1..tsv",
-    format = "file"
-  ),
-  tar_target(
-    time_at_address_raw_file,
-    "/data/sgg2/jenny/data/UKBB_raw/pheno/ukb31459.csv",
-    format = "file"
-  ),
-  tar_target(
-    time_at_address,
-    fread(time_at_address_file,  select=c("userId",time_at_address_field), data.table=F)
-  ),
-  tar_target(
-    time_at_address_raw,
-    fread(time_at_address_raw_file, data.table=F)
-  ),
+
   tar_target(
     household_time,
-    calc_time_together(joint_model_adjustments,time_at_address,time_at_address_raw)
+    calc_time_together(joint_model_adjustments,data_time_at_address,data_time_at_address_raw)
   ),
   tar_target(
     household_intervals,
@@ -158,13 +172,46 @@ list(
     household_time_munge,
     munge_household_time(household_time, joint_model_adjustments, time_together_min,time_together_max, time_together_interval,
                                                  age_min, age_max, age_interval, num_household_bins)
-  )
+  ),
 
   # write_household_time = write.csv(household_time_munge, file_out("analysis/data_setup/household_time.csv"), row.names=F, quote=T )
 
   #####################################
   #### FITLER TRAITS ##################
   #####################################
+
+  tar_target(
+    trait_corrs,
+    compute_trait_corr(phesant_directory,data_UKBB_directory,hh_pairs_filter)
+  ),
+  tar_target(
+    Neale_SGG_dir_filt,
+    SGG_link_with_Neale(data_Neale_SGG_dir)
+  ),
+  tar_target(
+    traits_corr2,
+    filter_by_corr(trait_corrs,Neale_SGG_dir_filt,household_correlation_threshold)
+  ),
+  tar_target(
+    Neale_to_process,
+    organize_Neale(traits_corr2)
+  ),
+  tar_target(
+    define_cats_file,
+    write_define_cats(Neale_to_process),
+    format = "file"
+  ),
+  tar_target(
+    download_list_file,
+    write_download_list(Neale_to_process),
+    format = "file"
+  )
+
+
+
+
+
+
 
 )
 

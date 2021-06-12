@@ -400,6 +400,17 @@ organize_Neale <- function(traits_corr_filter){
   return(list("download_rest"=download_rest, "define_cats"=define_cats2))
 }
 
+
+write_define_cats <- function(Neale_to_process){
+  write.csv(Neale_to_process$define_cats, "output/tables/define_Neale_categories.csv", row.names=F)
+  return("output/tables/define_Neale_categories.csv")
+}
+
+write_download_list <- function(Neale_to_process){
+  write.csv(Neale_to_process$download_rest, "analysis/download_Neale_list.csv", row.names=F)
+  return("analysis/download_Neale_list.csv")
+}
+
 ### File A3 ----
 
 ## Description: download missing neale files using categories defined here:

@@ -16,6 +16,7 @@
 project_dir <- "/data/sgg2/jenny/projects/proxyMR/"
 SGG_generic <- "/data/sgg2/jenny/SGG_generic/"
 
+
 ## register clustermq and future plans
 #options(clustermq.scheduler = "slurm", clustermq.template = "slurm_clustermq.tmpl")
 #future::plan(batchtools_slurm, template = "slurm_batchtools.tmpl")
@@ -34,6 +35,7 @@ num_household_bins <- 5
 num_IVs_threshold <- 5
 household_correlation_threshold <-0.1
 irnt=TRUE
+
 
 #phesant_directory <- read.table(paste0(UKBB_processed,"/PHESANT/","PHESANT_file_directory.txt"), header=T)
 #phesant_file_list <- unique(phesant_directory$File)
