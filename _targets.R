@@ -40,13 +40,13 @@ household_correlation_threshold <-0.1
 input_data <- tar_map(
   values = list(
     custom_names = c("household_info", "phesant_directory", "relatives", "fam", "sqc", "time_at_address",
-                     "time_at_address_raw", "UKBB_directory", "Neale_SGG_dir", "Neale_manifest"),
+                     "time_at_address_raw", "UKBB_directory", "Neale_SGG_dir", "Neale_manifest", "code_process_Neale"),
     files = c(paste0(UKBB_dir,"/pheno/ukb6881.csv"), paste0(UKBB_processed,"/PHESANT/","PHESANT_file_directory.txt"),
               paste0(UKBB_dir,"/geno/","ukb1638_rel_s488366.dat"),  paste0(UKBB_dir,"/plink/_001_ukb_cal_chr9_v2.fam"),
               paste0(UKBB_dir,"/geno/ukb_sqc_v2.txt"),
               paste0(UKBB_processed, "PHESANT/ukb31459/bin1/out_bin1..tsv"), paste0(UKBB_dir, "pheno/ukb31459.csv"),
               paste0(UKBB_processed,"/UKBB_pheno_directory.csv"),
-              Neale_SGG_dir_cp, paste0(Neale_output_path,"/",Neale_manifest_file_name))
+              Neale_SGG_dir_cp, paste0(Neale_output_path,"/",Neale_manifest_file_name), "code/process_Neale.sh")
   ),
   names = custom_names,
   unlist = FALSE,
@@ -232,7 +232,7 @@ list(
     {
       path_define_cats
       "output/table/define_Neale_categories_filled.csv"
-      },
+    },
     format = "file"
   ),
   tar_target(
@@ -242,11 +242,14 @@ list(
   tar_target(
     traits_corr2_filled,
     download_Neale(data_define_cats_filled,Neale_to_process$download_rest,traits_corr2,
-                   path_Neale_manifest),
+                   path_Neale_manifest)
   ),
   tar_target(
     run_process_Neale,
-    processx::run(command = "sbatch", c(file_in("code/process_Neale.sh"))),
+    {
+      traits_corr2_filled
+      processx::run(command = "sbatch", c(path_code_process_Neale))
+    }
   )
 
 )
