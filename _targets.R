@@ -218,21 +218,36 @@ list(
     organize_Neale(traits_corr2)
   ),
   tar_target(
-    define_cats_file,
+    path_define_cats,
     write_define_cats(Neale_to_process),
     format = "file"
   ),
   tar_target(
-    download_list_file,
+    path_download_list,
     write_download_list(Neale_to_process),
     format = "file"
+  ),
+  tar_target(
+    path_define_cats_filled,
+    {
+      path_define_cats
+      "output/table/define_Neale_categories_filled.csv"
+      },
+    format = "file"
+  ),
+  tar_target(
+    data_define_cats_filled,
+    read.csv(path_define_cats_filled, check.names=F)
+  ),
+  tar_target(
+    traits_corr2_filled,
+    download_Neale(data_define_cats_filled,Neale_to_process$download_rest,traits_corr2,
+                   path_Neale_manifest),
+  ),
+  tar_target(
+    run_process_Neale,
+    processx::run(command = "sbatch", c(file_in("code/process_Neale.sh"))),
   )
-
-
-
-
-
-
 
 )
 
