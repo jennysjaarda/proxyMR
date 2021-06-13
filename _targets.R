@@ -1,11 +1,24 @@
 library(targets)
 library(tarchetypes)
-library(data.table)
-source("R/functions.R")
-options(tidyverse.quiet = TRUE)
-tar_option_set(packages = c("biglm", "tidyverse", "data.table"))
 
-tar_option_set(error = "workspace")
+source("R/functions.R")
+source("code/settings.R")
+
+options(tidyverse.quiet = TRUE)
+options(clustermq.scheduler = "slurm", clustermq.template = "slurm_clustermq.tmpl")
+
+
+tar_option_set(
+  resources = tar_resources(
+    clustermq = tar_resources_clustermq(template = list(num_cores = 1,
+                                                        cpus = 1, partition = "cluster2",
+                                                        log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
+  ),
+  packages = c("tidyverse", "data.table", "cutr"),
+  error = "workspace"
+
+)
+
 
 UKBB_dir <- "/data/sgg2/jenny/data/UKBB_raw/"
 UKBB_processed <- "/data/sgg2/jenny/data/UKBB_processed/"
@@ -13,12 +26,10 @@ Neale_summary_dir <- "/data/sgg2/jenny/data/Neale_UKBB_GWAS/"
 
 Neale_SGG_dir_cp <- "data/Neale_SGG_directory_12_06_2021.csv"
 household_relationships_field <- "6141_1"
-#time_at_address_file <- "/data/sgg2/jenny/data/UKBB_processed/PHESANT/ukb31459/bin1/out_bin1..tsv"
-#time_at_address_raw_file <- "/data/sgg2/jenny/data/UKBB_raw/pheno/ukb31459.csv"
 time_at_address_field <- "699"
 time_at_address_raw_field <- "699-0.0"
 
-source("code/settings.R")
+
 
 household_correlation_threshold <-0.1
 
@@ -28,13 +39,14 @@ household_correlation_threshold <-0.1
 
 input_data <- tar_map(
   values = list(
-    custom_names = c("household_info", "phesant_directory", "relatives", "fam", "sqc", "time_at_address", "time_at_address_raw", "UKBB_directory", "Neale_SGG_dir"),
+    custom_names = c("household_info", "phesant_directory", "relatives", "fam", "sqc", "time_at_address",
+                     "time_at_address_raw", "UKBB_directory", "Neale_SGG_dir", "Neale_manifest"),
     files = c(paste0(UKBB_dir,"/pheno/ukb6881.csv"), paste0(UKBB_processed,"/PHESANT/","PHESANT_file_directory.txt"),
               paste0(UKBB_dir,"/geno/","ukb1638_rel_s488366.dat"),  paste0(UKBB_dir,"/plink/_001_ukb_cal_chr9_v2.fam"),
               paste0(UKBB_dir,"/geno/ukb_sqc_v2.txt"),
               paste0(UKBB_processed, "PHESANT/ukb31459/bin1/out_bin1..tsv"), paste0(UKBB_dir, "pheno/ukb31459.csv"),
               paste0(UKBB_processed,"/UKBB_pheno_directory.csv"),
-              Neale_SGG_dir_cp)
+              Neale_SGG_dir_cp, paste0(Neale_output_path,"/",Neale_manifest_file_name))
   ),
   names = custom_names,
   unlist = FALSE,
@@ -105,6 +117,10 @@ list(
   tar_target(
     data_Neale_SGG_dir,
     read.csv(path_Neale_SGG_dir, header=T)
+  ),
+  tar_target(
+    data_Neale_manifest,
+    read_tsv(path_Neale_manifest, col_types = cols())
   ),
 
 
@@ -185,8 +201,10 @@ list(
 
   tar_target(
     trait_corrs,
-    compute_trait_corr(phesant_directory,data_UKBB_directory,hh_pairs_filter)
+    compute_trait_corr(data_phesant_directory,data_UKBB_directory,hh_pairs_filter)
   ),
+  # write_traits_corr = write.csv(trait_corrs, file_out( "output/tables/1.household_correlations.csv"), row.names=F),
+
   tar_target(
     Neale_SGG_dir_filt,
     SGG_link_with_Neale(data_Neale_SGG_dir)

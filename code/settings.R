@@ -67,3 +67,6 @@ age_min <- 40
 age_max <- 70
 age_interval <- 10
 ## functions to fit:
+
+Neale_output_path <- "/data/sgg3/data/neale_files"
+Neale_manifest_file_name <- "UKBB GWAS Imputed v3 - File Manifest Release 20180731 - Manifest 201807.tsv"

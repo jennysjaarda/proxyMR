@@ -154,10 +154,11 @@ filter_pairs <- function(pairs,household_relationships,field){
   pairs_unrelated_hetero <- pairs_unrelated[-which(pairs_unrelated$sex1==pairs_unrelated$sex2),]
   pairs_unrelated_hetero2 <- pairs_unrelated_hetero[-which(is.na(pairs_unrelated_hetero$sex1) | is.na(pairs_unrelated_hetero$sex2)),]
 
-  temp1 <- pairs_unrelated_hetero[which(pairs_unrelated_hetero$sex1==0),c(2,1,3,4,6,5)]
+  temp1 <- pairs_unrelated_hetero[which(pairs_unrelated_hetero$sex1==0),c("HOUSEHOLD_MEMBER2", "HOUSEHOLD_MEMBER1", "HOUSE_ID", "kinship", "sex2", "sex1", "tar_group")]
+
   colnames(temp1) <- colnames(pairs_unrelated_hetero)
 
-  temp2 <- pairs_unrelated_hetero[which(pairs_unrelated_hetero$sex1==1),]
+  temp2 <- pairs_unrelated_hetero[which(pairs_unrelated_hetero$sex1==1),c("HOUSEHOLD_MEMBER1", "HOUSEHOLD_MEMBER2", "HOUSE_ID", "kinship", "sex1", "sex2", "tar_group")]
   pairs_filter <- rbind(temp2, temp1)
   ## 79150      6
 
@@ -166,8 +167,9 @@ filter_pairs <- function(pairs,household_relationships,field){
   pairs_filter2 <- pairs_unrelated_hetero[which(pairs_filter$house_rel_member1==TRUE & pairs_filter$house_rel_member2==TRUE ) ,]
   ## 75048     6
 
-  colnames(pairs_filter2)[5] <- "HOUSEHOLD_MEMBER1_sex"
-  colnames(pairs_filter2)[6] <- "HOUSEHOLD_MEMBER2_sex"
+
+  colnames(pairs_filter2)[which(colnames(pairs_filter2)=="sex1")] <- "HOUSEHOLD_MEMBER1_sex"
+  colnames(pairs_filter2)[which(colnames(pairs_filter2)=="sex2")] <- "HOUSEHOLD_MEMBER2_sex"
   return(pairs_filter2)
 
 }
@@ -180,6 +182,8 @@ munge_sqc <- function(sqc,fam){
 }
 
 add_pcs <- function(pairs,pheno,sqc_sub){
+  ## get rid of tar_grouping -> don't need it anymore
+  pairs <- pairs %>% dplyr::select(-tar_group)
   out <- list()
   for(i in 1:dim(pairs)[1])
   {

@@ -1,0 +1,12 @@
+#!/bin/sh
+# From https://github.com/mschubert/clustermq/wiki/SLURM
+#SBATCH --job-name={{ job_name }}           # job name
+#SBATCH --partition={{ partition }}                 # partition
+#SBATCH --output={{ log_file | /dev/null }} # you can add .%a for array index
+#SBATCH --error={{ log_file | /dev/null }}  # log file
+####SBATCH --mem-per-cpu={{ memory | 4096 }}   # memory
+#SBATCH --array=1-{{ n_jobs }}              # job array
+#SBATCH --cpus-per-task={{ cpus }}
+# module load R                             # Uncomment if R is an environment module.
+####ulimit -v $(( 1024 * {{ memory | 4096 }} ))
+CMQ_AUTH={{ auth }} R --no-save --no-restore -e 'clustermq:::worker("{{ master }}")'
