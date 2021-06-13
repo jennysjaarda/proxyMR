@@ -231,7 +231,7 @@ list(
     path_define_cats_filled,
     {
       path_define_cats
-      "output/table/define_Neale_categories_filled.csv"
+      "output/tables/define_Neale_categories_filled.csv"
     },
     format = "file"
   ),
