@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --partition sgg
-#SBATCH --workdir /data/sgg2/jenny/projects/proxyMR
+#SBATCH --chdir /data/sgg2/jenny/projects/proxyMR
 #SBATCH --job-name process_Neale
 #SBATCH --output analysis/process_Neale.out
 
