@@ -271,7 +271,7 @@ list(
   ),
   tar_target(
     traits_to_count_IVs,
-    1:dim(traits_corr2_update[which(traits_corr2_update[["Neale_file_sex"]]=="both"),])[1]
+    tibble(i = 1:dim(traits_corr2_update[which(traits_corr2_update[["Neale_file_sex"]]=="both"),])[1])
   ),
   tar_target(
     IV_list,
