@@ -258,11 +258,11 @@ list(
       run_process_Neale
       stats1 <- 2
       stats2 <- 2
-      while ( (length(stats1) > 1 | length(stats2) > 1)){
-        stats1 <- suppressWarnings(system(paste("squeue -n", "process_Neale"), intern = TRUE))
-        stats2 <- suppressWarnings(system(paste("squeue -n", "clump_Neale_IVs"), intern = TRUE))
+      while ( (stats1) > 1 | (stats2) > 1){
+        stats1 <- length(suppressWarnings(system(paste("squeue -n", "process_Neale"), intern = TRUE)))
+        stats2 <- length(suppressWarnings(system(paste("squeue -n", "fp2018"), intern = TRUE)))
         print("Still running...")
-        Sys.sleep(60)
+        Sys.sleep(2)
       }
 
       update_download_info(traits_corr2_filled, data_Neale_SGG_dir)
