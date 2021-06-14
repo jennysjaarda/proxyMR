@@ -271,12 +271,11 @@ list(
   ),
   tar_target(
     traits_to_count_IVs,
-    tibble(i = 1:dim(traits_corr2_update[which(traits_corr2_update[["Neale_file_sex"]]=="both"),])[1]), iteration = "list"
+    tibble(i = 1:dim(traits_corr2_update[which(traits_corr2_update[["Neale_file_sex"]]=="both"),])[1])
   ),
   tar_target(
     IV_list,
-    get_IV_list(traits_corr2_update,traits_to_count_IVs$i, data_Neale_manifest,IV_threshold, Neale_output_path, Neale_summary_dir), pattern = map(traits_to_count_IVs),
-    iteration = "list"
+    get_IV_list(traits_corr2_update,traits_to_count_IVs$i, data_Neale_manifest,IV_threshold, Neale_output_path, Neale_summary_dir), pattern = map(traits_to_count_IVs)
   ),
   tar_target(
     path_IV_list,
@@ -286,7 +285,7 @@ list(
   ),
   tar_target(
     count_IVs,
-    length(IV_list), pattern = map(IV_list), iteration = "list"
+    length(IV_list), pattern = map(IV_list)
   )
 
 

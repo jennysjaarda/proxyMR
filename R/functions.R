@@ -535,7 +535,7 @@ get_IV_list <- function(corr_traits, i, reference_file, IV_threshold, Neale_outp
 
   }
 
-  return(list(IV_snp_list = build_data))
+  return(IV_snp_list = build_data)
 }
 
 summarize_IVs <- function(corr_traits, i, reference_file){
