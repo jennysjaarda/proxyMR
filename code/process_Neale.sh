@@ -6,7 +6,7 @@
 #SBATCH --account=sgg                                          # runs on the sggg nodes.
 
 
-Rscript ${SGG_generic}/scripts/merge_Neale.r
+# Rscript ${SGG_generic}/scripts/UKBB/merge_Neale.r --> run this manually from SGG directory
 ### reupdate Neale_SGG_dir using ${SGG_generic}/scripts/merge_Neale.r
 
 process_IV_extractions=$(sbatch $SGG_generic/scripts/UKBB/gen_rslurm_Neale_extraction.sh | cut -f 4 -d' ')
