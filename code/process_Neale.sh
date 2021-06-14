@@ -3,6 +3,8 @@
 #SBATCH --chdir /data/sgg2/jenny/projects/proxyMR
 #SBATCH --job-name process_Neale
 #SBATCH --output analysis/process_Neale.out
+#SBATCH --account=sgg                                          # runs on the sggg nodes.
+
 
 Rscript ${SGG_generic}/scripts/merge_Neale.r
 ### reupdate Neale_SGG_dir using ${SGG_generic}/scripts/merge_Neale.r
