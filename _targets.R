@@ -253,7 +253,7 @@ list(
   ),
 
   tar_target(
-    traits_corr2_filled,
+    traits_corr2_update,
     {
       run_process_Neale
       stats1 <- 2
