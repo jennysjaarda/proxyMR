@@ -23,6 +23,7 @@ tar_option_set(
 UKBB_dir <- "/data/sgg2/jenny/data/UKBB_raw/"
 UKBB_processed <- "/data/sgg2/jenny/data/UKBB_processed/"
 Neale_summary_dir <- "/data/sgg2/jenny/data/Neale_UKBB_GWAS/"
+Neale_output_path <- "/data/sgg3/data/neale_files"
 
 Neale_SGG_dir_cp <- "data/Neale_SGG_directory_12_06_2021.csv"
 household_relationships_field <- "6141_1"
@@ -267,7 +268,22 @@ list(
 
       update_download_info(traits_corr2_filled, data_Neale_SGG_dir)
     }, deployment = "main"
+  ),
+  tar_target(
+    traits_to_count_IVs,
+    1:dim(traits_corr2_update[which(traits_corr2_update[["Neale_file_sex"]]=="both"),])[1]
+  ),
+  tar_target(
+    IV_list,
+    get_IV_list(traits_corr2_update,traits_to_count_IVs$i, data_Neale_manifest,IV_threshold, Neale_output_path, Neale_summary_dir), pattern = map(traits_to_count_IVs)
   )
+
+
+
+  #clump_dir = target(!!paste0(Neale_summary_dir,"/IVs/clump/" )),
+  #trigger = trigger(change = file.mtime(!!paste0(Neale_summary_dir,"/IVs/clump/" )))),
+  #Neale_files_dir = target(!!Neale_output_path),
+
 
 
 )

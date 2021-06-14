@@ -488,7 +488,7 @@ file_in_out <- function(traits_corr2_update,i,reference_file,IV_threshold){
 
 }
 
-get_IV_list <- function(corr_traits, i, reference_file,IV_threshold){
+get_IV_list <- function(corr_traits, i, reference_file, IV_threshold, Neale_output_path, Neale_summary_dir){
 
   corr_traits_both <- corr_traits[which(corr_traits[["Neale_file_sex"]]=="both"),]
 
