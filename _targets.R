@@ -276,6 +276,16 @@ list(
   tar_target(
     IV_list,
     get_IV_list(traits_corr2_update,traits_to_count_IVs$i, data_Neale_manifest,IV_threshold, Neale_output_path, Neale_summary_dir), pattern = map(traits_to_count_IVs)
+  ),
+  tar_target(
+    path_IV_list,
+    write_IV_list(traits_corr2_update, traits_to_count_IVs$i, IV_list,
+                  IV_threshold, "analysis/data_setup/IV_lists/"), pattern = map(traits_to_count_IVs),
+    format = "file"
+  ),
+  tar_target(
+    count_IVs,
+    length(IV_list), pattern = map(IV_list)
   )
 
 
