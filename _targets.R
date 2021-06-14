@@ -260,7 +260,7 @@ list(
       stats2 <- 2
       while ( (stats1) > 1 | (stats2) > 1){
         stats1 <- length(suppressWarnings(system(paste("squeue -n", "process_Neale"), intern = TRUE)))
-        stats2 <- length(suppressWarnings(system(paste("squeue -n", "fp2018"), intern = TRUE)))
+        stats2 <- length(suppressWarnings(system(paste("squeue -n", "clump_Neale_IVs"), intern = TRUE)))
         print("Still running...")
         Sys.sleep(2)
       }
