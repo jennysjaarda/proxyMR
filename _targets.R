@@ -289,7 +289,8 @@ list(
     pull_traits_to_count_IVs(traits_corr3$to_run)
   ),
 
-  IV_data_summary = target( # this target used to be called: sex_het_summary
+  tar_target(
+    IV_data_summary, # this target used to be called: sex_het_summary
     {
       ## This function gets info on all IVs for male and females, calcs het between and provides a summary line with number of SNPs that pass filter
       path_IV_list

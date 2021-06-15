@@ -712,7 +712,8 @@ summarize_IV_data <- function(traits,Neale_pheno_ID,variant_data,reference_file,
 
   char_row <- data.frame(lapply(traits[i,], as.character), stringsAsFactors=FALSE)
   sex_het_summary <- as.data.frame(t(unlist(c(char_row, num_pass_filter))))
-  output <- list(male_IV_data = male_IV_data, female_IV_data = female_IV_data, IV_list_both_sexes = IV_list_both_sexes, sex_het_summary = sex_het_summary)  return(output)
+  output <- list(male_IV_data = male_IV_data, female_IV_data = female_IV_data, IV_list_both_sexes = IV_list_both_sexes, sex_het_summary = sex_het_summary)
+  return(output)
 
 }
 
