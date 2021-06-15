@@ -724,7 +724,7 @@ calc_sex_het <- function(traits,i,variant_data,reference_file){
 
 }
 
-write_IV_list <- function(traits_corr2_update, Neale_pheno_ID, IV_lists, IV_threshold, dir) {
+write_IV_list <- function(traits_corr2_update, Neale_pheno_ID, IV_list, IV_threshold, dir) {
 
   corr_traits_both <- traits_corr2_update[which(traits_corr2_update[["Neale_file_sex"]]=="both"),]
 
@@ -733,7 +733,7 @@ write_IV_list <- function(traits_corr2_update, Neale_pheno_ID, IV_lists, IV_thre
     Neale_id <- Neale_pheno_ID
     out_file <- paste0("analysis/data_setup/IV_lists/", Neale_id, "_IVs_", IV_threshold,"_both_sexes.txt")
     if(file.exists(out_file)) {file.remove(out_file)}
-    write.table(IV_lists[[i]], out_file, append=F, row.names=F, col.names=F, quote=F)
+    write.table(IV_list, out_file, append=F, row.names=F, col.names=F, quote=F)
     return(out_file)
   #}
 

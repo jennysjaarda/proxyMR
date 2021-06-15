@@ -259,6 +259,13 @@
       "Repository": "CRAN",
       "Hash": "44594a07a42e5f91fac9f93fda6d0109"
     },
+    "future": {
+      "Package": "future",
+      "Version": "1.21.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "f25fad6bee82b7ab01f055e2d813b96f"
+    },
     "gargle": {
       "Package": "gargle",
       "Version": "1.1.0",
@@ -293,6 +300,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "f64fd34026f6025de71a4354800e6d79"
+    },
+    "globals": {
+      "Package": "globals",
+      "Version": "0.14.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "eca8023ed5ca6372479ebb9b3207f5ae"
     },
     "glue": {
       "Package": "glue",
@@ -349,6 +363,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "af2c2531e55df5cf230c4b5444fc973c"
+    },
+    "htmlwidgets": {
+      "Package": "htmlwidgets",
+      "Version": "1.5.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "6fdaa86d0700f8b3e92ee3c445a5a10d"
     },
     "httpuv": {
       "Package": "httpuv",
@@ -427,6 +448,13 @@
       "Repository": "CRAN",
       "Hash": "3471fb65971f1a7b2d4ae7848cf2db8d"
     },
+    "listenv": {
+      "Package": "listenv",
+      "Version": "0.8.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "0bde42ee282efb18c7c4e63822f5b4f7"
+    },
     "lubridate": {
       "Package": "lubridate",
       "Version": "1.7.10",
@@ -489,6 +517,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "f4dbc5a47fd93d3415249884d31d6791"
+    },
+    "parallelly": {
+      "Package": "parallelly",
+      "Version": "1.25.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "bc53006c11a08ba955ccbf85b586875f"
     },
     "pillar": {
       "Package": "pillar",
@@ -784,6 +819,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "55e157e2aa88161bdb0754218470d204"
+    },
+    "visNetwork": {
+      "Package": "visNetwork",
+      "Version": "2.0.9",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "12545f2acf49d1d346d075580122d89c"
     },
     "whisker": {
       "Package": "whisker",

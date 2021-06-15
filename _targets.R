@@ -279,8 +279,8 @@ list(
   ),
   tar_target(
     path_IV_list,
-    write_IV_list(traits_corr2_update, traits_to_count_IVs$Neale_pheno_ID, IV_list,
-                  IV_threshold, "analysis/data_setup/IV_lists/"), pattern = map(traits_to_count_IVs),
+    write_IV_list(traits_corr2_update, Neale_pheno_ID = traits_to_count_IVs$Neale_pheno_ID, IV_list,
+                  IV_threshold, "analysis/data_setup/IV_lists/"), pattern = map(traits_to_count_IVs, IV_list),
     format = "file"
   ),
   tar_target(
