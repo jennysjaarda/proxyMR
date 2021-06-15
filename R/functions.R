@@ -625,7 +625,7 @@ summarize_IV_data <- function(traits, Neale_pheno_ID, variant_data, reference_fi
   result <- NA
 
   trait_ID <- Neale_pheno_ID
-  i <- which(corr_traits_both[["Neale_pheno_ID"]]==Neale_pheno_ID)
+  i <- which(traits[["Neale_pheno_ID"]]==trait_ID)
 
   phenotype_ids  =  paste0( '^', trait_ID, ifelse( irnt, '(_irnt|)$', '(_raw|)$' ) ) %>%
     paste( collapse = '|' )
