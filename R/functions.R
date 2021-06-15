@@ -583,7 +583,7 @@ IV_filter <- function(corr_traits, count_IVs, num_IVs_threshold){
 
   corr_traits_both <- corr_traits[which(corr_traits[["Neale_file_sex"]]=="both"),]
 
-  corr_traits_both <- merge(corr_traits_both, IV_summary, by="Neale_pheno_ID")
+  corr_traits_both <- merge(corr_traits_both, count_IVs, by="Neale_pheno_ID")
   to_run <- corr_traits_both[which(corr_traits_both$num_IVs >=num_IVs_threshold),]
   return(list(to_run = to_run, non_filtered = corr_traits_both))
 
