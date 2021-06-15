@@ -734,17 +734,15 @@ write_IV_list <- function(traits_corr2_update, Neale_pheno_ID, IV_list, IV_thres
 
 }
 
-write_IV_info <- function(sex_het_summary, traits_to_calc_het, traits_corr3, dir) {
+write_IV_info <- function(IV_data_summary, Neale_pheno_ID) {
 
-  for(i in 1:dim(traits_to_calc_het)[1]){
-    data_out <- readd(sex_het_summary,subtargets=i)
-    list_length <- 4
-    trait_ID <- as.character(traits_corr3$to_run[i,"Neale_pheno_ID"])
+    trait_ID <- Neale_pheno_ID
     male_out_file <- paste0( "analysis/data_setup/IV_info/", trait_ID, "_IVs_5e-08_male.txt")
     female_out_file <- paste0( "analysis/data_setup/IV_info/", trait_ID, "_IVs_5e-08_female.txt")
-    write.table(data_out[[1]]$male_IV_data, male_out_file,row.names=F, col.names=T, quote=F)
-    write.table(data_out[[1]]$female_IV_data, female_out_file,row.names=F, col.names=T, quote=F)
-  }
+    write.table(IV_data_summary$male_IV_data, male_out_file,row.names=F, col.names=T, quote=F)
+    write.table(IV_data_summary$female_IV_data, female_out_file,row.names=F, col.names=T, quote=F)
+    out_names <- c(male_out_file, female_out_file)
+
 
 }
 

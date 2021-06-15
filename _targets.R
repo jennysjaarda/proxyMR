@@ -291,24 +291,34 @@ list(
 
   tar_target(
     IV_data_summary, # this target used to be called: sex_het_summary
+                     # could try running it as it used to be and make sure you get the same result
     {
       ## This function gets info on all IVs for male and females, calcs het between and provides a summary line with number of SNPs that pass filter
       path_IV_list
       summarize_IV_data(traits_corr3$to_run, traits_to_calc_het$Neale_pheno_ID, variant_IV_data,
                         data_Neale_manifest, Neale_summary_dir, Neale_output_dir, IV_threshold)
     }, pattern = map(traits_to_calc_het)
+  ),
+  tar_target(
+    path_IV_info,
+    write_IV_info(IV_data_summary, traits_to_calc_het$Neale_pheno_ID),
+    format = "file",
+    pattern = map(IV_data_summary, traits_to_calc_het)
   )
 
+
   ## removed all `readd` commands from next set of functions
-
-
-  #variant_data_reduced = target(reduce_variant_data(traits_corr3$to_run,file_in(!!variant_file_full_name)), hpc = FALSE),
 
 
   #clump_dir = target(!!paste0(Neale_summary_dir,"/IVs/clump/" )),
   #trigger = trigger(change = file.mtime(!!paste0(Neale_summary_dir,"/IVs/clump/" )))),
   #Neale_files_dir = target(!!Neale_output_path),
-
+#
+#   sex_het_out = write_sex_het(sex_het_summary, traits_to_calc_het, traits_corr3, file_out("analysis/data_setup/sex_heterogeneity/")),
+#   traits_corr4 = sex_het_filter(traits_corr3$to_run, sex_het_summary, traits_to_calc_het, !!num_IVs_threshold),
+#   write_traits_corr3 = write.csv(traits_corr4$non_filtered, file_out("output/tables/3.household_correlations.numIVs_filter.csv"), row.names=F),
+#   write_traits_corr4 = write.csv(traits_corr4$to_run, file_out("output/tables/4.household_correlations.sexhet_filter.csv"), row.names=F),
+#
 
 
 )
