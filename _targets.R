@@ -169,7 +169,7 @@ list(
 
   tar_target(
     household_time,
-    calc_time_together(joint_model_adjustments,data_time_at_address,data_time_at_address_raw)
+    calc_time_together(joint_model_adjustments,data_time_at_address,data_time_at_address_raw, time_at_address_raw_field, time_at_address_field)
   ),
   tar_target(
     household_intervals,
@@ -294,7 +294,8 @@ list(
     {
       ## This function gets info on all IVs for male and females, calcs het between and provides a summary line with number of SNPs that pass filter
       path_IV_list
-      summarize_IV_data(traits_corr3$to_run, traits_to_calc_het$Neale_pheno_ID, variant_IV_data, data_Neale_manifest, Neale_summary_dir, Neale_output_dir)
+      summarize_IV_data(traits_corr3$to_run, traits_to_calc_het$Neale_pheno_ID, variant_IV_data,
+                        data_Neale_manifest, Neale_summary_dir, Neale_output_dir, IV_threshold)
     }, pattern = map(traits_to_calc_het)
   )
 
@@ -302,9 +303,6 @@ list(
 
 
   #variant_data_reduced = target(reduce_variant_data(traits_corr3$to_run,file_in(!!variant_file_full_name)), hpc = FALSE),
-
-
-
 
 
   #clump_dir = target(!!paste0(Neale_summary_dir,"/IVs/clump/" )),
