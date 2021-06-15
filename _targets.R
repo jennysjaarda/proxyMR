@@ -271,22 +271,27 @@ list(
   ),
   tar_target(
     traits_to_count_IVs,
-    tibble(i = 1:dim(traits_corr2_update[which(traits_corr2_update[["Neale_file_sex"]]=="both"),])[1])
+    pull_traits_to_count_IVs(traits_corr2_update)
   ),
   tar_target(
     IV_list,
-    get_IV_list(traits_corr2_update,traits_to_count_IVs$i, data_Neale_manifest,IV_threshold, Neale_output_path, Neale_summary_dir), pattern = map(traits_to_count_IVs)
+    get_IV_list(traits_corr2_update,traits_to_count_IVs$Neale_pheno_ID, data_Neale_manifest,IV_threshold, Neale_output_path, Neale_summary_dir), pattern = map(traits_to_count_IVs)
   ),
   tar_target(
     path_IV_list,
-    write_IV_list(traits_corr2_update, traits_to_count_IVs$i, IV_list,
+    write_IV_list(traits_corr2_update, traits_to_count_IVs$Neale_pheno_ID, IV_list,
                   IV_threshold, "analysis/data_setup/IV_lists/"), pattern = map(traits_to_count_IVs),
     format = "file"
   ),
   tar_target(
     count_IVs,
-    length(IV_list), pattern = map(IV_list)
+    tibble(Neale_pheno_ID = traits_to_count_IVs$Neale_pheno_ID, num_IVs = length(IV_list)), pattern = map(traits_to_count_IVs, IV_list)
   )
+  # tar_target(
+  #   traits_corr3,
+  #   IV_filter(traits_corr2_update, IV_summary, num_IVs_threshold)
+  # ),
+
 
 
 

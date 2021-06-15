@@ -488,7 +488,12 @@ file_in_out <- function(traits_corr2_update,i,reference_file,IV_threshold){
 
 }
 
-get_IV_list <- function(corr_traits, i, reference_file, IV_threshold, Neale_output_path, Neale_summary_dir){
+pull_traits_to_count_IVs <- function(traits_corr2_update){
+  output <- tibble(Neale_pheno_ID =traits_corr2_update[which(traits_corr2_update[["Neale_file_sex"]]=="both"),"Neale_pheno_ID"])
+  return(output)
+}
+
+get_IV_list <- function(corr_traits, Neale_pheno_ID, reference_file, IV_threshold, Neale_output_path, Neale_summary_dir){
 
   corr_traits_both <- corr_traits[which(corr_traits[["Neale_file_sex"]]=="both"),]
 
@@ -500,9 +505,9 @@ get_IV_list <- function(corr_traits, i, reference_file, IV_threshold, Neale_outp
   IVs <- list.files(path=paste0(Neale_summary_dir,"/IVs/clump/" ))
   irnt=TRUE
 
-
+  i <- which(corr_traits_both[["Neale_pheno_ID"]]==Neale_pheno_ID)
   category <- corr_traits_both[i,"category"]
-  Neale_id <- corr_traits_both[i,"Neale_pheno_ID"]
+  Neale_id <- corr_traits_both[i,"Neale_pheno_ID"] #same as Neale_pheno_ID
   ID <- corr_traits_both[i,"Neale_pheno_ID"]
   phenotype_ids  =  paste0( '^', ID, ifelse( irnt, '(_irnt|)$', '(_raw|)$' ) ) %>%
     paste( collapse = '|' )
@@ -537,6 +542,7 @@ get_IV_list <- function(corr_traits, i, reference_file, IV_threshold, Neale_outp
 
   return(IV_snp_list = build_data)
 }
+
 
 summarize_IVs <- function(corr_traits, i, reference_file){
 
@@ -573,7 +579,7 @@ IV_filter <- function(corr_traits, IV_summary, num_IVs_threshold){
   corr_traits_both <- corr_traits[which(corr_traits[["Neale_file_sex"]]=="both"),]
   order_summary <- IV_summary[order(IV_summary[,1]),]
   corr_traits_both$num_IVs <- order_summary[,2]
-
+  ## corr_traits_both <- merge(corr_traits_both, IV_summary, by="Neale_pheno_ID")
   to_run <- corr_traits_both[which(corr_traits_both$num_IVs >=num_IVs_threshold),]
   return(list(to_run = to_run, non_filtered = corr_traits_both))
 
@@ -718,13 +724,13 @@ calc_sex_het <- function(traits,i,variant_data,reference_file){
 
 }
 
-write_IV_list <- function(traits_corr2_update, i, IV_lists, IV_threshold, dir) {
+write_IV_list <- function(traits_corr2_update, Neale_pheno_ID, IV_lists, IV_threshold, dir) {
 
   corr_traits_both <- traits_corr2_update[which(traits_corr2_update[["Neale_file_sex"]]=="both"),]
 
   #for(i in 1:dim(traits_to_count_IVs)[1]){
 
-    Neale_id <- corr_traits_both[i,"Neale_pheno_ID"]
+    Neale_id <- Neale_pheno_ID
     out_file <- paste0("analysis/data_setup/IV_lists/", Neale_id, "_IVs_", IV_threshold,"_both_sexes.txt")
     if(file.exists(out_file)) {file.remove(out_file)}
     write.table(IV_lists[[i]], out_file, append=F, row.names=F, col.names=F, quote=F)
