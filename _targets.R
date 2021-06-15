@@ -20,20 +20,6 @@ tar_option_set(
 )
 
 
-UKBB_dir <- "/data/sgg2/jenny/data/UKBB_raw/"
-UKBB_processed <- "/data/sgg2/jenny/data/UKBB_processed/"
-Neale_summary_dir <- "/data/sgg2/jenny/data/Neale_UKBB_GWAS/"
-Neale_output_path <- "/data/sgg3/data/neale_files"
-
-Neale_SGG_dir_cp <- "data/Neale_SGG_directory_12_06_2021.csv"
-household_relationships_field <- "6141_1"
-time_at_address_field <- "699"
-time_at_address_raw_field <- "699-0.0"
-
-
-
-household_correlation_threshold <-0.1
-
 ##################################
 ### INPUT DATA ####
 ##################################
@@ -41,13 +27,14 @@ household_correlation_threshold <-0.1
 input_data <- tar_map(
   values = list(
     custom_names = c("household_info", "phesant_directory", "relatives", "fam", "sqc", "time_at_address",
-                     "time_at_address_raw", "UKBB_directory", "Neale_SGG_dir", "Neale_manifest", "code_process_Neale"),
-    files = c(paste0(UKBB_dir,"/pheno/ukb6881.csv"), paste0(UKBB_processed,"/PHESANT/","PHESANT_file_directory.txt"),
+                     "time_at_address_raw", "UKBB_directory", "Neale_SGG_dir", "Neale_manifest", "code_process_Neale", "Neale_variants"),
+    files = c(paste0(UKBB_dir,"/pheno/ukb6881.csv"), paste0(UKBB_processed_dir,"/PHESANT/","PHESANT_file_directory.txt"),
               paste0(UKBB_dir,"/geno/","ukb1638_rel_s488366.dat"),  paste0(UKBB_dir,"/plink/_001_ukb_cal_chr9_v2.fam"),
               paste0(UKBB_dir,"/geno/ukb_sqc_v2.txt"),
-              paste0(UKBB_processed, "PHESANT/ukb31459/bin1/out_bin1..tsv"), paste0(UKBB_dir, "pheno/ukb31459.csv"),
-              paste0(UKBB_processed,"/UKBB_pheno_directory.csv"),
-              Neale_SGG_dir_cp, paste0(Neale_output_path,"/",Neale_manifest_file_name), "code/process_Neale.sh")
+              paste0(UKBB_processed_dir, "PHESANT/ukb31459/bin1/out_bin1..tsv"), paste0(UKBB_dir, "pheno/ukb31459.csv"),
+              paste0(UKBB_processed_dir,"/UKBB_pheno_directory.csv"),
+              Neale_SGG_dir_file_cp, paste0(Neale_output_dir,"/",Neale_manifest_file), "code/process_Neale.sh",
+              Neale_variant_file)
   ),
   names = custom_names,
   unlist = FALSE,
@@ -275,7 +262,7 @@ list(
   ),
   tar_target(
     IV_list,
-    get_IV_list(traits_corr2_update,traits_to_count_IVs$Neale_pheno_ID, data_Neale_manifest,IV_threshold, Neale_output_path, Neale_summary_dir), pattern = map(traits_to_count_IVs)
+    get_IV_list(traits_corr2_update,traits_to_count_IVs$Neale_pheno_ID, data_Neale_manifest,IV_threshold, Neale_output_dir, Neale_summary_dir), pattern = map(traits_to_count_IVs)
   ),
   tar_target(
     path_IV_list,
@@ -286,11 +273,35 @@ list(
   tar_target(
     count_IVs,
     tibble(Neale_pheno_ID = traits_to_count_IVs$Neale_pheno_ID, num_IVs = length(IV_list)), pattern = map(traits_to_count_IVs, IV_list)
+  ),
+  tar_target(
+    traits_corr3,
+    IV_filter(traits_corr2_update, count_IVs, num_IVs_threshold)
+  ),
+  # write_traits_corr2 = write.csv(traits_corr3$non_filtered,file_out("output/tables/2.household_correlations.corr_filter.csv"), row.names=F),
+
+  tar_target(
+    variant_IV_data,
+    reduce_Neale_variant_data(path_Neale_variants, IV_list), deployment = "main"
+  ),
+  tar_target(
+    traits_to_calc_het,
+    pull_traits_to_count_IVs(traits_corr3$to_run)
+  ),
+
+  IV_data_summary = target( # this target used to be called: sex_het_summary
+    {
+      ## This function gets info on all IVs for male and females, calcs het between and provides a summary line with number of SNPs that pass filter
+      path_IV_list
+      summarize_IV_data(traits_corr3$to_run, traits_to_calc_het$Neale_pheno_ID, variant_IV_data, data_Neale_manifest, Neale_summary_dir, Neale_output_dir)
+    }, pattern = map(traits_to_calc_het)
   )
-  # tar_target(
-  #   traits_corr3,
-  #   IV_filter(traits_corr2_update, IV_summary, num_IVs_threshold)
-  # ),
+
+  ## removed all `readd` commands from next set of functions
+
+
+  #variant_data_reduced = target(reduce_variant_data(traits_corr3$to_run,file_in(!!variant_file_full_name)), hpc = FALSE),
+
 
 
 

@@ -493,6 +493,11 @@ pull_traits_to_count_IVs <- function(traits_corr2_update){
   return(output)
 }
 
+pull_traits_to_calc_het <- function(traits_corr3_run){
+  output <- tibble(Neale_pheno_ID =traits_corr3_run[,"Neale_pheno_ID"])
+  return(output)
+}
+
 get_IV_list <- function(corr_traits, Neale_pheno_ID, reference_file, IV_threshold, Neale_output_path, Neale_summary_dir){
 
   corr_traits_both <- corr_traits[which(corr_traits[["Neale_file_sex"]]=="both"),]
@@ -574,12 +579,11 @@ summarize_IVs <- function(corr_traits, i, reference_file){
 
 }
 
-IV_filter <- function(corr_traits, IV_summary, num_IVs_threshold){
+IV_filter <- function(corr_traits, count_IVs, num_IVs_threshold){
 
   corr_traits_both <- corr_traits[which(corr_traits[["Neale_file_sex"]]=="both"),]
-  order_summary <- IV_summary[order(IV_summary[,1]),]
-  corr_traits_both$num_IVs <- order_summary[,2]
-  ## corr_traits_both <- merge(corr_traits_both, IV_summary, by="Neale_pheno_ID")
+
+  corr_traits_both <- merge(corr_traits_both, IV_summary, by="Neale_pheno_ID")
   to_run <- corr_traits_both[which(corr_traits_both$num_IVs >=num_IVs_threshold),]
   return(list(to_run = to_run, non_filtered = corr_traits_both))
 
@@ -591,31 +595,20 @@ IV_filter <- function(corr_traits, IV_summary, num_IVs_threshold){
 
 }
 
-reduce_variant_data <- function(traits,variant_file_full_name){
+reduce_Neale_variant_data <- function(path_Neale_variants, variants_to_extract){
 
-  variant_data <- fread(variant_file_full_name,data.table=F)
+  variant_data <- fread(path_Neale_variants,data.table=F)
 
-  traits <- filter(traits, Neale_file_sex=="both")
-  total_SNP_rows <- numeric()
-  for (i in 1:dim(traits)[1])
-  {
-    trait_ID <- as.character(traits[i,"Neale_pheno_ID"])
-    IV_list_both_sexes <- suppressWarnings(fread(paste0( project_dir,"/analysis/data_setup/IV_lists/", trait_ID, "_IVs_", IV_threshold,"_both_sexes.txt"), data.table=F, header=F))
 
-    if(dim(IV_list_both_sexes)[1]!=0){
-      SNP_rows <- which(variant_data[,"rsid"] %in% IV_list_both_sexes[,1])
-      total_SNP_rows <- c(total_SNP_rows, SNP_rows)
-    }
-
-  }
-  total_SNP_rows <- unique(total_SNP_rows)
-  reduced_data <- variant_data[total_SNP_rows,]
+  SNP_rows <- which(variant_data[,"rsid"] %in% variants_to_extract)
+  reduced_data <- variant_data[total_SNP_rows_unique,]
 
   return(reduced_data)
 
 }
 
-calc_sex_het <- function(traits,i,variant_data,reference_file){
+# calc_sex_het
+summarize_IV_data <- function(traits,Neale_pheno_ID,variant_data,reference_file, Neale_summary_dir, Neale_output_dir){
 
   irnt=TRUE
   existing_files_full <- list()
@@ -631,7 +624,7 @@ calc_sex_het <- function(traits,i,variant_data,reference_file){
 
   result <- NA
 
-  trait_ID <- as.character(traits[i,"Neale_pheno_ID"])
+  trait_ID <- Neale_pheno_ID
   phenotype_ids  =  paste0( '^', trait_ID, ifelse( irnt, '(_irnt|)$', '(_raw|)$' ) ) %>%
     paste( collapse = '|' )
   file_name_temp  =  reference_file %>%
@@ -719,8 +712,7 @@ calc_sex_het <- function(traits,i,variant_data,reference_file){
 
   char_row <- data.frame(lapply(traits[i,], as.character), stringsAsFactors=FALSE)
   sex_het_summary <- as.data.frame(t(unlist(c(char_row, num_pass_filter))))
-  output <- list(list(male_IV_data = male_IV_data, female_IV_data = female_IV_data, IV_list_both_sexes = IV_list_both_sexes, sex_het_summary = sex_het_summary))
-  return(output)
+  output <- list(male_IV_data = male_IV_data, female_IV_data = female_IV_data, IV_list_both_sexes = IV_list_both_sexes, sex_het_summary = sex_het_summary)  return(output)
 
 }
 

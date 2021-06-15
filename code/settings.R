@@ -68,5 +68,20 @@ age_max <- 70
 age_interval <- 10
 ## functions to fit:
 
-Neale_output_path <- "/data/sgg3/data/neale_files"
-Neale_manifest_file_name <- "UKBB GWAS Imputed v3 - File Manifest Release 20180731 - Manifest 201807.tsv"
+## directories
+UKBB_dir <- "/data/sgg2/jenny/data/UKBB_raw"
+UKBB_processed_dir <- "/data/sgg2/jenny/data/UKBB_processed"
+Neale_summary_dir <- "/data/sgg2/jenny/data/Neale_UKBB_GWAS"
+Neale_output_dir <- "/data/sgg3/data/neale_files"
+
+## files
+Neale_SGG_dir_file_cp <- "data/Neale_SGG_directory_12_06_2021.csv"
+Neale_manifest_file <- "UKBB GWAS Imputed v3 - File Manifest Release 20180731 - Manifest 201807.tsv"
+Neale_variant_file <- paste0(Neale_summary_dir, "/variants.tsv")
+
+
+## UKBB fields
+household_relationships_field <- "6141_1"
+time_at_address_field <- "699"
+time_at_address_raw_field <- "699-0.0"
+
