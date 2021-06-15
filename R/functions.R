@@ -601,7 +601,7 @@ reduce_Neale_variant_data <- function(path_Neale_variants, variants_to_extract){
 
 
   SNP_rows <- which(variant_data[,"rsid"] %in% variants_to_extract)
-  reduced_data <- variant_data[total_SNP_rows_unique,]
+  reduced_data <- variant_data[SNP_rows,]
 
   return(reduced_data)
 
