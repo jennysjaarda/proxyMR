@@ -330,12 +330,12 @@ list(
   ),
   tar_target(
     traits_to_run,
-    pull_traits_to_run(traits_final), iteration = "list"
+    pull_traits_to_run(traits_final)
   ),
   ## data prep
   tar_target(
     path_trait_dirs,
-    create_trait_dirs(traits_to_run$Neale_pheno_ID), pattern = map(traits_to_run), iteration = "list"
+    create_trait_dirs(traits_to_run$Neale_pheno_ID), pattern = map(traits_to_run)
   ),
   tar_target(
     pheno_data,
