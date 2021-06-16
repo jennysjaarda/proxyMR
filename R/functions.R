@@ -1013,7 +1013,7 @@ prep_pheno_data <- function(traits, Neale_pheno_ID, phesant_directory, data_Neal
 
   cat(paste0("Successfully prepared phenotype for processing (created directories, phenotype file inputs, trait summary, etc).\n"))
 
-  write_files = list(list(trait_info = trait_info, unrelated_male_data = unrelated_male_data, unrelated_female_data = unrelated_female_data))
+  write_files = list(trait_info = trait_info, unrelated_male_data = unrelated_male_data, unrelated_female_data = unrelated_female_data)
   return(write_files)
 }
 
