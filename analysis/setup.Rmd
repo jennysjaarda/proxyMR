@@ -1,0 +1,76 @@
+---
+title: "Project setup"
+author: "jennysjaarda"
+date: "2021-06-14"
+output: workflowr::wflow_html
+editor_options:
+    toc: true
+    number_sections: true
+---
+
+**Last updated:** `r Sys.Date()`
+
+**Code version:** `r system("git log -1 --format='%H'", intern = TRUE)`
+
+**To reproduce the results from this project, please follow these instructions.**
+
+*In general, [`targets`](https://books.ropensci.org/targets/dynamic.html) was used to manage long-running code and [`workflowr`](https://jdblischak.github.io/workflowr/index.html) was used to manage the [website](https://jennysjaarda.github.io/proxymr/index.html).*
+
+***
+
+
+# Initiate project on remote server.
+
+All processing scripts were run from the root sgg directory.
+Project was initialized using `workflowr` rpackage, see [here](https://jdblischak.GitHub.io/workflowr/articles/wflow-01-getting-started.html).
+
+On personal computer:
+
+```{r eval=FALSE}
+project_name <- "proxyMR"
+library("workflowr")
+
+wflow_start(project_name) # creates directory called `project_name`
+
+options("workflowr.view" = FALSE) # if using cluster
+options("workflowr.view" = TRUE) # defaule, if using Rstudio on personal computer
+
+wflow_build() # create directories
+options(workflowr.sysgit = "")
+
+wflow_use_github("jennysjaarda") # select option 2: manually create new repository
+
+wflow_git_push()
+```
+
+You have now successfully created a GitHub repository for your project that is accessible on GitHub and the servers.
+
+Next setup a local copy.
+
+
+# Create local copy on personal computer.
+
+Within terminal of personal computer, clone the git repository.
+
+```{r, engine = 'bash', eval = FALSE}
+cd ~/Dropbox/UNIL/projects/
+git clone https://GitHub.com/jennysjaarda/proxyMR.git proxyMR
+```
+
+Open project in atom (or preferred text editor) and modify the following files:
+
+- Because Terminal cannot generate a preview and `workflowr` doesn't like the sysgit, to the `.Rprofile` file, add:
+  - `options(workflowr.sysgit = "")`
+  - `options("workflowr.view" = FALSE)`
+- To ensure git hub isn't manaaging large files, modify the `.gitignore` file, by adding the following lines:
+  - `analysis/*`
+  - `data/*`
+  - `!analysis/*.Rmd`
+  - `!data/*.md`
+  - `.git/`
+  - `.drake/`
+- Save and push these changes to GitHub.
+- Pull to the server.
+
+
+
