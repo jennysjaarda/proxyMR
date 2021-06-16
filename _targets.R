@@ -14,7 +14,7 @@ tar_option_set(
                                                         cpus = 1, partition = "cluster2",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
-  packages = c("tidyverse", "data.table", "cutr"),
+  packages = c("tidyverse", "data.table", "cutr", "ukbtools"),
   error = "workspace"
 
 )
@@ -69,7 +69,7 @@ list(
   ),
   tar_target(
     data_relatives,
-    read.table(path_relatives),
+    read.table(path_relatives, header = T),
   ),
   tar_target(
     data_phesant_directory,
@@ -335,7 +335,7 @@ list(
   ## data prep
   tar_target(
     path_trait_dirs,
-    create_trait_dirs(traits_to_run$Neale_pheno_ID), pattern = map(traits_to_run)
+    create_trait_dirs(traits_to_run$Neale_pheno_ID), pattern = map(traits_to_run), iteration = "list"
   ),
   tar_target(
     pheno_data,
