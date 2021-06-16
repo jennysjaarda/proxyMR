@@ -325,7 +325,7 @@ list(
   ),
   tar_target(
     path_correlations_final_filter,
-    write.csv(traits_final, "output/tables/household_correlations.final_filter.csv", row.names=F),
+    write_final_filter(traits_final, "output/tables/household_correlations.final_filter.csv"),
     format = "file"
   ),
   tar_target(

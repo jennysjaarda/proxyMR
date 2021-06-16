@@ -788,6 +788,13 @@ continuous_filter <- function(traits){
   return(output)
 }
 
+write_final_filter <- function(traits_final, output_name){
+  output_name <- ("output/tables/household_correlations.final_filter.csv")
+  write.csv(traits_final, "output/tables/household_correlations.final_filter.csv", row.names=F)
+  return(output_name)
+}
+
+
 check_valid_GRS_input <- function(traits,reference_file, Neale_output_path, Neale_summary_dir){
 
   irnt=TRUE
