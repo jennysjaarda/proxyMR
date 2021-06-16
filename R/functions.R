@@ -757,16 +757,14 @@ write_sex_het <- function(sex_het_summary, traits_to_calc_het, traits_corr3,dir)
   }
 }
 
-sex_het_filter <- function(corr_traits, sex_het_summary, traits_to_calc_het, num_IVs_threshold){
+sex_het_filter <- function(corr_traits, sex_het_summary, num_IVs_threshold){
   list_length <- 4
   build_df <- numeric()
-  for(i in 1:dim(traits_to_calc_het)[1]){
-    data_out <- readd(sex_het_summary,subtargets=i)
-    row <- data_out[[1]]$sex_het_summary
-    build_df <- rbind(build_df, row)
+  for(i in 1:dim(corr_traits)[1]){
+    data_out <- sex_het_summary[[(i*4)]] #sex_het_summary is in spot 4
+    build_df <- rbind(build_df, data_out)
   }
   colnames(build_df) <- c(colnames(corr_traits),"num_IVs_pass_het")
-  #sex_het_summary is in spot 4
   result_df <- as.data.frame(build_df)
   result_df$num_IVs_pass_het <- as.numeric(as.character(result_df$num_IVs_pass_het))
   to_run <- result_df[which(result_df$num_IVs_pass_het >=num_IVs_threshold),]
@@ -778,6 +776,11 @@ sex_het_filter <- function(corr_traits, sex_het_summary, traits_to_calc_het, num
   with significant evidence of heterogeneity between sexes (p<0.05/[number of GW-sig IVs]),
   filtered phenotypic correlations have been saved to:
   'output/tables/4.household_correlations.sexhet_filter.csv'.\n"))
+}
+
+continuous_filter <- function(traits){
+  output <- traits %>% filter(variable_type=="ordinal" | variable_type=="continuous_irnt")
+  return(output)
 }
 
 check_valid_GRS_input <- function(traits,reference_file, Neale_output_path, Neale_summary_dir){
