@@ -1,0 +1,61 @@
+---
+title: "Update Meeting: 14-06-2021"
+author: "jennysjaarda"
+date: "2021-06-14"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+  toc: true
+---
+
+## Last week summary.
+
+### Next steps: 
+
+1. Summarize all our results to get a feel for top traits (let's call this: trait/trait MR). A logical addition that we didn't discuss would be to meta-analyze across sexes and see what traits are significant in pooled analysis and then check which of these are significantly different between sexes.
+
+2. Test linear association across bins (both age and time-together bins) using IVW estimated inversely weighted by SE. 
+
+3. Combine age and time-together bins into a grid of effect sizes to see if we see any pattern. 
+
+4. Move beyond our trait/trait MR into investigating how one trait impacts other traits to tease out direct vs indirect effects, two parts here:
+    (a) as univariate model and 
+    (b) as multivariate model (selecting traits for multivariate model that were nominal in univariate).
+    
+5. Replicate permutation procedure from Tenesa paper. Do you still want to explore this?
+
+6. Explore dietary traits - request estimates from Ninon? 
+
+### Follow-up questions:
+
+Re (#4), for the trait/trait MR, I essentially followed a 2-sample MR procedure (just as a refresher for us both), so for example BMI partner vs BMI trait: 
+
+- Find IVs for BMI in Neale and take these estimates as betaX.
+- Test association of IVs with partner BMI in couples (this is betaY). 
+- Combine effects together in standard MR framework (betaY ~ betaX). 
+
+For the univariate analysis between two traits, I think what you were suggesting is to follow exactly the same procedure as above. So for example, disease partner vs BMI trait: 
+
+- Same IVs as above and take these estimates as betaX.
+- Test association of these IVs with partner "different phenotype" (some disease, let's say) (betaY). 
+- Combine in MR framework. 
+
+For the multivariate model, so if the model of interest is BMI ~ BMI + education + diet + activity level: 
+
+- IVs are the union of the IVs for each individual trait (estimates taken from Neale: beta_BMI, beta_edu, beta_diet). 
+- **Additional step**: prune these SNPs to ensure independence.
+- Test association of these pruned SNPs with BMI in couples (betaY). 
+- Combine effects in multivariate MR framework: betaY ~ beta_BMI + beta_edu + beta_diet, etc... 
+
+Does this look right (particularly for the multivariate model)? i.e. the final MR model only includes beta estimates, no raw genetic data. 
+
+I also understood that one of the traits to explore would be PCs. To me it seems logical that this would be a causal variable to explore (for eg, an MR being: BMI_beta ~ PCX_beta) rather than the other way around. If I have that right, then that means we would need IVs for PCs. At quick glance, Neale doesn't have this available. Do you know if anyone in the group would have done this, otherwise I should run this GWAS. 
+
+### Responses:
+
+- Re. #3: also test heterogeneity (in case there is discrepancy, but no trend), using Cochran's Q stat.
+- Re. combining time-together  and age bins: Do this only if the previous point gave something promising. Otherwise drop it. 
+- Not urgent to replicate Tenesa paper.
+- To explore dietary traits, got in touch again with Nicola Pirastu.
+- Raw genetic data is only used to derive the betaY, but from then it is a 2-sample MR.
+-  PCs are only exposures, not outcomes. Need to run GWAS. 
