@@ -498,6 +498,11 @@ pull_traits_to_calc_het <- function(traits_corr3_run){
   return(output)
 }
 
+pull_traits_to_run <- function(traits_corr5){
+  output <- tibble(Neale_pheno_ID =traits_corr5[,"Neale_pheno_ID"])
+  return(output)
+}
+
 get_IV_list <- function(corr_traits, Neale_pheno_ID, reference_file, IV_threshold, Neale_output_path, Neale_summary_dir){
 
   corr_traits_both <- corr_traits[which(corr_traits[["Neale_file_sex"]]=="both"),]
@@ -876,12 +881,9 @@ valid_GRS_filter <- function(traits,valid_GRS_summary){
 
 }
 
-prep_data <- function(traits,i,phesant_directory,GRS_thresholds,reference_file,sqc,fam, UKBB_dir, Neale_summary_dir, Neale_output_path){
+create_trait_dirs <- function(Neale_pheno_ID){
 
-  category <- as.character(traits[i,"category"])
-  trait_ID <- as.character(traits[i,"Neale_pheno_ID"]) ## this is the Neale_id, used to be pheno_description
-  phes_ID <- as.character(traits[i,"SGG_PHESANT_ID"])
-  variable_type <- as.character(traits[i,"variable_type"])
+  trait_ID <- Neale_pheno_ID ## this is the Neale_id, used to be pheno_description
 
   print(trait_ID)
   dir.create(paste0("output/tables/traitMR/", trait_ID), showWarnings = FALSE)
@@ -892,9 +894,9 @@ prep_data <- function(traits,i,phesant_directory,GRS_thresholds,reference_file,s
   ### create_relevant directories
   dir.create(paste0(pheno_dir, "/household_MR/", trait_ID), showWarnings = FALSE)
   dir.create(paste0(pheno_dir, "/household_GWAS/", trait_ID), showWarnings = FALSE)
-  dir.create(paste0(pheno_dir, "/GRS/", trait_ID), showWarnings = FALSE)
-  dir.create(paste0(pheno_dir, "/GRS/", trait_ID, "/male"), showWarnings = FALSE)
-  dir.create(paste0(pheno_dir, "/GRS/", trait_ID, "/female"), showWarnings = FALSE)
+  #dir.create(paste0(pheno_dir, "/GRS/", trait_ID), showWarnings = FALSE)
+  #dir.create(paste0(pheno_dir, "/GRS/", trait_ID, "/male"), showWarnings = FALSE)
+  #dir.create(paste0(pheno_dir, "/GRS/", trait_ID, "/female"), showWarnings = FALSE)
 
   dir.create(paste0(pheno_dir, "/IVs/Neale/", trait_ID), showWarnings = FALSE)
   dir.create(paste0(pheno_dir,"/household_GWAS/", trait_ID, "/outcome_male"), showWarnings = FALSE)
@@ -902,19 +904,33 @@ prep_data <- function(traits,i,phesant_directory,GRS_thresholds,reference_file,s
   dir.create(paste0(pheno_dir,"/household_MR/", trait_ID, "/exposure_male"), showWarnings = FALSE)
   dir.create(paste0(pheno_dir,"/household_MR/", trait_ID, "/exposure_female"), showWarnings = FALSE)
 
+  # INITIALLY performed some GRS analyses, but decided against later
 
-  folder_list <- c(paste0("GRS/", trait_ID, "/male"), paste0("GRS/", trait_ID, "/female"))
+  # folder_list <- c(paste0("GRS/", trait_ID, "/male"), paste0("GRS/", trait_ID, "/female"))
+  #
+  # for(folder in folder_list)
+  # {
+  #   for (threshold in GRS_thresholds)
+  #   {
+  #     dir.create(paste0(pheno_dir,"/", folder,"/", threshold), showWarnings = FALSE)
+  #   }
+  # }
+  #
 
-  for(folder in folder_list)
-  {
-    for (threshold in GRS_thresholds)
-    {
-      dir.create(paste0(pheno_dir,"/", folder,"/", threshold), showWarnings = FALSE)
-    }
-  }
 
-  ## process pheno data to have IID column and no quotes.
-  phesant_file <- as.character(phesant_directory[which(phesant_directory[,2]==phes_ID),"File"])[1]
+}
+
+prep_pheno_data <- function(traits, Neale_pheno_ID, phesant_directory, data_Neale_manifest, sqc, fam, relatives, UKBB_dir, Neale_summary_dir, Neale_output_path){
+
+  reference_file <- data_Neale_manifest
+  i <- which(traits[["Neale_pheno_ID"]]==Neale_pheno_ID)
+  category <- as.character(traits[i,"category"])
+  trait_ID <- as.character(traits[i,"Neale_pheno_ID"]) ## this is the Neale_id, used to be pheno_description
+  phes_ID <- as.character(traits[i,"SGG_PHESANT_ID"])
+  variable_type <- as.character(traits[i,"variable_type"])
+
+   ## process pheno data to have IID column and no quotes.
+  phesant_file <- as.character(traits[i,"SGG_location"]) #as.character(phesant_directory[which(phesant_directory[,2]==phes_ID),"File"])[1]
   tsv_data <- fread(phesant_file, header=TRUE, sep='\t',data.table=F,select=c("userId","sex","age", phes_ID))
 
   if(class(tsv_data[,phes_ID])=="logical")
@@ -944,8 +960,6 @@ prep_data <- function(traits,i,phesant_directory,GRS_thresholds,reference_file,s
   maleIDs <- as.integer(pheno_male_full$IID)
   femaleIDs <- as.integer(pheno_female_full$IID)
 
-  relatives_data <- paste0(UKBB_dir,"/geno/","ukb1638_rel_s488366.dat")
-  relatives <- read.table(relatives_data, header=T)
 
   related_males <- ukb_gen_samples_to_remove(relatives, ukb_with_data = maleIDs)
   related_females <- ukb_gen_samples_to_remove(relatives, ukb_with_data = femaleIDs)

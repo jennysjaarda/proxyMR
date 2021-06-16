@@ -313,11 +313,41 @@ list(
     traits_corr4,
     sex_het_filter(traits_corr3$to_run, IV_data_summary, num_IVs_threshold)
   ),
-  # filter for continuous
+  # filter for continuous traits only
   tar_target(
     traits_corr5,
     continuous_filter(traits_corr4$to_run)
+  ),
+  # final list of traits to run in pipeline, just a copy of above target
+  tar_target(
+    traits_final,
+    traits_corr5
+  ),
+  tar_target(
+    path_correlations_final_filter,
+    write.csv(traits_final, "output/tables/household_correlations.final_filter.csv", row.names=F),
+    format = "file"
+  ),
+  tar_target(
+    traits_to_run,
+    pull_traits_to_run(traits_final), iteration = "list"
+  ),
+  ## data prep
+  tar_target(
+    path_trait_dirs,
+    create_trait_dirs(traits_to_run$Neale_pheno_ID), pattern = map(traits_to_run), iteration = "list"
+  ),
+  tar_target(
+    pheno_data,
+    {
+      path_phesant
+      path_trait_dirs
+      prep_pheno_data(traits_final, traits_to_run$Neale_pheno_ID,
+                data_phesant_directory, data_Neale_manifest, data_sqc, data_fam, data_relatives,
+                UKBB_dir, Neale_summary_dir, Neale_output_dir)
+    }, pattern = map(traits_to_run), iteration = "list"
   )
+
 
 
 
@@ -327,7 +357,7 @@ list(
 #   traits_corr4 = sex_het_filter(traits_corr3$to_run, sex_het_summary, traits_to_calc_het, !!num_IVs_threshold),
 #   write_traits_corr3 = write.csv(traits_corr4$non_filtered, file_out("output/tables/3.household_correlations.numIVs_filter.csv"), row.names=F),
 #   write_traits_corr4 = write.csv(traits_corr4$to_run, file_out("output/tables/4.household_correlations.sexhet_filter.csv"), row.names=F),
-#   write_traits_corr5 = write.csv(traits_corr6, file_out("output/tables/6.household_correlations.nonbinary_filter.csv"), row.names=F)
+#   write_traits_corr5 = write.csv(traits_corr5, file_out("output/tables/6.household_correlations.nonbinary_filter.csv"), row.names=F)
 
 
 
