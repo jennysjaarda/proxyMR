@@ -365,6 +365,11 @@ list(
     pattern = map(pheno_data), iteration = "list"
   ),
 
+
+  tar_target(IV_data_summary_run,
+             IV_data_summary[[IV_indices_to_run]],
+             pattern = map(IV_indices_to_run)),
+
   tar_target(summ_stats,
     {
       create_summary_stats(traits_to_run$Neale_pheno_ID, trait_info, IV_data_summary)
@@ -372,13 +377,8 @@ list(
       # could try slicing over `IV_data_summary` but would need to find the
       # create_summary_stats(Neale_pheno_ID, trait_info)
 
-    }, pattern = head(map(traits_to_run, trait_info, slice(IV_data_summary, index = IV_indices_to_run)), n = 5)
+    }, pattern = head(map(traits_to_run, trait_info, IV_data_summary_run), n = 5) #slice(IV_data_summary, index = IV_indices_to_run)), n = 5)
   )
-
-
-
-
-
 
 
   ## removed all `readd` commands from next set of functions
