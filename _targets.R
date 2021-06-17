@@ -372,7 +372,7 @@ list(
       # could try slicing over `IV_data_summary` but would need to find the
       # create_summary_stats(Neale_pheno_ID, trait_info)
 
-    }, pattern = head(map(traits_to_run, trait_info, slice(IV_data_summary, index = pull_IV_indices_to_run)), n = 5)
+    }, pattern = head(map(traits_to_run, trait_info, slice(IV_data_summary, index = IV_indices_to_run)), n = 5)
   )
 
 
