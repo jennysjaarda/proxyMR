@@ -503,6 +503,12 @@ pull_traits_to_run <- function(traits_corr5){
   return(output)
 }
 
+pull_IV_indices_to_run <- function(traits_final, traits_to_calc_het){
+
+  indicies <- which(traits_to_calc_het$Neale_pheno_ID %in% traits_final$Neale_pheno_ID)
+  return(indicies)
+}
+
 get_IV_list <- function(corr_traits, Neale_pheno_ID, reference_file, IV_threshold, Neale_output_path, Neale_summary_dir){
 
   corr_traits_both <- corr_traits[which(corr_traits[["Neale_file_sex"]]=="both"),]
@@ -1047,7 +1053,7 @@ write_data_prep <- function(traits, traits_to_run, out1, out2){
   }
 }
 
-create_summary_stats <- function(Neale_pheno_ID, trait_info){
+create_summary_stats <- function(Neale_pheno_ID, trait_info, IV_data_summary){
 
   #i <- which(traits[["Neale_pheno_ID"]]==Neale_pheno_ID)
   trait_ID <- Neale_pheno_ID ## this is the Neale_id, used to be pheno_description
@@ -1056,13 +1062,13 @@ create_summary_stats <- function(Neale_pheno_ID, trait_info){
 
   #variant_data <- fread(variant_file_full_name,data.table=F)
 
-  het_stats <- fread(paste0( "analysis/data_setup/sex_heterogeneity/", trait_ID, "_sex_het.txt"), header=T, data.table=F)
+  het_stats <- IV_data_summary$IV_list_both_sexes #fread(paste0( "analysis/data_setup/sex_heterogeneity/", trait_ID, "_sex_het.txt"), header=T, data.table=F)
   IV_list_filter <- het_stats[which(het_stats[["P-het"]] > 0.05/dim(het_stats)[1]),]
 
-  for(file in c("male", "female"))
+  for(sex in c("male", "female"))
   {
-    file_name <- paste0( "analysis/data_setup/IV_info/", trait_ID, "_IVs_5e-08_", file,".txt")
-    temp <- read.table(file_name,header=T)
+    #file_name <- paste0( "analysis/data_setup/IV_info/", trait_ID, "_IVs_5e-08_", file,".txt")
+    temp <- IV_data_summary[[paste0("IV_data_summary_", sex, "_IV_data")]] #read.table(file_name,header=T)
     SNP_rows <- which(temp[,"rsid"] %in% IV_list_filter[,1])
     temp <- temp[SNP_rows,]
     IV_cols <- c("rsid", "chr", "beta", "se", "pval", "ref", "alt", "AF","n_complete_samples")
@@ -1082,7 +1088,7 @@ create_summary_stats <- function(Neale_pheno_ID, trait_info){
   MR inputs are sex-specific but based on GW-significance in both-sex file
   (only including SNPs which passed filters - see pipeline part A)\n"))
   output = list(male_IV_data = male_IV_data, female_IV_data = female_IV_data)
-  return(list(output))
+  return(output)
 
 }
 

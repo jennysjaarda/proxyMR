@@ -338,6 +338,11 @@ list(
     traits_to_run,
     pull_traits_to_run(traits_final)
   ),
+  tar_target(
+    IV_indices_to_run,
+    pull_IV_indices_to_run(traits_final, traits_to_calc_het)
+  ),
+
   ## data prep
   tar_target(
     path_trait_dirs,
@@ -362,12 +367,15 @@ list(
 
   tar_target(summ_stats,
     {
-      pheno_data
-      path_IV_info
-      path_sex_het
-      create_summary_stats(traits_to_run$Neale_pheno_ID, trait_info)
-    }, pattern = map(traits_to_run, trait_info)
+      create_summary_stats(traits_to_run$Neale_pheno_ID, trait_info, IV_data_summary)
+
+      # could try slicing over `IV_data_summary` but would need to find the
+      # create_summary_stats(Neale_pheno_ID, trait_info)
+
+    }, pattern = head(map(traits_to_run, trait_info, slice(IV_data_summary, index = pull_IV_indices_to_run)), n = 5)
   )
+
+
 
 
 
