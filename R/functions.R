@@ -751,15 +751,15 @@ write_IV_info <- function(IV_data_summary, Neale_pheno_ID) {
 
 }
 
-write_sex_het <- function(sex_het_summary, traits_to_calc_het, traits_corr3,dir){
-  for(i in 1:dim(traits_to_calc_het)[1]){
-    data_out <- readd(sex_het_summary,subtargets=i)
-    list_length <- 4
-    trait_ID <- as.character(traits_corr3$to_run[i,"Neale_pheno_ID"])
+write_sex_het <- function(IV_data_summary, Neale_pheno_ID){
+
+
+    trait_ID <- Neale_pheno_ID
     output_file <- paste0( "analysis/data_setup/sex_heterogeneity/", trait_ID, "_sex_het.txt")
-    write.table(data_out[[1]]$IV_list_both_sexes, output_file, row.names=F, col.names=T, quote=F)
+    write.table(IV_data_summary$IV_list_both_sexes, output_file, row.names=F, col.names=T, quote=F)
     #IV_list_both_sexes is in spot 3
-  }
+    return(output_file)
+
 }
 
 sex_het_filter <- function(corr_traits, sex_het_summary, num_IVs_threshold){
@@ -1024,6 +1024,14 @@ prep_pheno_data <- function(traits, Neale_pheno_ID, phesant_directory, data_Neal
   return(write_files)
 }
 
+extract_trait_info <- function(pheno_data){
+
+  output <- pheno_data$trait_info
+  return(output)
+
+}
+
+
 write_data_prep <- function(traits, traits_to_run, out1, out2){
 
   for(i in 1:dim(traits_to_run)[1]){
@@ -1039,11 +1047,12 @@ write_data_prep <- function(traits, traits_to_run, out1, out2){
   }
 }
 
-create_summary_stats <- function(traits,i,phesant_directory,GRS_thresholds,reference_file,variant_data){
+create_summary_stats <- function(Neale_pheno_ID, trait_info){
 
-  trait_ID <- as.character(traits[i,"Neale_pheno_ID"]) ## this is the Neale_id, used to be pheno_description
+  #i <- which(traits[["Neale_pheno_ID"]]==Neale_pheno_ID)
+  trait_ID <- Neale_pheno_ID ## this is the Neale_id, used to be pheno_description
   pheno_dir <- paste0("analysis/traitMR/")
-  trait_info <-  read.table(paste0(pheno_dir,"/trait_info/", trait_ID, "_trait_info.txt"), header=F, row.names=1,check.names=F)
+  #trait_info <-  read.table(paste0(pheno_dir,"/trait_info/", trait_ID, "_trait_info.txt"), header=F, row.names=1,check.names=F)
 
   #variant_data <- fread(variant_file_full_name,data.table=F)
 
@@ -1067,41 +1076,12 @@ create_summary_stats <- function(traits,i,phesant_directory,GRS_thresholds,refer
 
   ###############################
 
-  ### summary stats at each GRS threshold
-
-  #### DON"T NEED?
-
-  GRS_list <- list()
-  for(sex in c("male", "female"))
-  {
-    temp_folder <- as.character(trait_info[paste0(sex, "_IV_folder"),1])
-    base_name <- basename(temp_folder)
-    original_data <- fread(paste0(temp_folder,"/", base_name,"_unpruned", ".txt"), header=T,data.table=F)
-
-    for(chr in 1:22)
-    {
-      clump_data <- read.table(paste0(temp_folder,"/", base_name,"_unpruned_chr", chr, ".clumped"),header = T)
-      clumped_SNPs <- clump_data[,"SNP"]
-
-      for(GRS_threshold in GRS_thresholds)
-      {
-        list_name <- paste0(sex, "_chr", chr, "_GRSthresh_", GRS_threshold)
-        GRS_temp <- original_data[which(original_data[["PVAL"]]<GRS_threshold & original_data[["SNP"]] %in% clumped_SNPs),]
-        #write.table(GRS_temp, paste0( pheno_dir,"/GRS/", sex, "/", trait_ID, "/", GRS_threshold,"/", sex,"_GRS_",GRS_threshold,"_chr",chr,".txt"), append=F, row.names=F, col.names=T, quote=F)
-        #write.table(GRS_temp, paste0( pheno_dir,"/GRS/", sex, "/", trait_ID, "/", GRS_threshold,"/", sex,"_GRS_",GRS_threshold,".txt"), append=T, row.names=F, col.names=F, quote=F)
-        GRS_list[[list_name]] <- GRS_temp
-
-      }
-
-    }
-  }
 
 
-  cat(paste0("Successfully prepared MR and GRS inputs from Neale summary stats.
+  cat(paste0("Successfully prepared MR inputs from Neale summary stats.
   MR inputs are sex-specific but based on GW-significance in both-sex file
-  (only including SNPs which passed filters - see pipeline part A).
-  GRS thresholds are sex-specific, filtered for low-quality==FALSE and p<0.1.\n"))
-  output = list(male_IV_data = male_IV_data, female_IV_data = female_IV_data, GRS_list = GRS_list)
+  (only including SNPs which passed filters - see pipeline part A)\n"))
+  output = list(male_IV_data = male_IV_data, female_IV_data = female_IV_data)
   return(list(output))
 
 }

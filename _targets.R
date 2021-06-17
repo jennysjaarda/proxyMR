@@ -310,6 +310,12 @@ list(
     pattern = map(IV_data_summary, traits_to_calc_het)
   ),
   tar_target(
+    path_sex_het,
+    write_sex_het(IV_data_summary, traits_to_calc_het$Neale_pheno_ID),
+    format = "file",
+    pattern = map(IV_data_summary, traits_to_calc_het)
+  ),
+  tar_target(
     traits_corr4,
     sex_het_filter(traits_corr3$to_run, IV_data_summary, num_IVs_threshold)
   ),
@@ -346,7 +352,23 @@ list(
                 data_phesant_directory, data_Neale_manifest, data_sqc, data_fam, data_relatives,
                 UKBB_dir, Neale_summary_dir, Neale_output_dir)
     }, pattern = map(traits_to_run), iteration = "list"
+  ),
+
+  tar_target(
+    trait_info,
+    extract_trait_info(pheno_data),
+    pattern = map(pheno_data), iteration = "list"
+  ),
+
+  tar_target(summ_stats,
+    {
+      pheno_data
+      path_IV_info
+      path_sex_het
+      create_summary_stats(traits_to_run$Neale_pheno_ID, trait_info)
+    }, pattern = map(traits_to_run, trait_info)
   )
+
 
 
 
