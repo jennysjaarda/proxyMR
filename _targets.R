@@ -301,7 +301,7 @@ list(
       path_IV_list
       summarize_IV_data(traits_corr3$to_run, traits_to_calc_het$Neale_pheno_ID, variant_IV_data,
                         data_Neale_manifest, Neale_summary_dir, Neale_output_dir, IV_threshold)
-    }, pattern = map(traits_to_calc_het)
+    }, pattern = map(traits_to_calc_het), iteration = "list"
   ),
   tar_target(
     path_IV_info,
