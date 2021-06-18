@@ -368,7 +368,7 @@ list(
 
   tar_target(IV_data_summary_run,
              IV_data_summary[[IV_indices_to_run]],
-             pattern = map(IV_indices_to_run)),
+             pattern = map(IV_indices_to_run), iteration= "list"),
   tar_target(sex, c("male", "female")),
 
   tar_target(summ_stats,
