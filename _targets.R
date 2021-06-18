@@ -340,7 +340,7 @@ list(
   ),
   tar_target(
     IV_indices_to_run,
-    pull_IV_indices_to_run(traits_final, traits_to_calc_het)
+    pull_IV_indices_to_run(traits_final, traits_to_calc_het), iteration = "list"
   ),
 
   ## data prep
