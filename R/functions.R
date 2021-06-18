@@ -1073,7 +1073,7 @@ create_summary_stats <- function(Neale_pheno_ID, trait_info, IV_data_summary){
     temp <- temp[SNP_rows,]
     IV_cols <- c("rsid", "chr", "beta", "se", "pval", "ref", "alt", "AF","n_complete_samples")
     exp_var_merge <- temp[,IV_cols]
-    assign(paste0(file, "_IV_data"), exp_var_merge)
+    assign(paste0(sex, "_IV_data"), exp_var_merge)
   }
 
 
