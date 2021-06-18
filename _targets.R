@@ -11,7 +11,7 @@ options(clustermq.scheduler = "slurm", clustermq.template = "slurm_clustermq.tmp
 tar_option_set(
   resources = tar_resources(
     clustermq = tar_resources_clustermq(template = list(num_cores = 1, account = "sgg",
-                                                        cpus = 8, partition = "sgg",
+                                                        cpus = 1, partition = "cluster2",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
   packages = c("tidyverse", "data.table", "cutr", "ukbtools"),
@@ -369,6 +369,7 @@ list(
   tar_target(IV_data_summary_run,
              IV_data_summary[[IV_indices_to_run]],
              pattern = map(IV_indices_to_run)),
+  tar_target(sex, c("male", "female")),
 
   tar_target(summ_stats,
     {
@@ -378,8 +379,17 @@ list(
       # create_summary_stats(Neale_pheno_ID, trait_info)
 
     }, pattern = head(map(traits_to_run, trait_info, IV_data_summary_run), n = 5) #slice(IV_data_summary, index = IV_indices_to_run)), n = 5)
-  )
+  )#,
 
+  # household GWAS produces a DF with results for each group,
+  # so in MR function we can just filter to relevant groups.
+
+# household_MR(outcome_trait = "", household_GWAS, exposure_trait = "", IVs, grouping_var),
+
+# cross(cross(map(outcome_traits, household_GWAS), grouping_var), map(exposure_traits, IVs))
+# trait folder represents outcome trait
+# for each outcome find all trait < 0.05
+# combine
 
   ## removed all `readd` commands from next set of functions
 

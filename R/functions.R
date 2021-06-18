@@ -772,7 +772,7 @@ sex_het_filter <- function(corr_traits, sex_het_summary, num_IVs_threshold){
   list_length <- 4
   build_df <- numeric()
   for(i in 1:dim(corr_traits)[1]){
-    data_out <- sex_het_summary[[(i*4)]] #sex_het_summary is in spot 4
+    data_out <- sex_het_summary[[(i)]][[4]] #sex_het_summary is in spot 4
     build_df <- rbind(build_df, data_out)
   }
   colnames(build_df) <- c(colnames(corr_traits),"num_IVs_pass_het")
@@ -1053,7 +1053,7 @@ write_data_prep <- function(traits, traits_to_run, out1, out2){
   }
 }
 
-create_summary_stats <- function(Neale_pheno_ID, trait_info, IV_data_summary){
+create_summary_stats <- function(Neale_pheno_ID, trait_info, IV_data_summary, sex){
 
   #i <- which(traits[["Neale_pheno_ID"]]==Neale_pheno_ID)
   trait_ID <- Neale_pheno_ID ## this is the Neale_id, used to be pheno_description
