@@ -1053,7 +1053,7 @@ write_data_prep <- function(traits, traits_to_run, out1, out2){
   }
 }
 
-create_summary_stats <- function(Neale_pheno_ID, trait_info, IV_data_summary, sex){
+create_summary_stats <- function(Neale_pheno_ID, trait_info, IV_data_summary){
 
   #i <- which(traits[["Neale_pheno_ID"]]==Neale_pheno_ID)
   trait_ID <- Neale_pheno_ID ## this is the Neale_id, used to be pheno_description
@@ -1068,7 +1068,7 @@ create_summary_stats <- function(Neale_pheno_ID, trait_info, IV_data_summary, se
   for(sex in c("male", "female"))
   {
     #file_name <- paste0( "analysis/data_setup/IV_info/", trait_ID, "_IVs_5e-08_", file,".txt")
-    temp <- IV_data_summary[[paste0("IV_data_summary_", sex, "_IV_data")]] #read.table(file_name,header=T)
+    temp <- IV_data_summary[[paste0(sex, "_IV_data")]] #read.table(file_name,header=T)
     SNP_rows <- which(temp[,"rsid"] %in% IV_list_filter[,1])
     temp <- temp[SNP_rows,]
     IV_cols <- c("rsid", "chr", "beta", "se", "pval", "ref", "alt", "AF","n_complete_samples")

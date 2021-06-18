@@ -373,7 +373,7 @@ list(
 
   tar_target(summ_stats,
     {
-      create_summary_stats(traits_to_run$Neale_pheno_ID, trait_info, IV_data_summary)
+      create_summary_stats(traits_to_run$Neale_pheno_ID, trait_info, IV_data_summary_run)
 
       # could try slicing over `IV_data_summary` but would need to find the
       # create_summary_stats(Neale_pheno_ID, trait_info)
