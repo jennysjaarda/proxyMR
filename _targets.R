@@ -14,7 +14,7 @@ tar_option_set(
                                                         cpus = 1, partition = "sgg",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
-  packages = c("tidyverse", "data.table", "cutr", "ukbtools"),
+  packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen"),
   error = "workspace"
 
 )
@@ -28,14 +28,15 @@ input_data <- tar_map(
   values = list(
     custom_names = c("household_info", "phesant_directory", "relatives", "fam", "sqc", "time_at_address",
                      "time_at_address_raw", "UKBB_directory", "Neale_SGG_dir", "Neale_manifest", "code_process_Neale", "Neale_variants",
-                     "UKBB_sample"),
+                     "UKBB_sample", "UKBB_imp_data"),
     files = c(paste0(UKBB_dir,"/pheno/ukb6881.csv"), paste0(UKBB_processed_dir,"/PHESANT/","PHESANT_file_directory.txt"),
               paste0(UKBB_dir,"/geno/","ukb1638_rel_s488366.dat"),  paste0(UKBB_dir,"/plink/_001_ukb_cal_chr9_v2.fam"),
               paste0(UKBB_dir,"/geno/ukb_sqc_v2.txt"),
               paste0(UKBB_processed_dir, "/PHESANT/ukb31459/bin1/out_bin1..tsv"), paste0(UKBB_dir, "/pheno/ukb31459.csv"),
               paste0(UKBB_processed_dir,"/UKBB_pheno_directory.csv"),
               Neale_SGG_dir_file_cp, paste0(Neale_output_dir,"/",Neale_manifest_file), "code/process_Neale.sh",
-              Neale_variant_file, paste0(UKBB_dir, "/imp/ukb1638_imp_chr1_v2_s487398.sample"))
+              Neale_variant_file, paste0(UKBB_dir, "/imp/ukb1638_imp_chr1_v2_s487398.sample"),
+              paste0(UKBB_dir, "/imp"))
   ),
   names = custom_names,
   unlist = FALSE,
@@ -366,23 +367,28 @@ list(
   ),
 
 
-  tar_target(IV_data_summary_run,
-             IV_data_summary[[IV_indices_to_run]],
-             pattern = map(IV_indices_to_run), iteration= "list"),
+  tar_target(
+    IV_data_summary_run,
+    IV_data_summary[[IV_indices_to_run]],
+    pattern = map(IV_indices_to_run), iteration= "list"
+  ),
   tar_target(sex, c("male", "female")),
+  tar_target(grouping_var, c("time_together_even_bins", "age_even_bins")),
 
-  tar_target(summ_stats,
-    {
-      create_summary_stats(traits_to_run$Neale_pheno_ID, trait_info, IV_data_summary_run)
-
-      # could try slicing over `IV_data_summary` but would need to find the
-      # create_summary_stats(Neale_pheno_ID, trait_info)
-
-    },
+  tar_target(
+    summ_stats,
+    create_summary_stats(traits_to_run$Neale_pheno_ID, trait_info, IV_data_summary_run),
     pattern = map(traits_to_run, trait_info, IV_data_summary_run),
     iteration = "list"
-    #slice(IV_data_summary, index = IV_indices_to_run)), n = 5)
-  )#,
+  ),
+
+  tar_target(
+    household_GWAS,
+    run_household_GWAS(trait_info, summ_stats, pheno_data, path_UKBB_imp_data,
+                       data_UKBB_sample, joint_model_adjustments, grouping_var, household_time_munge),
+    pattern = cross(map(trait_info, summ_stats, pheno_data), grouping_var)
+
+  )
 
   # household GWAS produces a DF with results for each group,
   # so in MR function we can just filter to relevant groups.
