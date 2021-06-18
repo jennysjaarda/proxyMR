@@ -379,7 +379,7 @@ list(
       # create_summary_stats(Neale_pheno_ID, trait_info)
 
     },
-    pattern = head(map(traits_to_run, trait_info, IV_data_summary_run), n = 5),
+    pattern = map(traits_to_run, trait_info, IV_data_summary_run),
     iteration = "list"
     #slice(IV_data_summary, index = IV_indices_to_run)), n = 5)
   )#,
