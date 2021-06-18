@@ -1620,7 +1620,7 @@ run_household_GWAS <- function(trait_info, summ_stats, pheno_data, path_UKBB_imp
 
       mod_extract <- extract_model_stats(model_summary, c("geno_index"))
       n <- length(fitted(mod))
-      group_AF <- mean(final_data$geno_index)
+      group_AF <- mean(final_data$geno_index)/2
       k_GWAS <- numeric()
       k_GWAS <- rbind(k_GWAS,cbind(outcome, as.character(snp), grouping_var, "all", exposure_sex, outcome_sex, mod_extract,n, group_AF))
 
@@ -1633,7 +1633,7 @@ run_household_GWAS <- function(trait_info, summ_stats, pheno_data, path_UKBB_imp
         bin_pheno_run$outcome <- scale(bin_pheno_run$outcome)
         bin_pheno_run <- bin_pheno_run[complete.cases(bin_pheno_run),] #if all values are the same then NA's will be produced
         if(dim(bin_pheno_run)[1]!=0){
-          group_AF <- mean(bin_pheno_run$geno_index)
+          group_AF <- mean(bin_pheno_run$geno_index)/2
           bin_mod <- glm(outcome ~ ., data=bin_pheno_run, family="gaussian")
 
           bin_model_summary <- full_model_summary(bin_mod)
