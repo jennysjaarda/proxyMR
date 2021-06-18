@@ -8,6 +8,22 @@ editor_options:
   toc: true
 ---
 
+
+```{r setup, include = FALSE}
+
+options(scipen=999)
+source("code/settings.R")
+load("summary.Rdata")
+library(DT)
+library(knitr)
+
+```
+
+```{r, echo=FALSE,include = FALSE}
+# You need this code to conduct the magic dependences attaching...
+DT::datatable(matrix())
+```
+
 ## Last week summary.
 
 ### Next steps: 
@@ -59,3 +75,40 @@ I also understood that one of the traits to explore would be PCs. To me it seems
 - To explore dietary traits, got in touch again with Nicola Pirastu.
 - Raw genetic data is only used to derive the betaY, but from then it is a 2-sample MR.
 -  PCs are only exposures, not outcomes. Need to run GWAS. 
+
+## Results.
+
+### Traits analyzed.
+
+```{r traits, echo = FALSE}
+
+DT::datatable(traits, width = "100%")
+
+```
+
+### Summary Heterogeneity between sexes.
+
+```{r sex_het, echo = FALSE}
+
+reduced_mr_summary <- calc_mr_sex_het %>% dplyr::select(trait_ID, trait_description, 
+                                                        exposure_sex, N_snps,"IVW/Wald_summary","IVW/Wald_pval", 
+                                                        "MR_meta_est", "MR_meta_pval", "sex_het")
+
+DT::datatable(reduced_mr_summary, width = "100%")
+
+```
+
+
+### Testing discrepancy amongst bins.
+
+```{r mr_summary_age, echo = FALSE}
+
+mr_summary_age_reduced <- mr_summary_age %>% dplyr::select(trait_ID, exposure_sex, Q_stat, Q_pval)
+DT::datatable(mr_summary_age_reduced, width = "100%")
+
+mr_summary_tt_reduced <- mr_summary_tt %>% dplyr::select(trait_ID, exposure_sex, Q_stat, Q_pval)
+DT::datatable(mr_summary_tt_reduced, width = "100%")
+
+```
+
+
