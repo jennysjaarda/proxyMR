@@ -11,7 +11,7 @@ options(clustermq.scheduler = "slurm", clustermq.template = "slurm_clustermq.tmp
 tar_option_set(
   resources = tar_resources(
     clustermq = tar_resources_clustermq(template = list(num_cores = 1, account = "sgg",
-                                                        cpus = 2, partition = "sgg",
+                                                        cpus = 1, partition = "sgg",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
   packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen"),
@@ -335,9 +335,15 @@ list(
     format = "file"
   ),
   tar_target(
-    traits_to_run,
+    exposures_to_run,
     pull_traits_to_run(traits_final)
   ),
+
+  tar_target(
+    outcomes_to_run,
+    pull_traits_to_run(traits_final) #this could be changed to traits_corr2_update
+  ),
+
   tar_target(
     IV_indices_to_run,
     pull_IV_indices_to_run(traits_final, traits_to_calc_het), iteration = "list"
@@ -345,49 +351,65 @@ list(
 
   ## data prep
   tar_target(
-    path_trait_dirs,
-    create_trait_dirs(traits_to_run$Neale_pheno_ID), pattern = map(traits_to_run), iteration = "list"
+    path_outcome_dirs,
+    create_trait_dirs(outcomes_to_run$Neale_pheno_ID), pattern = map(outcomes_to_run), iteration = "list"
   ),
+
   tar_target(
-    pheno_data,
+    pheno_data, # pheno data list could expand beyond just those traits with relevant IVs by changing `outcomes_to_run`
     {
       path_phesant
       path_trait_dirs
-      prep_pheno_data(traits_final, traits_to_run$Neale_pheno_ID,
-                data_phesant_directory, data_Neale_manifest, data_sqc, data_fam, data_relatives,
-                UKBB_dir, Neale_summary_dir, Neale_output_dir)
-    }, pattern = map(traits_to_run), iteration = "list"
+      prep_pheno_data(traits_corr2_update, outcomes_to_run$Neale_pheno_ID,
+                data_sqc, data_fam, data_relatives)
+    }, pattern = head(map(outcomes_to_run), n = 5), iteration = "list"
   ),
 
   tar_target(
-    trait_info,
-    extract_trait_info(pheno_data),
-    pattern = map(pheno_data), iteration = "list"
+    exposure_info,
+    get_trait_info(traits_final, exposures_to_run$Neale_pheno_ID,
+                   data_Neale_manifest, Neale_summary_dir, Neale_output_dir),
+    pattern = head(map(exposures_to_run), n = 5), iteration = "list"
   ),
-
 
   tar_target(
     IV_data_summary_run,
     IV_data_summary[[IV_indices_to_run]],
     pattern = map(IV_indices_to_run), iteration= "list"
   ),
-  tar_target(sex, c("male", "female")),
+
   tar_target(grouping_var, c("time_together_even_bins", "age_even_bins")),
 
   tar_target(
     summ_stats,
-    create_summary_stats(traits_to_run$Neale_pheno_ID, trait_info, IV_data_summary_run),
-    pattern = map(traits_to_run, trait_info, IV_data_summary_run),
+    create_summary_stats(exposures_to_run$Neale_pheno_ID, exposure_info, IV_data_summary_run),
+    pattern = map(exposures_to_run, exposure_info, IV_data_summary_run),
     iteration = "list"
   ),
 
   tar_target(
+    IV_genetic_data, ## loads genetic data for each set of IVs, same IVs are used for both males and females
+    load_geno(summ_stats[["male_IV_data"]], sample_file, path_UKBB_imp_data), iteration = "list",
+    pattern = map(summ_stats)
+  ),
+
+  tar_target(
     household_GWAS,
-    run_household_GWAS(trait_info, summ_stats, pheno_data, path_UKBB_imp_data,
+    run_household_GWAS(trait_info, summ_stats, pheno_data, IV_genetic_data,
+                       joint_model_adjustments, grouping_var, household_time_munge),
+    pattern = cross(map(trait_info, summ_stats, IV_genetic_data), pheno_data, grouping_var)
+
+  ),
+
+  tar_target(
+    household_MR,
+    run_household_MR(trait_info, summ_stats, path_UKBB_imp_data,
                        data_UKBB_sample, joint_model_adjustments, grouping_var, household_time_munge),
-    pattern = cross(map(trait_info, summ_stats, pheno_data), grouping_var)
+    pattern = head(map(cross(map(trait_info, summ_stats), grouping_var), household_GWAS), n= 5)
 
   )
+
+
 
   # household GWAS produces a DF with results for each group,
   # so in MR function we can just filter to relevant groups.
