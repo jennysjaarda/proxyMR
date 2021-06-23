@@ -935,7 +935,7 @@ create_trait_dirs <- function(Neale_pheno_ID){
 
 prep_pheno_data <- function(traits, Neale_pheno_ID, sqc, fam, relatives){
 
-  i <- which(traits[["Neale_pheno_ID"]]==Neale_pheno_ID)
+  i <- which(traits[["Neale_pheno_ID"]]==Neale_pheno_ID & traits[["Neale_file_sex"]]=="both")
   category <- as.character(traits[i,"category"])
   trait_ID <- as.character(traits[i,"Neale_pheno_ID"]) ## this is the Neale_id, used to be pheno_description
   phes_ID <- as.character(traits[i,"SGG_PHESANT_ID"])
