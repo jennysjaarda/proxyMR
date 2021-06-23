@@ -359,7 +359,7 @@ list(
     pheno_data, # pheno data list could expand beyond just those traits with relevant IVs by changing `outcomes_to_run`
     {
       path_phesant
-      path_trait_dirs
+      path_outcome_dirs
       prep_pheno_data(traits_corr2_update, outcomes_to_run$Neale_pheno_ID,
                 data_sqc, data_fam, data_relatives)
     }, pattern = head(map(outcomes_to_run), n = 5), iteration = "list"
@@ -369,7 +369,7 @@ list(
     exposure_info,
     get_trait_info(traits_final, exposures_to_run$Neale_pheno_ID,
                    data_Neale_manifest, Neale_summary_dir, Neale_output_dir),
-    pattern = head(map(exposures_to_run), n = 5), iteration = "list"
+    pattern = map(exposures_to_run), iteration = "list"
   ),
 
   tar_target(
