@@ -362,7 +362,7 @@ list(
       path_outcome_dirs
       prep_pheno_data(traits_corr2_update, outcomes_to_run$Neale_pheno_ID,
                 data_sqc, data_fam, data_relatives)
-    }, pattern = head(map(outcomes_to_run), n = 5), iteration = "list"
+    }, pattern = map(outcomes_to_run), iteration = "list"
   ),
 
   tar_target(
