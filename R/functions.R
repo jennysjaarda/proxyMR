@@ -1589,7 +1589,7 @@ summarize_gwas <- function(geno, outcome, covar){
   gwas <- big_univLinReg(as_FBM(geno, backingfile = temp_file), y.train = outcome,
                          covar.train = covar_from_df(covar))
 
-  unlink(temp_file)
+  unlink(paste0(temp_file, ".bk"))
   gwas$pval <- predict(gwas, log10 = FALSE)
   gwas$n <- dim(geno)[1]
   gwas$group_AF <- colMeans(geno)/2
