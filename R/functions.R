@@ -1585,10 +1585,11 @@ define_models <- function(traits){
 
 summarize_gwas <- function(geno, outcome, covar){
 
-
-  gwas <- big_univLinReg(as_FBM(geno), y.train = outcome,
+  temp_file <- tempfile(tmpdir = "~/tmp")
+  gwas <- big_univLinReg(as_FBM(geno, backingfile = temp_file), y.train = outcome,
                          covar.train = covar_from_df(covar))
 
+  unlink(temp_file)
   gwas$pval <- predict(gwas, log10 = FALSE)
   gwas$n <- dim(geno)[1]
   gwas$group_AF <- colMeans(geno)/2
@@ -1753,70 +1754,88 @@ household_GWAS_across_phenos <- function(exposure_info, summ_stats, outcomes_to_
 
 }
 
+household_MR_all <- function(){
 
-run_household_MR <- function(trait_info, summ_stats, household_GWAS_result, grouping_var) {
-  #household_GWAS_result <- "gwas_age_bins"
-  #grouping_var <- "age_even_bins"
+  het_test <- mr_heterogeneity(harmonise_dat, method_list=c("mr_egger_regression", "mr_ivw"))
+  egger_test <- mr_pleiotropy_test(harmonise_dat)
+  leave1out_test <- mr_leaveoneout(harmonise_dat)
 
-  #number <- household_GWAS_result[[1]]$outcome_gwas_out
-  trait_ID <- as.character(trait_info["trait_ID",1])
+  ngwas <- max(harmonise_dat$samplesize.outcome, na.rm=T)
+  nsnps <- dim(harmonise_dat)[1]
+  n_neale <- max(harmonise_dat$samplesize.exposure, na.rm=T)
+
+  temp_summary <- summarize_mr_result (paste0(exposure_ID,"_INDEX"), paste0(exposure_ID,"_HOUSEHOLD"), exposure_sex, outcome_sex, nsnps,MR_res, het_test, egger_test,n_neale, ngwas)
+
+  ## Test for reverse causality
+  harmonise_dat_sensitivity <- harmonise_dat[which(harmonise_dat[["pval.exposure"]] < harmonise_dat[["pval.outcome"]]),]
+  MR_res <- include_MR_NA(mr(harmonise_dat_sensitivity, method=MR_method_list))
+  #write.csv(MR_res, paste0(MR_dir, "/", phenotype_description, "_", exposure_sex,"-",outcome_sex, "_MR-sensitivity.csv"), row.names=F)
+
+  MR_ivw_row <- which(MR_res[,"method"]=="Inverse variance weighted")
+  MR_wald_row <- which(MR_res[,"method"]=="Wald ratio")
+  nsnps_sensitivity <- dim(harmonise_dat_sensitivity)[1]
+  correct_row <- ifelse(nsnps_sensitivity==1, MR_wald_row, MR_ivw_row)
+  sensitivity_result <- cbind(nsnps_sensitivity, make_beta_95ci(MR_res[correct_row,"b"],MR_res[correct_row,"se"]),pretty_round(MR_res[correct_row,"pval"]))
+  temp_summary <- cbind(temp_summary, sensitivity_result)
+
+  ## Make MR plot
+  #output_figure_dir <- paste0(project_dir, "/output/figures/traitMR/",trait_ID)
+  #pdf(file=paste0(output_figure_dir,"/", trait_ID, "_", exposure_sex, "-",outcome_sex, "_household_MR", ".pdf"))
+  mr_title <- bquote(atop(.(paste0("Estimate of the assortative mating effect of ")),
+                          italic(.(trait_description)) ~ .(paste0(' for ', exposure_sex, "s on ", outcome_sex,"s"))))
+  mr_plot <- mr_scatter_plot_custom(original_MR, harmonise_dat, mr_title, exposure_sex, outcome_sex)
+  #dev.off()
+
+  MR_summary <- cbind(outcome, temp_summary)
+  full_MR_summary <- rbind(full_MR_summary, MR_summary)
+
+  return(full_MR_summary)
+}
+
+run_household_MR <- function(exposure_info, summ_stats, grouping_var, traits_corr2_update, outcome_ID, household_GWAS_result) {
+
+  exposure_ID <- as.character(exposure_info["trait_ID",1])
+  outcome_traits <- traits_corr2_update[which(traits_corr2_update[["Neale_file_sex"]]=="both"),]
+  outcome_description <- as.character(outcome_traits[which(outcome_traits[["Neale_pheno_ID"]]==outcome_ID), "description"])
 
   pheno_dir <- paste0("analysis/traitMR/")
-  print(trait_ID)
-  # trait_info <-  read.table(paste0(pheno_dir,"/trait_info/", trait_ID, "_trait_info.txt"), header=F, row.names=1,check.names=F)
-  trait_description <- as.character(trait_info["description",1])
-  phesant_ID <- as.character(trait_info["phes_ID",1])
+  print(exposure_ID)
+  exposure_description <- as.character(exposure_info["description",1])
 
   for(exposure_sex in c("male", "female")){
+
     cat(paste0("Processing ", exposure_sex, "s...\n"))
 
+    if(exposure_sex=="male"){outcome_sex="female"}
+    if(exposure_sex=="female"){outcome_sex="male"}
+    if(exposure_sex=="male"){index="HOUSEHOLD_MEMBER1"}
+    if(exposure_sex=="female"){index="HOUSEHOLD_MEMBER2"}
+    opp_index <- ifelse(index=="HOUSEHOLD_MEMBER1", "HOUSEHOLD_MEMBER2", "HOUSEHOLD_MEMBER1")
 
-  if(exposure_sex=="male"){outcome_sex="female"}
-  if(exposure_sex=="female"){outcome_sex="male"}
-  if(exposure_sex=="male"){index="HOUSEHOLD_MEMBER1"}
-  if(exposure_sex=="female"){index="HOUSEHOLD_MEMBER2"}
-  opp_index <- ifelse(index=="HOUSEHOLD_MEMBER1", "HOUSEHOLD_MEMBER2", "HOUSEHOLD_MEMBER1")
-  ####### load IV list
+    ## FORMAT IV DATA
+    IV_data <- summ_stats[[paste0(exposure_sex, "_IV_data")]]
+    colnames(IV_data)[match(c("rsid", "chr", "beta", "se", "pval", "ref", "alt", "AF", "n_complete_samples"), colnames(IV_data))] <-
+      c("SNP", "chr", "beta", "se", "pval", "other_allele", "effect_allele","eaf","samplesize")
+    IV_data$phenotype <- exposure_ID
+    data_IV_format <- format_data(IV_data, type="exposure", phenotype_col = "phenotype")
 
+    ## FILTER OUTCOME DATA
+    outcome_gwas <- household_GWAS_result %>% filter(grouping_var == !!grouping_var) %>%
+      filter(exposure_sex == !!exposure_sex)
 
-  IV_data <- summ_stats[[paste0(exposure_sex, "_IV_data")]]
-  colnames(IV_data) <- c("SNP", "chr", "beta", "se", "pval", "other_allele", "effect_allele","eaf","samplesize")
-  data_IV_format <- format_data(IV_data, type="exposure")
-  outcome <- "phenotype" #phenotype_description
-  #j <- which(models_to_run[["exposure_sex"]]==exposure_sex & models_to_run[["trait_ID"]]==trait_ID) # j represents the model
-  #outcome_gwas <- get(household_GWAS_result)[[j]]$outcome_gwas_out
-  outcome_gwas <- household_GWAS_result[[1]]$outcome_gwas_out
-  household_intervals <- levels(outcome_gwas[[grouping_var]])
+    household_intervals <- levels(as.factor(outcome_gwas$bin))
+    household_intervals_num <- strex::str_first_number(household_intervals)
+    household_intervals_num[which(is.na(household_intervals_num))] <- 1e3
 
-  outcome_gwas <- outcome_gwas %>% mutate_if(is.factor,as.character) %>%
-    mutate_at(vars(geno_index_beta, geno_index_se, geno_index_pval, AF), as.numeric)
-  outcome_dat_full <- format_data(outcome_gwas, type="outcome",
-                                  snp_col = "SNP",
-                                  beta_col = paste0("geno_index_beta"),
-                                  se_col = paste0("geno_index_se"),
-                                  effect_allele_col = "allele1",
-                                  other_allele_col = "allele0",
-                                  pval_col = paste0("geno_index_pval"),
-                                  eaf_col = "AF",
-                                  phenotype_col = grouping_var
-  )
-  harmonise_dat_full <- harmonise_data(
-    exposure_dat = data_IV_format,
-    outcome_dat = outcome_dat_full, action=1
-  )
+    full_MR_summary <-  numeric()
+    bin_summary <- numeric()
 
-  full_MR_summary <-  numeric()
-  bin_summary <- numeric()
+    for(bin in household_intervals[order(household_intervals_num)]){
 
-  household_intervals_num <- strex::str_first_number(household_intervals)
+    gwas_sub <- outcome_gwas[which(outcome_gwas[["bin"]]==bin),] %>% mutate_if(is.factor,as.character) %>%
+      mutate_at(vars(geno_index_beta, geno_index_se, geno_index_pval, group_AF, UKBB_AF), as.numeric)
 
-  household_intervals_num[which(is.na(household_intervals_num))] <- 1e3
-  for(bin in household_intervals[order(household_intervals_num)]){
-
-    gwas_sub <- outcome_gwas[which(outcome_gwas[[grouping_var]]==bin),] %>% mutate_if(is.factor,as.character) %>%
-      mutate_at(vars(geno_index_beta, geno_index_se, geno_index_pval, AF), as.numeric)
-
-    n_bin <- max(gwas_sub$n)
+    n_bin <- max(gwas_sub$bin_n)
     outcome_dat <- format_data(gwas_sub, type="outcome",
                                snp_col = "SNP",
                                beta_col = paste0("geno_index_beta"),
@@ -1824,7 +1843,9 @@ run_household_MR <- function(trait_info, summ_stats, household_GWAS_result, grou
                                effect_allele_col = "allele1",
                                other_allele_col = "allele0",
                                pval_col = paste0("geno_index_pval"),
-                               eaf_col = "AF"
+                               eaf_col = "group_AF",
+                               phenotype_col = "outcome_ID",
+                               samplesize_col = "bin_n"
     )
 
     harmonise_dat <- harmonise_data(
@@ -1834,53 +1855,27 @@ run_household_MR <- function(trait_info, summ_stats, household_GWAS_result, grou
 
 
     original_MR <- mr(harmonise_dat, method=MR_method_list)
+
     if(dim(original_MR)[1]!=0){
       MR_res <- include_MR_NA(original_MR)
       MR_ivw_row <- which(MR_res[,"method"]=="Inverse variance weighted")
       MR_wald_row <- which(MR_res[,"method"]=="Wald ratio")
-      #MR_dir <- paste0(pheno_dir, "/household_MR/exposure_", exposure_sex)
-      #write.csv(MR_res, paste0(MR_dir, "/", phenotype_description, "_", exposure_sex,"-",outcome_sex, "_MR_bin_",bin, ".csv"), row.names=F)
 
-      bin_result <- c(bin, outcome, n_bin, exposure_sex, outcome_sex, MR_res[MR_ivw_row,"b"],MR_res[MR_ivw_row,"se"], MR_res[MR_ivw_row,"pval"])
-    } else bin_result <- c(bin, outcome, n_bin, exposure_sex, outcome_sex, NA,NA, NA)
+      bin_result <- c(bin, outcome_ID, n_bin, exposure_sex, outcome_sex, MR_res[MR_ivw_row,"b"],MR_res[MR_ivw_row,"se"], MR_res[MR_ivw_row,"pval"])
+    } else bin_result <- c(bin, outcome_ID, n_bin, exposure_sex, outcome_sex, NA,NA, NA)
+
     bin_summary <- rbind(bin_summary, bin_result)
-
-
 
     if(bin=="all"){
 
-      het_test <- mr_heterogeneity(harmonise_dat, method_list=c("mr_egger_regression", "mr_ivw"))
-      egger_test <- mr_pleiotropy_test(harmonise_dat)
-      leave1out_test <- mr_leaveoneout(harmonise_dat)
-
-      #write.csv(het_test, paste0(MR_dir, "/", phenotype_description, "_", exposure_sex,"-",outcome_sex, "_MR-het.csv"), row.names=F)
-      #write.csv(egger_test, paste0(MR_dir, "/", phenotype_description, "_", exposure_sex,"-",outcome_sex, "_MR-Egger.csv"), row.names=F)
-      #write.csv(leave1out_test, paste0(MR_dir, "/", phenotype_description, "_", exposure_sex,"-",outcome_sex, "_MR-leave_out.csv"), row.names=F)
-
-      gwas_sub <- outcome_gwas[which(outcome_gwas[[grouping_var]]==bin),] %>% mutate_if(is.factor,as.character) %>%
-        mutate_at(vars(geno_index_beta, geno_index_se, geno_index_pval, AF), as.numeric)
-      ngwas <- max(gwas_sub$n, na.rm=T)
-      nsnps <- dim(harmonise_dat)[1]
-      n_neale <- max(data_IV_format$samplesize.exposure, na.rm=T)
-      temp_summary <- summarize_mr_result (paste0(trait_ID,"_INDEX"), paste0(trait_ID,"_HOUSEHOLD"), exposure_sex, outcome_sex, nsnps,MR_res, het_test, egger_test,n_neale, ngwas)
-
-      ## Test for reverse causality
-      harmonise_dat_sensitivity <- harmonise_dat[which(harmonise_dat[["pval.exposure"]] < harmonise_dat[["pval.outcome"]]),]
-      MR_res <- include_MR_NA(mr(harmonise_dat_sensitivity, method=MR_method_list))
-      #write.csv(MR_res, paste0(MR_dir, "/", phenotype_description, "_", exposure_sex,"-",outcome_sex, "_MR-sensitivity.csv"), row.names=F)
-
-      MR_ivw_row <- which(MR_res[,"method"]=="Inverse variance weighted")
-      MR_wald_row <- which(MR_res[,"method"]=="Wald ratio")
-      nsnps_sensitivity <- dim(harmonise_dat_sensitivity)[1]
-      correct_row <- ifelse(nsnps_sensitivity==1, MR_wald_row, MR_ivw_row)
-      sensitivity_result <- cbind(nsnps_sensitivity, make_beta_95ci(MR_res[correct_row,"b"],MR_res[correct_row,"se"]),pretty_round(MR_res[correct_row,"pval"]))
-      temp_summary <- cbind(temp_summary, sensitivity_result)
+      household_MR_all(exposure_ID, outcome_ID, harmonise_dat, original_MR, MR_res, exposure_sex, outcome_sex)
 
       ## Make MR plot
       #output_figure_dir <- paste0(project_dir, "/output/figures/traitMR/",trait_ID)
       #pdf(file=paste0(output_figure_dir,"/", trait_ID, "_", exposure_sex, "-",outcome_sex, "_household_MR", ".pdf"))
+
       mr_title <- bquote(atop(.(paste0("Estimate of the assortative mating effect of ")),
-                              italic(.(trait_description)) ~ .(paste0(' for ', exposure_sex, "s on ", outcome_sex,"s"))))
+                              italic(.(exposure_description)) ~ 'on' ~ italic(.(outcome_description)) ~ .(paste0(' for ', exposure_sex, "s on ", outcome_sex,"s"))))
       mr_plot <- mr_scatter_plot_custom(original_MR, harmonise_dat, mr_title, exposure_sex, outcome_sex)
       #dev.off()
 
@@ -1903,6 +1898,26 @@ run_household_MR <- function(trait_info, summ_stats, household_GWAS_result, grou
 
   out <- list(harmonise_dat_full = harmonise_dat_full, bin_summary = bin_summary, full_MR_summary = full_MR_summary, mr_plot = mr_plot, leave1out_test = leave1out_test)
   return(list(out))
+
+}
+
+household_MR_across_phenos <- function(exposure_info, summ_stats, grouping_var, traits_corr2_update, outcome_ID, household_GWAS_result){
+
+  output_list <- list()
+  output_files <- numeric()
+  exposure_ID <- as.character(exposure_info["trait_ID",1])
+  pheno_dir <- paste0("analysis/traitMR")
+  cat(paste0("Calculating household MR for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+    outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
+    cat(paste0("Loading GWAS results for outcome `", outcome_ID, "` for IVs from exposure `", exposure_ID, "`...\n"))
+
+    GWAS_file_i <- paste0(pheno_dir, "/household_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
+    household_GWAS_result <- fread(GWAS_file_i, sep=",", header = T, data.table=F)
+
+    run_household_MR(exposure_info, summ_stats, grouping_var, traits_corr2_update, outcome_ID, household_GWAS_result)
+  }
 
 }
 
