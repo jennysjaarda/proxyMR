@@ -922,28 +922,11 @@ create_trait_dirs <- function(Neale_pheno_ID){
   ### create_relevant directories
   dir.create(paste0(pheno_dir, "/household_MR/", trait_ID), showWarnings = FALSE)
   dir.create(paste0(pheno_dir, "/household_GWAS/", trait_ID), showWarnings = FALSE)
-  #dir.create(paste0(pheno_dir, "/GRS/", trait_ID), showWarnings = FALSE)
-  #dir.create(paste0(pheno_dir, "/GRS/", trait_ID, "/male"), showWarnings = FALSE)
-  #dir.create(paste0(pheno_dir, "/GRS/", trait_ID, "/female"), showWarnings = FALSE)
+
 
   dir.create(paste0(pheno_dir, "/IVs/Neale/", trait_ID), showWarnings = FALSE)
-  dir.create(paste0(pheno_dir,"/household_GWAS/", trait_ID, "/outcome_male"), showWarnings = FALSE)
-  dir.create(paste0(pheno_dir,"/household_GWAS/", trait_ID, "/outcome_female"), showWarnings = FALSE)
-  dir.create(paste0(pheno_dir,"/household_MR/", trait_ID, "/exposure_male"), showWarnings = FALSE)
-  dir.create(paste0(pheno_dir,"/household_MR/", trait_ID, "/exposure_female"), showWarnings = FALSE)
 
-  # INITIALLY performed some GRS analyses, but decided against later
 
-  # folder_list <- c(paste0("GRS/", trait_ID, "/male"), paste0("GRS/", trait_ID, "/female"))
-  #
-  # for(folder in folder_list)
-  # {
-  #   for (threshold in GRS_thresholds)
-  #   {
-  #     dir.create(paste0(pheno_dir,"/", folder,"/", threshold), showWarnings = FALSE)
-  #   }
-  # }
-  #
 
 
 }
@@ -1736,23 +1719,32 @@ household_GWAS_across_phenos <- function(exposure_info, summ_stats, outcomes_to_
   output_list <- list()
   output_files <- numeric()
   exposure_ID <- as.character(exposure_info["trait_ID",1])
+  pheno_dir <- paste0("analysis/traitMR")
   cat(paste0("Calculating household GWAS for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
 
   for(i in 1:dim(outcomes_to_run)[1]){
 
-
     outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
+    cat(paste0("Loading phenotype data for phenotype `", outcome_ID, "` and performing GWAS...\n"))
 
-    pheno_data <- tar_read(pheno_data, branches = i)[[1]]
+    male_file <- paste0(pheno_dir,"/pheno_files/phesant/", outcome_ID, "_male.txt")
+    female_file <- paste0(pheno_dir,"/pheno_files/phesant/", outcome_ID, "_female.txt")
+
+    male_pheno_data <- fread( male_file,header=T, data.table=F)
+    female_pheno_data <- fread( female_file,header=T, data.table=F)
+
+    pheno_data <- list(unrelated_male_data = male_pheno_data, unrelated_female_data = female_pheno_data)
+
     outcome_result <- household_GWAS_bin(exposure_info, summ_stats, pheno_data, outcome_ID, traits_corr2_update,
                                        IV_genetic_data, joint_model_adjustments, grouping_var_list, household_time_munge)
 
-    otuput_file_i <- paste0()
-    write.csv(outcome_result, otuput_file_i, row.names = F, quote = T)
+    output_file_i <- paste0(pheno_dir, "/household_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "GWAS.csv")
+
+    write.csv(outcome_result, output_file_i, row.names = F)
 
     #output_list[[outcome_ID]] <- outcome_result ## getting to large, slowing down the analysis
+    output_files <- c(output_files, output_file_i)
 
-    output_files <- c(output_files, otuput_file_i)
     cat(paste0("Finished GWAS for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
 
   }

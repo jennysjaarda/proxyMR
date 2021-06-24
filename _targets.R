@@ -410,10 +410,11 @@ list(
     household_GWAS,
     {
       path_pheno_data  ### map over all phenos
-      household_GWAS_bin(exposure_info, summ_stats, pheno_data, outcomes_to_run$Neale_pheno_ID, traits_corr2_update,
+      path_outcome_dirs
+      household_GWAS_bin(exposure_info, summ_stats, outcomes_to_run, traits_corr2_update,
                          IV_genetic_data, joint_model_adjustments, grouping_var, household_time_munge)
     },
-    pattern = head(cross(map(exposure_info, summ_stats, IV_genetic_data), map(pheno_data, outcomes_to_run)), n = 20)
+    pattern = head(map(exposure_info, summ_stats, IV_genetic_data), n = 10),  format = "file"
 
   ),
 
