@@ -424,9 +424,9 @@ list(
       household_GWAS
       run_household_MR(exposure_info, summ_stats, outcomes_to_run, path_UKBB_imp_data,
                        data_UKBB_sample, joint_model_adjustments, grouping_var)
-    }
+    },
 
-    pattern = head(cross(map(exposure_info, summ_stats, IV_genetic_data), grouping_var), n= 5)
+    pattern = head(map(exposure_info, summ_stats, IV_genetic_data), n= 5)
 
   )
 
