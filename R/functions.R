@@ -768,6 +768,21 @@ write_sex_het <- function(IV_data_summary, Neale_pheno_ID){
 
 }
 
+write_pheno_data <- function(pheno_data, Neale_pheno_ID){
+
+  trait_ID <- Neale_pheno_ID
+  pheno_dir <- paste0("analysis/traitMR")
+
+  male_file <- paste0(pheno_dir,"/pheno_files/phesant/", trait_ID, "_male.txt")
+  female_file <- paste0(pheno_dir,"/pheno_files/phesant/", trait_ID, "_female.txt")
+
+  write.table(pheno_data$unrelated_male_data, male_file,row.names=F, quote=F)
+  write.table(pheno_data$unrelated_female_data, female_file, row.names=F, quote=F)
+
+  return(c(male_file, female_file))
+
+}
+
 sex_het_filter <- function(corr_traits, sex_het_summary, num_IVs_threshold){
   list_length <- 4
   build_df <- numeric()
@@ -1585,13 +1600,25 @@ define_models <- function(traits){
 
 }
 
+summarize_gwas <- function(geno, outcome, covar){
 
-run_household_GWAS <- function(trait_info, summ_stats, pheno_data, IV_genetic_data,
-                               joint_model_adjustments, grouping_var, household_time_munge){
 
-  trait_ID <- as.character(trait_info["trait_ID",1])
-  cat(paste0("Calculating household GWAS for phenotype: ", trait_ID, "...\n"))
-  cat(paste0("Loading genotype data...\n"))
+  gwas <- big_univLinReg(as_FBM(geno), y.train = outcome,
+                         covar.train = covar_from_df(covar))
+
+  gwas$pval <- predict(gwas, log10 = FALSE)
+  gwas$n <- dim(geno)[1]
+  gwas$group_AF <- colMeans(geno)/2
+
+  return(gwas)
+
+}
+
+run_household_GWAS <- function(exposure_info, summ_stats, pheno_data, outcome_ID, traits_corr2_update,
+                               IV_genetic_data, joint_model_adjustments, grouping_var, household_time_munge){
+
+  exposure_ID <- as.character(exposure_info["trait_ID",1])
+  cat(paste0("Calculating household GWAS for phenotype `", exposure_ID, "` as exposure and phenotype `", outcome_ID, "` as outcome...\n"))
   pheno_dir <- paste0("analysis/traitMR/")
 
   IV_data <- summ_stats # IVs are same for males and females
@@ -1601,10 +1628,13 @@ run_household_GWAS <- function(trait_info, summ_stats, pheno_data, IV_genetic_da
   IV_geno <- IV_genetic_data[[1]]
   snp_map <- IV_genetic_data[[2]]
 
-  phesant_ID <- as.character(trait_info["phes_ID",1])
-  #phenotype_col <- phesant_ID
+  phesant_ID <- as.character(exposure_info["phes_ID",1])
+
+  outcome_traits <- traits_corr2_update[which(traits_corr2_update[["Neale_file_sex"]]=="both"),]
+  outcome_phes_ID <- as.character(outcome_traits[which(outcome_traits[["Neale_pheno_ID"]]==outcome_ID), "SGG_PHESANT_ID"])
 
   for(exposure_sex in c("male", "female")){
+
     cat(paste0("Processing ", exposure_sex, "s...\n"))
     if(exposure_sex=="male"){outcome_sex="female"}
     if(exposure_sex=="female"){outcome_sex="male"}
@@ -1612,85 +1642,125 @@ run_household_GWAS <- function(trait_info, summ_stats, pheno_data, IV_genetic_da
     if(exposure_sex=="female"){index="HOUSEHOLD_MEMBER2"}
     opp_index <- ifelse(index=="HOUSEHOLD_MEMBER1", "HOUSEHOLD_MEMBER2", "HOUSEHOLD_MEMBER1")
     IV_data_sex <- IV_data[[paste0(exposure_sex, "_IV_data")]]
-    phenotype_col <- pheno_data
-    pheno_data_sex <- pheno_data[[paste0("unrelated_", outcome_sex, "_data")]] %>% dplyr::select(IID, !!phenotype_col)
 
-    outcome_GWAS <- numeric()
 
-    cat(paste0("Running regression for each GWAS in all participants and bins of household pairs
-               (divided by length of time in household) using specified phenotype as outcomes...\n"))
+    pheno_data_sex <- pheno_data[[paste0("unrelated_", outcome_sex, "_data")]] %>% dplyr::select(IID, !!outcome_phes_ID)
 
-    for(k in 1:dim(IV_data_sex)[1])
+
+    household_intervals <- levels(household_time[[grouping_var]])
+
+    genetic_IDs <- tibble(IID = as.character(rownames(IV_geno)))
+
+    # to reduce to only genetic IDs with good genetic data
+    temp1 <- merge(pheno_cov,genetic_IDs, by.x=index, by.y="IID")
+    # to reudce to only IDs with phenotype data
+    temp2 <- merge(temp1, pheno_data_sex, by.x=opp_index, by.y="IID")
+    # to reduce to only those in a household pair
+    temp3 <- merge(temp2, household_time[,c("HOUSEHOLD_MEMBER1",grouping_var)], by="HOUSEHOLD_MEMBER1")
+    final_data <- temp3
+    colnames(final_data) <- c(colnames(pheno_cov), "outcome", grouping_var)
+
+    pheno_run <- final_data[,c(grep("_age", names(final_data)),grep("_PC_", names(final_data)), which(names(final_data)=="outcome"))]
+    pheno_run$outcome <- scale(pheno_run$outcome)
+
+
+    IIDs_keep <- as.character(format(final_data[[index]], scientific = F))
+    geno_data_sub <- IV_geno[as.character(IIDs_keep),]
+
+    template <- cbind(exposure_ID, outcome_ID, SNP = colnames(geno_data_sub), grouping_var, bin = "all", exposure_sex, outcome_sex)
+
+    gwas_result <- summarize_gwas(geno_data_sub, pheno_run$outcome, pheno_run[,!names(pheno_run) %in% c("outcome")])
+
+    outcome_GWAS <- cbind(template, gwas_result)
+
+    for(bin in household_intervals)
     {
-      snp <- IV_data_sex[["rsid"]][k]
-      geno_sub <- as.data.frame(IV_geno[,which(colnames(IV_geno)==snp)])
-      colnames(geno_sub)[1] <- "geno"
-      geno_sub$IID <- as.numeric(row.names(geno_sub))
-      temp1 <- merge(pheno_cov,geno_sub, by.x=index, by.y="IID")
-      temp2 <- merge(temp1, pheno_data_sex, by.x=opp_index, by.y="IID")
-      temp3 <- merge(temp2, household_time[,c("HOUSEHOLD_MEMBER1",grouping_var)], by="HOUSEHOLD_MEMBER1")
-      final_data <- temp3
-      colnames(final_data) <- c(colnames(pheno_cov), "geno_index", "phenotype", grouping_var)###,"GRS_0.01_household","GRS_0.001_household")
 
-      outcome <- "phenotype"
-      pheno_run <- final_data[,c(grep("_age", names(final_data)),grep("_PC_", names(final_data)), which(names(final_data)=="geno_index" |names(final_data)==outcome))]
-      colnames(pheno_run)[which(colnames(pheno_run)==outcome)] <- "outcome"
-      pheno_run$outcome <- scale(pheno_run$outcome)
-      mod <- glm(outcome ~ ., data=pheno_run, family="gaussian") # check that "grouping_var" is removed
+      bin_sub <- final_data[which(final_data[[grouping_var]]==bin),]
+      bin_pheno_run <- bin_sub[,c(grep("_age", names(bin_sub)),grep("_PC_", names(bin_sub)), which(names(bin_sub)=="outcome"))]
 
-      model_summary <- full_model_summary(mod)
+      bin_pheno_run$outcome <- scale(bin_pheno_run$outcome)
+      bin_pheno_run <- bin_pheno_run[complete.cases(bin_pheno_run),] #if all values are the same then NA's will be produced
 
-      mod_extract <- extract_model_stats(model_summary, c("geno_index"))
-      n <- length(fitted(mod))
-      group_AF <- mean(final_data$geno_index)/2
-      k_GWAS <- numeric()
-      k_GWAS <- rbind(k_GWAS,cbind(outcome, as.character(snp), grouping_var, "all", exposure_sex, outcome_sex, mod_extract,n, group_AF))
+      bin_IIDs_keep <- bin_sub[[index]]
+      bin_geno_data_sub <- IV_geno[as.character(bin_IIDs_keep),]
 
-      household_intervals <- levels(household_time[[grouping_var]])
-      for(bin in household_intervals)
-      {
-        bin_sub <- final_data[which(final_data[[grouping_var]]==bin),]
-        bin_pheno_run <- bin_sub[,c(grep("_age", names(bin_sub)),grep("_PC_", names(bin_sub)), which(names(bin_sub)=="geno_index" |names(bin_sub)==outcome))]
-        colnames(bin_pheno_run)[which(colnames(bin_pheno_run)==outcome)] <- "outcome"
-        bin_pheno_run$outcome <- scale(bin_pheno_run$outcome)
-        bin_pheno_run <- bin_pheno_run[complete.cases(bin_pheno_run),] #if all values are the same then NA's will be produced
-        if(dim(bin_pheno_run)[1]!=0){
-          group_AF <- mean(bin_pheno_run$geno_index)/2
-          bin_mod <- glm(outcome ~ ., data=bin_pheno_run, family="gaussian")
+      template <- cbind(exposure_ID, outcome_ID, SNP = colnames(geno_data_sub), grouping_var, bin, exposure_sex, outcome_sex)
 
-          bin_model_summary <- full_model_summary(bin_mod)
+      if(dim(bin_pheno_run)[1]!=0){
 
-          bin_mod_extract <- extract_model_stats(bin_model_summary, c("geno_index"))
-          bin_n <- length(fitted(bin_mod))
-          bin_row_summary <- cbind(outcome, as.character(snp), grouping_var, bin, exposure_sex, outcome_sex, bin_mod_extract,bin_n, group_AF)
+        bin_gwas_result <- summarize_gwas(bin_geno_data_sub, bin_pheno_run$outcome, bin_pheno_run[,!names(bin_pheno_run) %in% c("outcome")])
 
-        } else bin_row_summary <- cbind(outcome, as.character(snp), grouping_var, bin, exposure_sex, outcome_sex, NA,NA,NA,0, NA)
+      } else bin_gwas_result <- as.data.frame(sapply(c(NA, NA, NA, NA, 0, NA), rep, 9))
 
-        k_GWAS <- rbind(k_GWAS, bin_row_summary)
-      }
-
-      outcome_GWAS <- rbind(outcome_GWAS, k_GWAS)
-      cat(paste0("Finished running regression for ", k, " of ", dim(IV_data_sex)[1], " SNPs.\n"))
-
+      outcome_GWAS <- rbind(outcome_GWAS, cbind(template, bin_gwas_result))
     }
 
-    outcome_GWAS <- as.data.frame(outcome_GWAS)
-    colnames(outcome_GWAS)[1] <- "outcome"
-    colnames(outcome_GWAS)[2] <- "SNP"
-    outcome_GWAS$outcome <- phenotype_col
-    colnames(outcome_GWAS)[3] <- "grouping_var"
-    colnames(outcome_GWAS)[4] <- "bin"
+    colnames(outcome_GWAS)[match(c("estim", "std.err", "score", "pval", "n"), colnames(outcome_GWAS))] <-
+      c("geno_index_beta", "geno_index_se", "geno_index_score", "geno_index_pval", "bin_n")
 
-    outcome_gwas_out <- merge(outcome_GWAS, snp_map,by.x="SNP", by.y="rsid")
+    outcome_GWAS_snp_info <- full_join(outcome_GWAS, snp_map,by = c("SNP"="rsid"))
 
-    assign(paste0(exposure_sex, "_", outcome_sex, "_GWAS"), outcome_gwas_out)
+    colnames(outcome_GWAS_snp_info)[match(c("AF"), colnames(outcome_GWAS_snp_info))] <-
+      c("UKBB_AF")
 
-
+    assign(paste0(exposure_sex, "_", outcome_sex, "_GWAS"), outcome_GWAS_snp_info)
   }
 
   output <- rbind(male_female_GWAS, female_male_GWAS)
   return(output)
 }
+
+household_GWAS_bin <- function(exposure_info, summ_stats, pheno_data, outcome_ID, traits_corr2_update,
+                                           IV_genetic_data, joint_model_adjustments, grouping_var_list, household_time_munge){
+
+  for(grouping_var in grouping_var_list){
+
+    cat(paste0("Running regression for each GWAS in all participants and bins of household pairs for group `", grouping_var, "`...\n"))
+
+    group_result <- run_household_GWAS(exposure_info, summ_stats, pheno_data, outcome_ID, traits_corr2_update,
+                       IV_genetic_data, joint_model_adjustments, grouping_var, household_time_munge)
+
+    assign(paste0(grouping_var, "_GWAS"), group_result)
+  }
+  output <- rbind(time_together_even_bins_GWAS, age_even_bins_GWAS)
+  return(output)
+
+}
+
+
+
+household_GWAS_across_phenos <- function(exposure_info, summ_stats, outcomes_to_run, traits_corr2_update,
+                               IV_genetic_data, joint_model_adjustments, grouping_var_list, household_time_munge){
+
+  output_list <- list()
+  output_files <- numeric()
+  exposure_ID <- as.character(exposure_info["trait_ID",1])
+  cat(paste0("Calculating household GWAS for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+
+    outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
+
+    pheno_data <- tar_read(pheno_data, branches = i)[[1]]
+    outcome_result <- household_GWAS_bin(exposure_info, summ_stats, pheno_data, outcome_ID, traits_corr2_update,
+                                       IV_genetic_data, joint_model_adjustments, grouping_var_list, household_time_munge)
+
+    otuput_file_i <- paste0()
+    write.csv(outcome_result, otuput_file_i, row.names = F, quote = T)
+
+    #output_list[[outcome_ID]] <- outcome_result ## getting to large, slowing down the analysis
+
+    output_files <- c(output_files, otuput_file_i)
+    cat(paste0("Finished GWAS for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+
+  }
+  #return(output_list)
+  return(output_files)
+
+}
+
 
 run_household_MR <- function(trait_info, summ_stats, household_GWAS_result, grouping_var) {
   #household_GWAS_result <- "gwas_age_bins"
@@ -2005,7 +2075,7 @@ MR_MLE <- function(sqc_munge, i, trait_ID, exposure_sex, phenotype_file, phenoty
   cat(paste0("Running MLE MR for phenotype: ", trait_ID, "...\n"))
   cat(paste0("Loading genotype data...\n"))
   pheno_dir <- paste0("analysis/traitMR/")
-  IV_geno_out <- load_IV_geno(sample_file, pheno_dir, IV_file)
+  IV_geno_out <- load_geno(sample_file, pheno_dir, IV_file)
   IV_geno <- IV_geno_out[[1]]
   snp_map <- IV_geno_out[[2]]
 

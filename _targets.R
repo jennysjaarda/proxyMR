@@ -309,12 +309,14 @@ list(
     format = "file",
     pattern = map(IV_data_summary, traits_to_calc_het)
   ),
+
   tar_target(
     path_sex_het,
     write_sex_het(IV_data_summary, traits_to_calc_het$Neale_pheno_ID),
     format = "file",
     pattern = map(IV_data_summary, traits_to_calc_het)
   ),
+
   tar_target(
     traits_corr4,
     sex_het_filter(traits_corr3$to_run, IV_data_summary, num_IVs_threshold)
@@ -324,16 +326,19 @@ list(
     traits_corr5,
     continuous_filter(traits_corr4$to_run)
   ),
+
   # final list of traits to run in pipeline, just a copy of above target
   tar_target(
     traits_final,
     traits_corr5
   ),
+
   tar_target(
     path_correlations_final_filter,
     write_final_filter(traits_final, "output/tables/household_correlations.final_filter.csv"),
     format = "file"
   ),
+
   tar_target(
     exposures_to_run,
     pull_traits_to_run(traits_final)
@@ -366,6 +371,13 @@ list(
   ),
 
   tar_target(
+    path_pheno_data,
+    write_pheno_data(pheno_data, outcomes_to_run$Neale_pheno_ID),
+    format = "file",
+    pattern = map(pheno_data, outcomes_to_run)
+  ),
+
+  tar_target(
     exposure_info,
     get_trait_info(traits_final, exposures_to_run$Neale_pheno_ID,
                    data_Neale_manifest, Neale_summary_dir, Neale_output_dir),
@@ -393,11 +405,15 @@ list(
     pattern = map(summ_stats)
   ),
 
+
   tar_target(
     household_GWAS,
-    run_household_GWAS(trait_info, summ_stats, pheno_data, IV_genetic_data,
-                       joint_model_adjustments, grouping_var, household_time_munge),
-    pattern = cross(map(trait_info, summ_stats, IV_genetic_data), pheno_data, grouping_var)
+    {
+      path_pheno_data  ### map over all phenos
+      household_GWAS_bin(exposure_info, summ_stats, pheno_data, outcomes_to_run$Neale_pheno_ID, traits_corr2_update,
+                         IV_genetic_data, joint_model_adjustments, grouping_var, household_time_munge)
+    },
+    pattern = head(cross(map(exposure_info, summ_stats, IV_genetic_data), map(pheno_data, outcomes_to_run)), n = 20)
 
   ),
 
