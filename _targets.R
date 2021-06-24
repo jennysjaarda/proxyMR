@@ -14,7 +14,7 @@ tar_option_set(
                                                         cpus = 4, partition = "sgg",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
-  packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen"),
+  packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "speedglm"),
   error = "workspace"
 
 )
@@ -389,7 +389,7 @@ list(
 
   tar_target(
     IV_genetic_data, ## loads genetic data for each set of IVs, same IVs are used for both males and females
-    load_geno(summ_stats[["male_IV_data"]], sample_file, path_UKBB_imp_data), iteration = "list",
+    load_geno(summ_stats[["male_IV_data"]], data_UKBB_sample, path_UKBB_imp_data), iteration = "list",
     pattern = map(summ_stats)
   ),
 
