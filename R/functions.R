@@ -1738,7 +1738,7 @@ household_GWAS_across_phenos <- function(exposure_info, summ_stats, outcomes_to_
     outcome_result <- household_GWAS_bin(exposure_info, summ_stats, pheno_data, outcome_ID, traits_corr2_update,
                                        IV_genetic_data, joint_model_adjustments, grouping_var_list, household_time_munge)
 
-    output_file_i <- paste0(pheno_dir, "/household_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "GWAS.csv")
+    output_file_i <- paste0(pheno_dir, "/household_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
 
     write.csv(outcome_result, output_file_i, row.names = F)
 
