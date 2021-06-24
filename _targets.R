@@ -14,7 +14,7 @@ tar_option_set(
                                                         cpus = 4, partition = "sgg",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
-  packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "speedglm"),
+  packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr"),
   error = "workspace"
 
 )
