@@ -11,10 +11,10 @@ options(clustermq.scheduler = "slurm", clustermq.template = "slurm_clustermq.tmp
 tar_option_set(
   resources = tar_resources(
     clustermq = tar_resources_clustermq(template = list(num_cores = 1, account = "sgg",
-                                                        cpus = 2, partition = "sgg",
+                                                        cpus = 4, partition = "sgg",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
-  packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr"),
+  packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR"),
   error = "workspace"
 
 )
@@ -420,9 +420,13 @@ list(
 
   tar_target(
     household_MR,
-    run_household_MR(trait_info, summ_stats, path_UKBB_imp_data,
-                       data_UKBB_sample, joint_model_adjustments, grouping_var, household_time_munge),
-    pattern = head(map(cross(map(trait_info, summ_stats), grouping_var), household_GWAS), n= 5)
+    {
+      household_GWAS
+      run_household_MR(exposure_info, summ_stats, outcomes_to_run, path_UKBB_imp_data,
+                       data_UKBB_sample, joint_model_adjustments, grouping_var)
+    }
+
+    pattern = head(cross(map(exposure_info, summ_stats, IV_genetic_data), grouping_var), n= 5)
 
   )
 
