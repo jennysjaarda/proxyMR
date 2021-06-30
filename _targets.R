@@ -11,11 +11,15 @@ options(clustermq.scheduler = "slurm", clustermq.template = "slurm_clustermq.tmp
 tar_option_set(
   resources = tar_resources(
     clustermq = tar_resources_clustermq(template = list(num_cores = 1, account = "sgg",
-                                                        ntasks = 2, partition = "sgg",
+                                                        ntasks = 4, partition = "sgg",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
   packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR"),
-  error = "workspace"
+  error = "workspace",
+  memory = "transient",
+  garbage_collection = TRUE,
+  storage = "worker",
+  retrieval = "worker"
 
 )
 path_UKBB_imp_data <- paste0(UKBB_dir, "/imp") #too large to track
