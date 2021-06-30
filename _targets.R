@@ -17,11 +17,10 @@ tar_option_set(
   packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR"),
   error = "workspace",
   memory = "transient",
-  garbage_collection = TRUE,
-  storage = "worker",
-  retrieval = "worker"
+  garbage_collection = TRUE
 
 )
+
 path_UKBB_imp_data <- paste0(UKBB_dir, "/imp") #too large to track
 
 ##################################
