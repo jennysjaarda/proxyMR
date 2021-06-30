@@ -1726,6 +1726,15 @@ household_GWAS_across_phenos <- function(exposure_info, summ_stats, outcomes_to_
   for(i in 1:dim(outcomes_to_run)[1]){
 
     outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
+    output_file_i <- paste0(pheno_dir, "/household_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
+    output_files <- c(output_files, output_file_i)
+
+
+    if(file.exists(output_file_i)) {
+      cat(paste0("Skipping `", outcome_ID, "` because results already exists...\n"))
+      next
+    }
+
     cat(paste0("Loading phenotype data for phenotype `", outcome_ID, "` and performing GWAS...\n"))
 
     male_file <- paste0(pheno_dir,"/pheno_files/phesant/", outcome_ID, "_male.txt")
@@ -1739,12 +1748,10 @@ household_GWAS_across_phenos <- function(exposure_info, summ_stats, outcomes_to_
     outcome_result <- household_GWAS_bin(exposure_info, summ_stats, pheno_data, outcome_ID, traits_corr2_update,
                                        IV_genetic_data, joint_model_adjustments, grouping_var_list, household_time_munge)
 
-    output_file_i <- paste0(pheno_dir, "/household_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
 
     write.csv(outcome_result, output_file_i, row.names = F)
 
     #output_list[[outcome_ID]] <- outcome_result ## getting to large, slowing down the analysis
-    output_files <- c(output_files, output_file_i)
 
     cat(paste0("Finished GWAS for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
 
@@ -1778,18 +1785,10 @@ household_MR_all <- function(){
   sensitivity_result <- cbind(nsnps_sensitivity, make_beta_95ci(MR_res[correct_row,"b"],MR_res[correct_row,"se"]),pretty_round(MR_res[correct_row,"pval"]))
   temp_summary <- cbind(temp_summary, sensitivity_result)
 
-  ## Make MR plot
-  #output_figure_dir <- paste0(project_dir, "/output/figures/traitMR/",trait_ID)
-  #pdf(file=paste0(output_figure_dir,"/", trait_ID, "_", exposure_sex, "-",outcome_sex, "_household_MR", ".pdf"))
-  mr_title <- bquote(atop(.(paste0("Estimate of the assortative mating effect of ")),
-                          italic(.(trait_description)) ~ .(paste0(' for ', exposure_sex, "s on ", outcome_sex,"s"))))
-  mr_plot <- mr_scatter_plot_custom(original_MR, harmonise_dat, mr_title, exposure_sex, outcome_sex)
-  #dev.off()
-
-  MR_summary <- cbind(outcome, temp_summary)
+  MR_summary <- cbind(outcome_ID, temp_summary)
   full_MR_summary <- rbind(full_MR_summary, MR_summary)
 
-  return(full_MR_summary)
+  return(list(full_MR_summary = full_MR_summary, leave1out_test = leave1out_test))
 }
 
 run_household_MR <- function(exposure_info, summ_stats, grouping_var, traits_corr2_update, outcome_ID, household_GWAS_result) {
@@ -1868,36 +1867,38 @@ run_household_MR <- function(exposure_info, summ_stats, grouping_var, traits_cor
 
     if(bin=="all"){
 
-      household_MR_all(exposure_ID, outcome_ID, harmonise_dat, original_MR, MR_res, exposure_sex, outcome_sex)
+      full_MR_summary <- household_MR_all(exposure_ID, outcome_ID, harmonise_dat, original_MR, MR_res, exposure_sex, outcome_sex)
+      #MR_plot() ## USE `harmonise_dat` from `all` as input
 
-      ## Make MR plot
-      #output_figure_dir <- paste0(project_dir, "/output/figures/traitMR/",trait_ID)
-      #pdf(file=paste0(output_figure_dir,"/", trait_ID, "_", exposure_sex, "-",outcome_sex, "_household_MR", ".pdf"))
-
-      mr_title <- bquote(atop(.(paste0("Estimate of the assortative mating effect of ")),
-                              italic(.(exposure_description)) ~ 'on' ~ italic(.(outcome_description)) ~ .(paste0(' for ', exposure_sex, "s on ", outcome_sex,"s"))))
-      mr_plot <- mr_scatter_plot_custom(original_MR, harmonise_dat, mr_title, exposure_sex, outcome_sex)
-      #dev.off()
-
-      MR_summary <- cbind(outcome, temp_summary)
-      full_MR_summary <- rbind(full_MR_summary, MR_summary)
     }
   }
 
-  num_cols <- length(colnames(full_MR_summary))
+    num_cols <- length(colnames(full_MR_summary))
 
-  colnames(full_MR_summary)[num_cols-1] <- "IVW/Wald_summary_sensitivity"
-  colnames(full_MR_summary)[num_cols] <- "IVW/Wald_pval_sensitivity"
-  colnames(full_MR_summary)[num_cols-2] <- "N_snps_sensitivity" #test for reverse causation
-  #output_table_dir <- paste0(project_dir, "/output/tables/traitMR/", trait_ID)
-  #write.csv(full_MR_summary, paste0(output_table_dir, "/", trait_ID, "_household_MR.csv"), row.names=F, quote=T)
+    colnames(full_MR_summary)[num_cols-1] <- "IVW/Wald_summary_sensitivity"
+    colnames(full_MR_summary)[num_cols] <- "IVW/Wald_pval_sensitivity"
+    colnames(full_MR_summary)[num_cols-2] <- "N_snps_sensitivity" #test for reverse causation
+    #output_table_dir <- paste0(project_dir, "/output/tables/traitMR/", trait_ID)
+    #write.csv(full_MR_summary, paste0(output_table_dir, "/", trait_ID, "_household_MR.csv"), row.names=F, quote=T)
 
-  colnames(bin_summary) <- c("bin","outcome","n", "exposure_sex","outcome_sex", "IVW_beta", "IVW_se", "IVW_pval")
-  #write.csv(bin_summary, paste0(pheno_dir, "/household_MR/", phenotype_description,"_", exposure_sex, "-",outcome_sex, "_household_MR_bin.csv"), row.names=F, quote=T)
+    colnames(bin_summary) <- c("bin","outcome","n", "exposure_sex","outcome_sex", "IVW_beta", "IVW_se", "IVW_pval")
+    #write.csv(bin_summary, paste0(pheno_dir, "/household_MR/", phenotype_description,"_", exposure_sex, "-",outcome_sex, "_household_MR_bin.csv"), row.names=F, quote=T)
   }
 
   out <- list(harmonise_dat_full = harmonise_dat_full, bin_summary = bin_summary, full_MR_summary = full_MR_summary, mr_plot = mr_plot, leave1out_test = leave1out_test)
   return(list(out))
+
+}
+
+MR_plot <- function(original_MR, harmonise_dat, exposure_description, outcome_description, exposure_sex, outcome_sex){
+  ## Make MR plot
+  #output_figure_dir <- paste0(project_dir, "/output/figures/traitMR/",trait_ID)
+  #pdf(file=paste0(output_figure_dir,"/", trait_ID, "_", exposure_sex, "-",outcome_sex, "_household_MR", ".pdf"))
+
+  mr_title <- bquote(atop(.(paste0("Estimate of the assortative mating effect of ")),
+                          italic(.(exposure_description)) ~ 'on' ~ italic(.(outcome_description)) ~ .(paste0(' for ', exposure_sex, "s on ", outcome_sex,"s"))))
+  mr_plot <- mr_scatter_plot_custom(original_MR, harmonise_dat, mr_title, exposure_sex, outcome_sex)
+  #dev.off()
 
 }
 
