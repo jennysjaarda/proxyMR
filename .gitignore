@@ -11,3 +11,5 @@ analysis/*_cache
 analysis/site_libs
 _targets
 *.out
+analysis/data_setup
+analysis/traitMR
