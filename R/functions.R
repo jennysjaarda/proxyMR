@@ -1731,7 +1731,7 @@ household_GWAS_across_phenos <- function(exposure_info, summ_stats, outcomes_to_
 
 
     if(file.exists(output_file_i)) {
-      cat(paste0("Skipping `", outcome_ID, "` because results already exists...\n"))
+      cat(paste0("Skipping `", outcome_ID, "` because GWAS results already exist...\n"))
       next
     }
 
