@@ -439,7 +439,16 @@ list(
     },
 
     pattern = map(exposure_info, summ_stats, IV_genetic_data, path_household_GWAS), iteration = "list"
+  ),
 
+  tar_target(
+    path_household_MR,
+    {
+      path_MR_dirs
+      write_household_MR(exposure_info, summ_stats, outcomes_to_run, household_MR) #could add MR_method_list = MR_method_list
+    },
+
+    pattern = map(exposure_info, household_MR), format = "file"
   ),
 
   tar_target(

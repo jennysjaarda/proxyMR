@@ -2013,26 +2013,31 @@ household_MR_all_outcomes <- function(exposure_info, summ_stats, outcomes_to_run
     cat(paste0("Finished MR for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
   }
 
-  output_list[[paste0(exposure_ID, "_MR")]] <- household_MR_result
+  output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_MR")]] <- household_MR_result
   return(output_list)
 
 }
 
-write_household_MR <- function(){
+write_household_MR <- function(exposure_ID, outcomes_to_run, MR_result){
 
-  MR_file_i <- paste0(pheno_dir, "/household_MR/", outcome_ID, "/univariate_MR/", outcome_ID, "_vs_", exposure_ID, "_MR.csv")
+  output_files <- numeric()
+  pheno_dir <- paste0("analysis/traitMR")
 
-  output_files <- c(output_files, MR_file_i)
+  for(i in 1:dim(outcomes_to_run)[1]){
 
+    outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
+    cat(paste0("Loading GWAS results for outcome `", outcome_ID, "` and IVs from exposure `", exposure_ID, "`...\n"))
+    MR_file_i <- paste0(pheno_dir, "/household_MR/", outcome_ID, "/univariate_MR/", outcome_ID, "_vs_", exposure_ID, "_MR.csv")
 
-  if(file.exists(MR_file_i)) {
+    output_files <- c(output_files, MR_file_i)
 
-    #cat(paste0("Skipping `", outcome_ID, "` because MR results already exist...\n\n"))
-    #next
+    MR_result_i <- MR_result[[paste0(outcome_ID, "_vs_", exposure_ID, "_MR")]]
+    write.csv(household_MR_result, MR_file_i, row.names = F)
+
   }
 
+  return(output_files)
 
-  write.csv(household_MR_result, MR_file_i, row.names = F)
 
 }
 
