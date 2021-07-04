@@ -1769,7 +1769,7 @@ household_GWAS_all_outcomes <- function(exposure_info, summ_stats, outcomes_to_r
 }
 
 
-household_MR_all <- function(exposure_ID, outcome_ID, harmonise_dat, original_MR, MR_res, exposure_sex, outcome_sex){
+household_MR_exhaustive <- function(exposure_ID, outcome_ID, harmonise_dat, MR_res, exposure_sex, outcome_sex){
 
   het_test <- mr_heterogeneity(harmonise_dat, method_list=c("mr_egger_regression", "mr_ivw"))
   egger_test <- mr_pleiotropy_test(harmonise_dat)
@@ -1889,7 +1889,7 @@ MR_plot <- function(original_MR, harmonise_dat, exposure_description, outcome_de
 
 }
 
-household_MR_bin <- function(exposure_info, summ_stats, grouping_var, traits_corr2_update, outcome_ID, household_GWAS_result) {
+household_MR_bin <- function(exposure_info, summ_stats, grouping_var, traits_corr2_update, outcome_ID, household_GWAS_result, MR_method_list) {
 
   exposure_ID <- as.character(exposure_info["trait_ID",1])
   outcome_traits <- traits_corr2_update[which(traits_corr2_update[["Neale_file_sex"]]=="both"),]
@@ -1958,8 +1958,8 @@ household_MR_bin <- function(exposure_info, summ_stats, grouping_var, traits_cor
         MR_ivw_row <- which(MR_res[,"method"]=="Inverse variance weighted")
         MR_wald_row <- which(MR_res[,"method"]=="Wald ratio")
 
-        bin_result <- c(grouping_var, bin, exposure_ID, outcome_ID, n_bin, exposure_sex, outcome_sex, MR_res[MR_ivw_row,"b"],MR_res[MR_ivw_row,"se"], MR_res[MR_ivw_row,"pval"])
-      } else bin_result <- c(grouping_var, bin, exposure_ID, outcome_ID, n_bin, exposure_sex, outcome_sex, NA,NA, NA)
+        bin_result <- c(grouping_var, bin, exposure_ID, outcome_ID, n_bin, exposure_sex, outcome_sex, MR_res[MR_ivw_row,"nsnp"], MR_res[MR_ivw_row,"b"],MR_res[MR_ivw_row,"se"], MR_res[MR_ivw_row,"pval"])
+      } else bin_result <- c(grouping_var, bin, exposure_ID, outcome_ID, n_bin, exposure_sex, outcome_sex, NA, NA,NA, NA)
 
       bin_summary <- rbind(bin_summary, bin_result)
 
@@ -1967,7 +1967,7 @@ household_MR_bin <- function(exposure_info, summ_stats, grouping_var, traits_cor
     }
 
 
-    colnames(bin_summary) <- c("grouping_var", "bin","exposure_ID", "outcome_ID","n", "exposure_sex","outcome_sex", "IVW_beta", "IVW_se", "IVW_pval")
+    colnames(bin_summary) <- c("grouping_var", "bin","exposure_ID", "outcome_ID","n", "exposure_sex","outcome_sex", "nsnp", "IVW_beta", "IVW_se", "IVW_pval")
     #write.csv(bin_summary, paste0(pheno_dir, "/household_MR/", phenotype_description,"_", exposure_sex, "-",outcome_sex, "_household_MR_bin.csv"), row.names=F, quote=T)
     assign(paste0(exposure_sex, "_", outcome_sex, "_MR"), bin_summary)
   }
@@ -1978,7 +1978,7 @@ household_MR_bin <- function(exposure_info, summ_stats, grouping_var, traits_cor
 
 }
 
-household_MR_all_outcomes <- function(exposure_info, summ_stats, outcomes_to_run, gwas_files, traits_corr2_update, grouping_var){
+household_MR_all_outcomes <- function(exposure_info, summ_stats, outcomes_to_run, gwas_files, traits_corr2_update, grouping_var, MR_method_list = MR_method_list){
 
   output_list <- list()
   output_files <- numeric()
@@ -1986,27 +1986,18 @@ household_MR_all_outcomes <- function(exposure_info, summ_stats, outcomes_to_run
   pheno_dir <- paste0("analysis/traitMR")
   cat(paste0("\nCalculating household MR for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
 
+  household_MR_result <- numeric()
+
   for(i in 1:dim(outcomes_to_run)[1]){
 
     outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
     cat(paste0("Loading GWAS results for outcome `", outcome_ID, "` and IVs from exposure `", exposure_ID, "`...\n"))
 
     GWAS_file_i <- gwas_files[[i]] ## should be the same as: `paste0(pheno_dir, "/household_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")`
-    MR_file_i <- paste0(pheno_dir, "/household_MR/", outcome_ID, "/univariate_MR/", outcome_ID, "_vs_", exposure_ID, "_MR.csv")
-
-    output_files <- c(output_files, MR_file_i)
-
-
-    if(file.exists(MR_file_i)) {
-
-      cat(paste0("Skipping `", outcome_ID, "` because MR results already exist...\n\n"))
-      next
-    }
 
 
     household_GWAS_result <- fread(GWAS_file_i, sep=",", header = T, data.table=F)
 
-    household_MR_result <- numeric()
 
     for(group in grouping_var){
 
@@ -2014,18 +2005,37 @@ household_MR_all_outcomes <- function(exposure_info, summ_stats, outcomes_to_run
 
       # `run_household_MR_binned` runs the MR in individual bins (by age or time_together) and returns a table with results for each bin.
 
-      group_MR_result <- household_MR_bin(exposure_info, summ_stats, group, traits_corr2_update, outcome_ID, household_GWAS_result)
+      group_MR_result <- household_MR_bin(exposure_info, summ_stats, group, traits_corr2_update, outcome_ID, household_GWAS_result, MR_method_list)
       household_MR_result <- rbind(household_MR_result, group_MR_result)
     }
 
-    write.csv(household_MR_result, MR_file_i, row.names = F)
 
     cat(paste0("Finished MR for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
   }
 
-  return(output_files)
+  output_list[[paste0(exposure_ID, "_MR")]] <- household_MR_result
+  return(output_list)
 
 }
+
+write_household_MR <- function(){
+
+  MR_file_i <- paste0(pheno_dir, "/household_MR/", outcome_ID, "/univariate_MR/", outcome_ID, "_vs_", exposure_ID, "_MR.csv")
+
+  output_files <- c(output_files, MR_file_i)
+
+
+  if(file.exists(MR_file_i)) {
+
+    #cat(paste0("Skipping `", outcome_ID, "` because MR results already exist...\n\n"))
+    #next
+  }
+
+
+  write.csv(household_MR_result, MR_file_i, row.names = F)
+
+}
+
 
 calc_Q_stat <- function(household_MR_result, trait_ID){
 
