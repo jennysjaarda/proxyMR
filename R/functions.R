@@ -937,8 +937,8 @@ create_MR_dirs <- function(Neale_pheno_ID){
    pheno_dir <- paste0("analysis/traitMR")
 
   ### create_relevant directories
-  dir.create(paste0(pheno_dir, "/household_MR/", trait_ID), "/univariate_MR", showWarnings = FALSE)
-  dir.create(paste0(pheno_dir, "/household_MR/", trait_ID), "/multivariate_MR", showWarnings = FALSE)
+  dir.create(paste0(pheno_dir, "/household_MR/", trait_ID, "/univariate_MR"), showWarnings = FALSE)
+  dir.create(paste0(pheno_dir, "/household_MR/", trait_ID, "/multivariate_MR"), showWarnings = FALSE)
 
 }
 
