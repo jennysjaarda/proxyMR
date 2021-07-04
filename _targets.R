@@ -11,7 +11,7 @@ options(clustermq.scheduler = "slurm", clustermq.template = "slurm_clustermq.tmp
 tar_option_set(
   resources = tar_resources(
     clustermq = tar_resources_clustermq(template = list(num_cores = 1, account = "sgg",
-                                                        ntasks = 4, partition = "sgg",
+                                                        ntasks = 1, partition = "sgg",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
   packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR"),
@@ -424,7 +424,11 @@ list(
   ## MR file prep
   tar_target(
     path_MR_dirs,
-    create_trait_dirs(outcomes_to_run$Neale_pheno_ID), pattern = map(outcomes_to_run), iteration = "list"
+    {
+      path_outcome_dirs
+      create_MR_dirs(outcomes_to_run$Neale_pheno_ID)
+    },
+    pattern = map(outcomes_to_run), iteration = "list"
   ),
 
   tar_target(
