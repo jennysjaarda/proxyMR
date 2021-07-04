@@ -434,7 +434,6 @@ list(
   tar_target(
     household_MR,
     {
-      path_MR_dirs
       household_MR_all_outcomes(exposure_info, summ_stats, outcomes_to_run, gwas_files = path_household_GWAS,
                        traits_corr2_update, grouping_var, MR_method_list) #could add MR_method_list = MR_method_list
     },
