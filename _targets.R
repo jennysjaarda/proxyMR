@@ -410,28 +410,36 @@ list(
 
 
   tar_target(
-    household_GWAS,
+    path_household_GWAS,
     {
       path_pheno_data  ### map over all phenos
       path_outcome_dirs
-      household_GWAS_across_phenos(exposure_info, summ_stats, outcomes_to_run, traits_corr2_update,
+      household_GWAS_all_outcomes(exposure_info, summ_stats, outcomes_to_run, traits_corr2_update,
                          IV_genetic_data, joint_model_adjustments, grouping_var, household_time_munge)
     },
     pattern = map(exposure_info, summ_stats, IV_genetic_data),  format = "file"
 
   ),
 
+  ## MR file prep
   tar_target(
-    household_MR,
+    path_MR_dirs,
+    create_trait_dirs(outcomes_to_run$Neale_pheno_ID), pattern = map(outcomes_to_run), iteration = "list"
+  ),
+
+  tar_target(
+    path_household_MR,
     {
-      household_GWAS
-      run_household_MR(exposure_info, summ_stats, outcomes_to_run,
+      path_MR_dirs
+      household_MR_all_outcomes(exposure_info, summ_stats, outcomes_to_run, gwas_files = path_household_GWAS,
                        traits_corr2_update, grouping_var)
     },
 
-    pattern = head(map(exposure_info, summ_stats, IV_genetic_data), n= 5)
+    pattern = map(exposure_info, summ_stats, IV_genetic_data, path_household_GWAS), format = "file"
 
   )
+
+  ## NEXT RUN SENSITIVITY ANALYSES WITH: plot, leave-one-out, egger, etc.
 
 
 
