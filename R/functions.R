@@ -1990,6 +1990,7 @@ household_MR_all_outcomes <- function(exposure_info, summ_stats, outcomes_to_run
 
   for(i in 1:dim(outcomes_to_run)[1]){
 
+    household_MR_result <- numeric()
     outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
     cat(paste0("Loading GWAS results for outcome `", outcome_ID, "` and IVs from exposure `", exposure_ID, "`...\n"))
 
@@ -2009,11 +2010,11 @@ household_MR_all_outcomes <- function(exposure_info, summ_stats, outcomes_to_run
       household_MR_result <- rbind(household_MR_result, group_MR_result)
     }
 
+    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_MR")]] <- household_MR_result
 
     cat(paste0("Finished MR for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
   }
 
-  output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_MR")]] <- household_MR_result
   return(output_list)
 
 }
