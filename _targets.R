@@ -452,11 +452,20 @@ list(
   ),
 
   tar_target(
+    harmonised_data,
+    {
+      harmonise_household_data_all_outcomes(exposure_info, summ_stats, outcomes_to_run, gwas_files = path_household_GWAS, traits_corr2_update)
+    },
+
+    pattern = map(exposure_info, summ_stats, IV_genetic_data, path_household_GWAS), iteration = "list"
+
+  ),
+
+  tar_target(
     household_MR_exhaustive,
     {
       path_MR_dirs
-      household_MR_all_outcomes(exposure_info, summ_stats, outcomes_to_run, gwas_files = path_household_GWAS,
-                                traits_corr2_update, grouping_var)
+      household_MR_complete(harmonised_data)
     },
 
     pattern = map(exposure_info, summ_stats, IV_genetic_data, path_household_GWAS), format = "file"
