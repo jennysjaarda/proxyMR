@@ -1853,6 +1853,24 @@ household_MR_complete_all_outcomes <- function(exposure_info, harmonised_data, o
 
 }
 
+
+household_MR_complete_summary <- function(household_MR_complete_result){
+
+  result <- numeric()
+  for(i in 1:length(household_MR_complete_result)){
+    male_result <- household_MR_complete_result[[i]][["exp_male_MR_complete"]][["MR_summary"]]
+    female_result <- household_MR_complete_result[[i]][["exp_female_MR_complete"]][["MR_summary"]]
+    result_i <- rbind(male_result, female_result)
+    result <- rbind(result, result_i)
+
+  }
+
+  result <- as_tibble(result)
+  return(result)
+
+}
+
+
 harmonise_household_data <- function(exposure_info, summ_stats, traits_corr2_update, outcome_ID, household_GWAS_result, grouping_var = "age_even_bins") {
 
   output_list <- list()

@@ -408,7 +408,6 @@ list(
     pattern = map(summ_stats)
   ),
 
-
   tar_target(
     path_household_GWAS,
     {
@@ -421,7 +420,8 @@ list(
 
   ),
 
-  ## MR file prep
+  ## MR
+
   tar_target(
     path_MR_dirs,
     {
@@ -431,6 +431,7 @@ list(
     pattern = map(outcomes_to_run), iteration = "list"
   ),
 
+  ## Binned results -> could change the name
   tar_target(
     household_MR,
     {
@@ -461,6 +462,7 @@ list(
 
   ),
 
+  ## RUN in full sample only, not binned
   tar_target(
     household_MR_exhaustive,
     {
@@ -469,25 +471,21 @@ list(
 
     pattern = map(exposure_info, harmonised_data), iteration = "list"
 
+  ),
+
+  ##summarize into one table, ignore leave-1-out analyses for now
+  tar_target(
+    household_MR_exhaustive_summary,
+    {
+      household_MR_complete_summary(household_MR_exhaustive)
+    },
+
+    pattern = map(household_MR_exhaustive)
+
   )
 
-  ## NEXT RUN SENSITIVITY ANALYSES WITH: plot, leave-one-out, egger, etc. not in bins
-  ## WRITE MR RESULTS
 
 
-  # household GWAS produces a DF with results for each group,
-  # so in MR function we can just filter to relevant groups.
-
-# household_MR(outcome_trait = "", household_GWAS, exposure_trait = "", IVs, grouping_var),
-
-# cross(cross(map(outcome_traits, household_GWAS), grouping_var), map(exposure_traits, IVs))
-# trait folder represents outcome trait
-# for each outcome find all trait < 0.05
-# combine
-
-  ## removed all `readd` commands from next set of functions
-
-#
 #   traits_corr4 = sex_het_filter(traits_corr3$to_run, sex_het_summary, traits_to_calc_het, !!num_IVs_threshold),
 #   write_traits_corr3 = write.csv(traits_corr4$non_filtered, file_out("output/tables/3.household_correlations.numIVs_filter.csv"), row.names=F),
 #   write_traits_corr4 = write.csv(traits_corr4$to_run, file_out("output/tables/4.household_correlations.sexhet_filter.csv"), row.names=F),
