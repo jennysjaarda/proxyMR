@@ -2080,7 +2080,7 @@ write_household_MR <- function(exposure_info, outcomes_to_run, household_MR){
     output_files <- c(output_files, MR_file_i)
 
     MR_result_i <- household_MR[[paste0(outcome_ID, "_vs_", exposure_ID, "_MR")]]
-    write.csv(household_MR_result, MR_file_i, row.names = F)
+    write.csv(MR_result_i, MR_file_i, row.names = F)
 
     cat(paste0("Finished writing MR results for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
 
