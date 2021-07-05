@@ -1769,24 +1769,6 @@ household_GWAS_all_outcomes <- function(exposure_info, summ_stats, outcomes_to_r
 }
 
 
-household_MR_plot <- function(harmonise_dat, MR_method_list, exposure_sex, outcome_sex, exposure_description, outcome_description){
-
-  ## Make MR plot
-
-  #output_figure_dir <- paste0(project_dir, "/output/figures/traitMR/",trait_ID)
-  #pdf(file=paste0(output_figure_dir,"/", trait_ID, "_", exposure_sex, "-",outcome_sex, "_household_MR", ".pdf"))
-
-  original_MR <- mr(harmonise_dat, method=MR_method_list)
-
-  mr_title <- bquote(atop(.(paste0("Estimate of the assortative mating effect of ")),
-                          italic(.(exposure_description)) ~ 'on' ~ italic(.(outcome_description)) ~ .(paste0(' for ', exposure_sex, "s on ", outcome_sex,"s"))))
-  mr_plot <- mr_scatter_plot_custom(original_MR, harmonise_dat, mr_title, exposure_sex, outcome_sex)
-  #dev.off()
-
-  return(mr_plot)
-
-}
-
 household_MR_complete <- function(harmonise_dat, MR_method_list){
 
 
@@ -1806,11 +1788,13 @@ household_MR_complete <- function(harmonise_dat, MR_method_list){
   nsnps <- dim(harmonise_dat)[1]
   n_neale <- max(harmonise_dat$samplesize.exposure, na.rm=T)
 
+  # Standard MR
+  original_MR <- mr(harmonise_dat, method=MR_method_list)
+  MR_res <- include_MR_NA(original_MR)
 
   ## Test for reverse causality
   harmonise_dat_sensitivity <- harmonise_dat[which(harmonise_dat[["pval.exposure"]] < harmonise_dat[["pval.outcome"]]),]
-  MR_res <- include_MR_NA(mr(harmonise_dat_sensitivity, method=MR_method_list))
-  #write.csv(MR_res, paste0(MR_dir, "/", phenotype_description, "_", exposure_sex,"-",outcome_sex, "_MR-sensitivity.csv"), row.names=F)
+  MR_res_sensitivity <- include_MR_NA(mr(harmonise_dat_sensitivity, method=MR_method_list))
 
   temp_summary <- summarize_mr_result (paste0(exposure_ID,"_INDEX"), paste0(outcome_ID,"_HOUSEHOLD"), exposure_sex, outcome_sex, nsnps, MR_res, het_test, egger_test,n_neale, ngwas)
 
@@ -1818,7 +1802,7 @@ household_MR_complete <- function(harmonise_dat, MR_method_list){
   MR_wald_row <- which(MR_res[,"method"]=="Wald ratio")
   nsnps_sensitivity <- dim(harmonise_dat_sensitivity)[1]
   correct_row <- ifelse(nsnps_sensitivity==1, MR_wald_row, MR_ivw_row)
-  sensitivity_result <- cbind(nsnps_sensitivity, make_beta_95ci(MR_res[correct_row,"b"],MR_res[correct_row,"se"]),pretty_round(MR_res[correct_row,"pval"]))
+  sensitivity_result <- cbind(nsnps_sensitivity, make_beta_95ci(MR_res_sensitivity[correct_row,"b"],MR_res_sensitivity[correct_row,"se"]),pretty_round(MR_res_sensitivity[correct_row,"pval"]))
   temp_summary <- cbind(temp_summary, sensitivity_result)
 
   MR_summary <- cbind(exposure_ID, outcome_ID, temp_summary)
@@ -1830,7 +1814,7 @@ household_MR_complete <- function(harmonise_dat, MR_method_list){
   colnames(MR_summary)[num_cols] <- "IVW/Wald_pval_sensitivity"
   colnames(MR_summary)[num_cols-2] <- "N_snps_sensitivity" #test for reverse causation
 
-  mr_plot <- household_MR_plot(harmonise_dat, MR_method_list, exposure_sex, outcome_sex, exposure_description, outcome_description)
+  mr_plot <- household_MR_plot(harmonise_dat, original_MR)
 
   leave1out_test$exposure_sex <- exposure_sex
   leave1out_test$outcome_sex <- outcome_sex
@@ -2235,7 +2219,21 @@ mr_sex_het <- function(calc_Q_stat_age, calc_Q_stat_tt, traits_summary){
 
 #saveRDS(out, "code/shiny/mr_summary.rds")
 
-mr_scatter_plot_custom <-  function (mr_results, dat, mr_title, exposure_sex, outcome_sex){
+
+household_MR_plot <-  function (dat, original_MR){
+
+  exposure_ID <- dat$exposure[1]
+  outcome_ID <- dat$outcome[1]
+  exposure_sex <- dat$exposure_sex[1]
+  outcome_sex <- dat$outcome_sex[1]
+  exposure_description <- dat$exposure_description[1]
+  outcome_description <- dat$outcome_description[1]
+
+  mr_title <- bquote(atop(.(paste0("Estimate of the assortative mating effect of ")),
+                          italic(.(outcome_description)) ~ 'on' ~ italic(.(exposure_description)) ~ .(paste0(' for ', exposure_sex, "s on ", outcome_sex,"s"))))
+
+  mr_results <- original_MR
+
   requireNamespace("ggplot2", quietly = TRUE)
   requireNamespace("plyr", quietly = TRUE)
   mrres <- plyr::dlply(dat, c("id.exposure", "id.outcome"),
@@ -2277,7 +2275,7 @@ mr_scatter_plot_custom <-  function (mr_results, dat, mr_title, exposure_sex, ou
                                                                    "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99",
                                                                    "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6",
                                                                    "#6a3d9a", "#ffff99", "#b15928")) + ggplot2::labs(colour = "MR Test",
-                                                                                                                     x = paste0("SNP effect on ", exposure_sex, "s (general population)"), y = paste("SNP effect on",
+                                                                                                                     x = paste0("SNP effect of ", exposure_ID, " in ", exposure_sex, "s (general population)"), y = paste("SNP effect of ", outcome_ID, " in ",
                                                                                                                                                                                                      outcome_sex, "partner")) + ggplot2::theme(legend.position = "bottom",
                                                                                                                                                                                                                                                legend.direction = "horizontal") + ggplot2::guides(colour = ggplot2::guide_legend(nrow = 2)) +
                            theme(legend.title = element_blank())
