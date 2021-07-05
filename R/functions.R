@@ -1861,6 +1861,8 @@ household_MR_complete_all_outcomes <- function(exposure_info, harmonised_data, o
 
     output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_MR_complete")]] <- MR_complete_i
 
+    cat(paste0("Finished computing full MR results for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+
   }
 
   return(output_list)
