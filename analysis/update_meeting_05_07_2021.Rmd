@@ -1,0 +1,68 @@
+---
+title: "Update Meeting: 05-07-2021"
+author: "jennysjaarda"
+date: "2021-07-02"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+  toc: true
+---
+
+
+```{r setup, include = FALSE}
+
+options(scipen=999)
+source("code/settings.R")
+library(targets)
+library(dplyr)
+library(DT)
+library(knitr)
+
+```
+
+```{r, echo=FALSE,include = FALSE}
+# You need this code to conduct the magic dependences attaching...
+DT::datatable(matrix())
+```
+
+
+## Last week summary.
+
+- Discussed PolyMR project with Jonathan. 
+  - To start by writing introduction. 
+  - Going through paper in-depth. 
+  
+## Results. 
+
+- Univariate MR. 
+
+```{r sex_het, echo = FALSE}
+
+tar_load(household_MR_exhaustive_summary)
+
+household_MR_exhaustive_summary <- household_MR_exhaustive_summary %>% mutate(same_traits = case_when(exposure_ID == outcome_ID ~ TRUE, 
+                                                                   TRUE ~ FALSE))
+
+
+DT::datatable(household_MR_exhaustive_summary, width = "100%")
+
+```
+
+
+## Questions. 
+
+- Expand list of outcomes? 
+  - Initially only performed MR with a single trait (i.e. trait_partner ~ trait_index). 
+  - Now that we are expanding to two traits in the analysis we could be less stringent with our trait selection.
+  - Traits were filtered as follows: 
+    1. UKBB phenotypes in SGG database.
+    2. Link with Neale summary stats and include only phenotypes which have been processed in both male, female and joint GWAS. 
+    3. Evidence of correlation among couples. 
+    4. &gt;5 IVs at GW significance. 
+    5. No evidence of sex heterogeneity among valid IVs. 
+  - Could add more phenotpyes as outcomes
+
+
+## Next steps. 
+
+- 
