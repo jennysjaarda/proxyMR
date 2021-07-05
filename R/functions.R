@@ -1787,10 +1787,16 @@ household_MR_plot <- function(harmonise_dat, MR_method_list, exposure_sex, outco
 
 }
 
-household_MR_complete <- function(harmonise_dat, MR_method_list, exposure_ID, outcome_ID, exposure_sex, outcome_sex){
+household_MR_complete <- function(harmonise_dat, MR_method_list){
+
 
   exposure_ID <- harmonise_dat$exposure[1]
   outcome_ID <- harmonise_dat$outcome[1]
+  exposure_sex <- harmonise_dat$exposure_sex[1]
+  outcome_sex <- harmonise_dat$outcome_sex[1]
+  exposure_description <- harmonise_dat$exposure_description[1]
+  outcome_description <- harmonise_dat$outcome_description[1]
+
 
   het_test <- mr_heterogeneity(harmonise_dat, method_list=c("mr_egger_regression", "mr_ivw"))
   egger_test <- mr_pleiotropy_test(harmonise_dat)
@@ -1800,12 +1806,13 @@ household_MR_complete <- function(harmonise_dat, MR_method_list, exposure_ID, ou
   nsnps <- dim(harmonise_dat)[1]
   n_neale <- max(harmonise_dat$samplesize.exposure, na.rm=T)
 
-  temp_summary <- summarize_mr_result (paste0(exposure_ID,"_INDEX"), paste0(exposure_ID,"_HOUSEHOLD"), exposure_sex, outcome_sex, nsnps,MR_res, het_test, egger_test,n_neale, ngwas)
 
   ## Test for reverse causality
   harmonise_dat_sensitivity <- harmonise_dat[which(harmonise_dat[["pval.exposure"]] < harmonise_dat[["pval.outcome"]]),]
   MR_res <- include_MR_NA(mr(harmonise_dat_sensitivity, method=MR_method_list))
   #write.csv(MR_res, paste0(MR_dir, "/", phenotype_description, "_", exposure_sex,"-",outcome_sex, "_MR-sensitivity.csv"), row.names=F)
+
+  temp_summary <- summarize_mr_result (paste0(exposure_ID,"_INDEX"), paste0(outcome_ID,"_HOUSEHOLD"), exposure_sex, outcome_sex, nsnps, MR_res, het_test, egger_test,n_neale, ngwas)
 
   MR_ivw_row <- which(MR_res[,"method"]=="Inverse variance weighted")
   MR_wald_row <- which(MR_res[,"method"]=="Wald ratio")
@@ -1814,19 +1821,49 @@ household_MR_complete <- function(harmonise_dat, MR_method_list, exposure_ID, ou
   sensitivity_result <- cbind(nsnps_sensitivity, make_beta_95ci(MR_res[correct_row,"b"],MR_res[correct_row,"se"]),pretty_round(MR_res[correct_row,"pval"]))
   temp_summary <- cbind(temp_summary, sensitivity_result)
 
-  MR_summary <- cbind(outcome_ID, temp_summary)
-  full_MR_summary <- rbind(full_MR_summary, MR_summary)
+  MR_summary <- cbind(exposure_ID, outcome_ID, temp_summary)
 
 
-  num_cols <- length(colnames(full_MR_summary))
+  num_cols <- length(colnames(MR_summary))
 
-  colnames(full_MR_summary)[num_cols-1] <- "IVW/Wald_summary_sensitivity"
-  colnames(full_MR_summary)[num_cols] <- "IVW/Wald_pval_sensitivity"
-  colnames(full_MR_summary)[num_cols-2] <- "N_snps_sensitivity" #test for reverse causation
+  colnames(MR_summary)[num_cols-1] <- "IVW/Wald_summary_sensitivity"
+  colnames(MR_summary)[num_cols] <- "IVW/Wald_pval_sensitivity"
+  colnames(MR_summary)[num_cols-2] <- "N_snps_sensitivity" #test for reverse causation
 
   mr_plot <- household_MR_plot(harmonise_dat, MR_method_list, exposure_sex, outcome_sex, exposure_description, outcome_description)
 
-  return(list(full_MR_summary = full_MR_summary, leave1out_test = leave1out_test, mr_plot = mr_plot))
+  leave1out_test$exposure_sex <- exposure_sex
+  leave1out_test$outcome_sex <- outcome_sex
+
+
+  return(list(MR_summary = MR_summary, leave1out_test = leave1out_test, MR_plot = mr_plot))
+
+}
+
+household_MR_complete_all_outcomes <- function(exposure_info, harmonised_data, outcomes_to_run, MR_method_list){
+
+  output_list <- list()
+  exposure_ID <- as.character(exposure_info["trait_ID",1])
+
+  cat(paste0("\nRunning complete MR analyses for all outcomes with phenotype `", exposure_ID, "`\nas exposure (i.e. Egger, leave-one-out, sensitivity, MR plot. \n[This is only being run in full sample, not in individual bins.]\n\n"))
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
+    MR_complete_i <- list()
+
+    for(exposure_sex in c("male", "female")){
+
+      harmonised_dat_i_sex <- harmonised_data[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonise_data")]][[paste0("exp_", exposure_sex, "_harmonise_data")]]
+      MR_complete_i_sex <- household_MR_complete(harmonised_dat_i_sex, MR_method_list)
+      MR_complete_i[[paste0("exp_", exposure_sex, "_MR_complete")]] <- MR_complete_i_sex
+    }
+
+    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_MR_complete")]] <- MR_complete_i
+
+  }
+
+  return(output_list)
 
 }
 

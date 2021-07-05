@@ -14,7 +14,7 @@ tar_option_set(
                                                         ntasks = 1, partition = "sgg",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
-  packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR"),
+  packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR", "ggplot2"),
   error = "workspace",
   memory = "transient",
   garbage_collection = TRUE
@@ -457,18 +457,17 @@ list(
       harmonise_household_data_all_outcomes(exposure_info, summ_stats, outcomes_to_run, gwas_files = path_household_GWAS, traits_corr2_update)
     },
 
-    pattern = map(exposure_info, summ_stats, IV_genetic_data, path_household_GWAS), iteration = "list"
+    pattern = map(exposure_info, summ_stats, IV_genetic_data, path_household_GWAS), iteration = "list" #could remove IV_genetic data
 
   ),
 
   tar_target(
     household_MR_exhaustive,
     {
-      path_MR_dirs
-      household_MR_complete(harmonised_data)
+      household_MR_complete_all_outcomes(exposure_info, harmonised_data, outcomes_to_run, MR_method_list)
     },
 
-    pattern = map(exposure_info, summ_stats, IV_genetic_data, path_household_GWAS), format = "file"
+    pattern = map(exposure_info, harmonised_data), iteration = "list"
 
   )
 
