@@ -435,7 +435,7 @@ list(
     household_MR,
     {
       household_MR_all_outcomes(exposure_info, summ_stats, outcomes_to_run, gwas_files = path_household_GWAS,
-                       traits_corr2_update, grouping_var, MR_method_list) #could add MR_method_list = MR_method_list
+                       traits_corr2_update, grouping_var, MR_method_list)
     },
 
     pattern = map(exposure_info, summ_stats, IV_genetic_data, path_household_GWAS), iteration = "list"
@@ -445,7 +445,7 @@ list(
     path_household_MR,
     {
       path_MR_dirs
-      write_household_MR(exposure_info, summ_stats, outcomes_to_run, household_MR) #could add MR_method_list = MR_method_list
+      write_household_MR(exposure_info, outcomes_to_run, household_MR)
     },
 
     pattern = map(exposure_info, household_MR), format = "file"
