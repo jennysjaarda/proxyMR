@@ -2070,7 +2070,7 @@ write_household_MR <- function(exposure_info, outcomes_to_run, household_MR){
   output_files <- numeric()
   pheno_dir <- paste0("analysis/traitMR")
 
-  cat(paste0("\Writing household MR results for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+  cat(paste0("\nWriting household MR results for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
 
   for(i in 1:dim(outcomes_to_run)[1]){
 
