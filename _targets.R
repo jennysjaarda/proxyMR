@@ -433,7 +433,7 @@ list(
 
   ## Binned results -> could change the name
   tar_target(
-    household_MR,
+    household_MR_binned,
     {
       household_MR_all_outcomes(exposure_info, summ_stats, outcomes_to_run, gwas_files = path_household_GWAS,
                        traits_corr2_update, grouping_var, MR_method_list)
@@ -443,13 +443,13 @@ list(
   ),
 
   tar_target(
-    path_household_MR,
+    path_household_MR_binned,
     {
       path_MR_dirs
-      write_household_MR(exposure_info, outcomes_to_run, household_MR)
+      write_household_MR(exposure_info, outcomes_to_run, household_MR_binned)
     },
 
-    pattern = map(exposure_info, household_MR), format = "file"
+    pattern = map(exposure_info, household_MR_binned), format = "file"
   ),
 
   tar_target(
@@ -474,6 +474,9 @@ list(
   ),
 
   ##summarize into one table, ignore leave-1-out analyses for now
+  ## add column for outcome_ID==exposure_ID
+  ## outcome_description and exposure description
+
   tar_target(
     household_MR_exhaustive_summary,
     {

@@ -1805,7 +1805,8 @@ household_MR_complete <- function(harmonise_dat, MR_method_list){
   sensitivity_result <- cbind(nsnps_sensitivity, make_beta_95ci(MR_res_sensitivity[correct_row,"b"],MR_res_sensitivity[correct_row,"se"]),pretty_round(MR_res_sensitivity[correct_row,"pval"]))
   temp_summary <- cbind(temp_summary, sensitivity_result)
 
-  MR_summary <- cbind(exposure_ID, outcome_ID, temp_summary)
+  same_trait <- exposure_ID == outcome_ID
+  MR_summary <- cbind(exposure_ID, outcome_ID,exposure_description, outcome_description, same_trait, temp_summary)
 
 
   num_cols <- length(colnames(MR_summary))
@@ -1853,7 +1854,6 @@ household_MR_complete_all_outcomes <- function(exposure_info, harmonised_data, o
 
 }
 
-
 household_MR_complete_summary <- function(household_MR_complete_result){
 
   result <- numeric()
@@ -1869,7 +1869,6 @@ household_MR_complete_summary <- function(household_MR_complete_result){
   return(result)
 
 }
-
 
 harmonise_household_data <- function(exposure_info, summ_stats, traits_corr2_update, outcome_ID, household_GWAS_result, grouping_var = "age_even_bins") {
 
@@ -2536,4 +2535,22 @@ MR_MLE <- function(sqc_munge, i, trait_ID, exposure_sex, phenotype_file, phenoty
 
 
 
+}
+
+launch_bgenie <- function(chr, phenofile, UKBB_dir, chr_char, start_pos, end_pos, chunk_num){
+
+  cat(paste0("Running chr: ", chr, ".\n"))
+  #cancel_if(file.exists(paste0("analysis/GWAS/UKBB/chr", chr, "_chunk", chunk_num, ".out")))
+  system(paste0("/data/sgg3/jonathan/bgenie_v1.3/bgenie_v1.3_static1 ",
+                "--bgen ", UKBB_dir, "imp/_001_ukb_imp_chr", chr, "_v2.bgen ",
+                "--pheno ", phenofile, " ",
+                "--range ", chr_char, " ", start_pos, " ", end_pos, " ",
+                "--pvals --out analysis/GWAS/UKBB/chr", chr, "_chunk", chunk_num, ".out"))
+  if(!file.exists(paste0("analysis/GWAS/UKBB/chr", chr, "_chunk", chunk_num, ".out.gz"))){
+    file.create(paste0("analysis/GWAS/UKBB/chr", chr, "_chunk", chunk_num, ".out.gz"))
+  }
+  # Eleonora's command line
+  # /data/sgg3/jonathan/bgenie_v1.3/bgenie_v1.3_static1 --bgen
+  # /data/sgg3/eleonora/projects/UKBB_GWAS/UK10K_SNPrs/CHR11/chr11.bgen ## this script would not include SNPs specific to HRC_list
+  # --pheno ../phenofile --pvals --out chr11.out
 }

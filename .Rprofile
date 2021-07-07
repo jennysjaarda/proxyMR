@@ -10,3 +10,7 @@ if (requireNamespace("workflowr", quietly = TRUE)) {
 }
 
 library("targets")
+
+if(Sys.info()["sysname"]=="Linux"){
+  options("workflowr.view" = FALSE)
+}
