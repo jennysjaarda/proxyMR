@@ -481,7 +481,7 @@ list(
 
   tar_target(
     IV_variant_data,
-    extract_relevant_variant_rows(Neale_variant_file, snp_list = all_IVs),
+    extract_relevant_variant_rows(Neale_variant_file, snp_list = all_IVs$rsid),
   ),
 
   tar_target(
