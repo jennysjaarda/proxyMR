@@ -1301,9 +1301,8 @@ extract_Neale_IV <- function(Neale_file, variant_file, filter_in,pval_threshold,
   return(data_prune)
 }
 
-extract_relevant_variant_rows(variant_file, snp_list){
+extract_relevant_variant_rows <- function(variant_file, snp_list){
   variant_data <- fread(paste0(variant_file),data.table=F)
-  variant_data <- variant_data[,variant_cols]
   extract_rows <- which(variant_data$rsid %in% snp_list)
   variant_data_sub <- variant_data[extract_rows,]
   variant_data_sub$original_row <- extract_rows
