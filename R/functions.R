@@ -1301,26 +1301,37 @@ extract_Neale_IV <- function(Neale_file, variant_file, filter_in,pval_threshold,
   return(data_prune)
 }
 
-extract_Neale_outcome <- function(Neale_file, variant_file, IVs){
+extract_relevant_variant_rows(variant_file, snp_list){
+  variant_data <- fread(paste0(variant_file),data.table=F)
+  variant_data <- variant_data[,variant_cols]
+  extract_rows <- which(variant_data$rsid %in% snp_list)
+  variant_data_sub <- variant_data[extract_rows,]
+  variant_data_sub$original_row <- extract_rows
+
+  return(variant_data_sub)
+
+}
+
+extract_Neale_outcome <- function(Neale_file, variant_data_sub){
+
   outcome_raw <- fread(paste0(Neale_file),data.table=F)
   outcome_cols  <- c("variant","beta","se","pval","n_complete_samples")
   outcome_raw <- outcome_raw[, outcome_cols]
 
-  variant_data <- fread(paste0(variant_file),data.table=F)
+  variant_data_sub
   variant_cols <- c("rsid", "ref", "alt", "AF","chr")
-  variant_data <- variant_data[,variant_cols]
+  variant_data <- variant_data_sub[,variant_cols]
 
   outcome_var_merge <- cbind(outcome_raw,variant_data)
-
-  outcome_filter <- outcome_var_merge[which(outcome_var_merge$rsid %in% IVs), ]
 
   cols <- c("rsid", "chr", "beta", "se", "pval", "ref", "alt", "AF", "n_complete_samples")
   outcome_filter <- outcome_filter[,cols]
   colnames(outcome_filter) <- c("SNP", "chr", "beta", "se", "pval", "other_allele", "effect_allele","eaf", "samplesize")
-  outcome_format <- format_data(outcome_filter, type="outcome")
+  #outcome_format <- format_data(outcome_filter, type="outcome")
 
-  return(outcome_format)
+  return(outcome_filter)
 }
+
 
 extract_bgen <- function(snps, file){
 
@@ -2102,6 +2113,45 @@ household_MR_all_outcomes <- function(exposure_info, summ_stats, outcomes_to_run
   return(output_list)
 
 }
+
+
+pull_Neale_effects <- function(snp_list, outcome_ID, Neale_output_path, reference_file = data_Neale_manifest){
+
+
+  existing_files_full <- list()
+  existing_files_full  =  list.files( Neale_output_path,
+                                      recursive = TRUE,
+                                      pattern = '[.]gz', full.names = T )
+
+  existing_files_full <- existing_files_full[-which(grepl(paste0("/","variants.tsv.gz"), existing_files_full))]
+
+  irnt = TRUE
+  ID <- outcome_ID
+  phenotype_ids  =  paste0( '^', ID, ifelse( irnt, '(_irnt|)$', '(_raw|)$' ) ) %>%
+    paste( collapse = '|' )
+
+  file_name_temp  =  reference_file %>%
+    filter( str_detect( .$'Phenotype Code', phenotype_ids ) & Sex=="both_sexes")
+
+  file_name <- file_name_temp[["Phenotype Code"]][1]
+
+  full_neale_file <- existing_files_full[which(grepl(paste0("/",file_name), existing_files_full))]
+
+  for(sex in c("male", "female")){
+
+    full_neale_file_sex <- full_neale_file[which(grepl(paste0("/",sex, "/"), full_neale_file))]
+    sumstats <- fread(full_neale_file_sex)
+  }
+
+
+
+
+}
+
+standard_MR_all_outcomes <- function(exposure_info, summ_stats){
+
+}
+
 
 write_household_MR <- function(exposure_info, outcomes_to_run, household_MR){
 

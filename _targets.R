@@ -349,7 +349,7 @@ list(
 
   tar_target(
     outcomes_to_run,
-    pull_traits_to_run(traits_final) #this could be changed to traits_corr2_update
+    pull_traits_to_run(traits_final) #this could be changed to traits_corr2_update, add Neale file name column
   ),
 
   tar_target(
@@ -434,11 +434,8 @@ list(
   ## Binned results -> could change the name
   tar_target(
     household_MR_binned,
-    {
-      household_MR_all_outcomes(exposure_info, summ_stats, outcomes_to_run, gwas_files = path_household_GWAS,
-                       traits_corr2_update, grouping_var, MR_method_list)
-    },
-
+    household_MR_all_outcomes(exposure_info, summ_stats, outcomes_to_run, gwas_files = path_household_GWAS,
+                       traits_corr2_update, grouping_var, MR_method_list),
     pattern = map(exposure_info, summ_stats, IV_genetic_data, path_household_GWAS), iteration = "list"
   ),
 
@@ -453,24 +450,16 @@ list(
   ),
 
   tar_target(
-    harmonised_data,
-    {
-      harmonise_household_data_all_outcomes(exposure_info, summ_stats, outcomes_to_run, gwas_files = path_household_GWAS, traits_corr2_update)
-    },
-
+    household_harmonised_data,
+    harmonise_household_data_all_outcomes(exposure_info, summ_stats, outcomes_to_run, gwas_files = path_household_GWAS, traits_corr2_update),
     pattern = map(exposure_info, summ_stats, IV_genetic_data, path_household_GWAS), iteration = "list" #could remove IV_genetic data
-
   ),
 
   ## RUN in full sample only, not binned
   tar_target(
     household_MR_exhaustive,
-    {
-      household_MR_complete_all_outcomes(exposure_info, harmonised_data, outcomes_to_run, MR_method_list)
-    },
-
-    pattern = map(exposure_info, harmonised_data), iteration = "list"
-
+    household_MR_complete_all_outcomes(exposure_info, household_harmonised_data, outcomes_to_run, MR_method_list),
+    pattern = map(exposure_info, household_harmonised_data), iteration = "list"
   ),
 
   ##summarize into one table, ignore leave-1-out analyses for now
@@ -479,11 +468,39 @@ list(
 
   tar_target(
     household_MR_exhaustive_summary,
+    household_MR_complete_summary(household_MR_exhaustive),
+    pattern = map(household_MR_exhaustive)
+  ),
+
+  tar_target(
+    all_IVs,
+    tibble(exposure = exposures_to_run, rsid = summ_stats[[1]]$rsid),
+    pattern = map(exposures_to_run, summ_stats)
+
+  ),
+
+  tar_target(
+    IV_variant_data,
+    extract_relevant_variant_rows(Neale_variant_file, snp_list = all_IVs),
+  ),
+
+  tar_target(
+    outcome_stats,
     {
-      household_MR_complete_summary(household_MR_exhaustive)
+      extract_Neale_outcome(Neale_file, IV_variant_data, outcomes_to_run, traits_corr2_update)
     },
 
-    pattern = map(household_MR_exhaustive)
+    pattern = map(outcomes_to_run, summ_stats)
+
+  ),
+
+  tar_target(
+    standard_MR,
+    {
+      standard_MR(exposures_to_run, outcomes_to_run)
+    },
+
+    pattern = map(exposures_to_run)
 
   )
 
