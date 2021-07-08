@@ -474,7 +474,7 @@ list(
 
   tar_target(
     all_IVs,
-    tibble(exposure = exposures_to_run, rsid = summ_stats[[1]]$rsid),
+    tibble(exposure = exposures_to_run$Neale_pheno_ID, rsid = summ_stats[[1]]$rsid), # it doesn't matter if you take male or female summary stats
     pattern = map(exposures_to_run, summ_stats)
 
   ),
