@@ -383,7 +383,7 @@ organize_Neale <- function(traits_corr_filter){
   if(dim(define_cats2)[1]!=0)
   {
 
-    cat(paste0("Some Neale files need to be categorized, please categorize appropriately within file:
+    cat(paste0("Some Neale files need to be categorized and downloaded, please categorize appropriately within file:
       'output/tables/define_Neale_categories.csv'.\n\n"))
   }
 
@@ -424,7 +424,7 @@ write_download_list <- function(Neale_to_process){
 ## Update categories in phenotypic correlations file: output/tables/pheno_household_filter_corr.csv
 ## run within project folder: /data/sgg2/jenny/projects/MR_Shared_Environment
 
-download_Neale <- function(filled_cats,download_rest,traits_corr_filter, reference_file_name){
+download_Neale <- function(filled_cats,download_rest,traits_corr_filter, reference_file_name, Neale_output_dir){
   full_dl_list <- rbind(filled_cats, download_rest)
   select <- dplyr::select
 
@@ -440,7 +440,34 @@ download_Neale <- function(filled_cats,download_rest,traits_corr_filter, referen
   levels(corr_traits$category) <- union (levels(corr_traits$category), levels(filled_cats$category))
   index <- which(corr_traits[["define_category:T/F"]]==TRUE)
   pheno_missing_cat <- corr_traits[index,"Neale_pheno_ID"]
-  corr_traits[index, "category"] <- as.factor(filled_cats[["category"]][match(pheno_missing_cat, filled_cats$Neale_pheno_ID)])
+  corr_traits[index, "category"] <- as.character(filled_cats[["category"]][match(pheno_missing_cat, filled_cats$Neale_pheno_ID)])
+
+
+
+
+  existing_files_full  =  list.files( Neale_output_dir,
+                                      recursive = TRUE,
+                                      pattern = '[.]gz', full.names = T )
+
+  existing_files_full <- existing_files_full[-which(grepl(paste0("/", "variants.tsv.gz"), existing_files_full))]
+
+  for(i in index){
+
+    Neale_ID <- corr_traits[["Neale_pheno_ID"]][i]
+    full_path <- existing_files_full[grepl(Neale_ID, existing_files_full )]
+    Neale_paths <- paste(full_path, collapse=";")
+    corr_traits[i, "Neale_file_location"] <- Neale_paths
+    if(!is.null(Neale_paths)){
+      corr_traits[i, "Neale_downloaded"] <- "YES"
+      corr_traits[i, "define_category:T/F"] <- "FALSE"
+
+      if(grepl("v2", Neale_paths )){
+        corr_traits[i, "v2_exists"] <- "TRUE"
+        corr_traits[i, "v2_downloaded"] <- "TRUE"
+      }
+    }
+
+  }
 
   cat(paste0("Missing Neale files have been successfully downloaded and categorized,\n",
              "now they need to be processed (clumped for LD and extracted for p<0.1).\n"))

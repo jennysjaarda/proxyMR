@@ -241,7 +241,7 @@ list(
   tar_target(
     traits_corr2_filled,
     download_Neale(data_define_cats_filled,Neale_to_process$download_rest,traits_corr2,
-                   path_Neale_manifest)
+                   path_Neale_manifest, Neale_output_dir)
   ),
   tar_target(
     run_process_Neale,
