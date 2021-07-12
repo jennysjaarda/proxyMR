@@ -199,7 +199,7 @@ list(
   #####################################
 
   tar_target(
-    trait_corrs,
+    traits_corr,
     compute_trait_corr(data_phesant_directory,data_UKBB_directory,hh_pairs_filter)
   ),
   # write_traits_corr = write.csv(trait_corrs, file_out( "output/tables/1.household_correlations.csv"), row.names=F),
@@ -210,7 +210,7 @@ list(
   ),
   tar_target(
     traits_corr2,
-    filter_by_corr(trait_corrs,Neale_SGG_dir_filt,household_correlation_threshold)
+    filter_by_corr(traits_corr,Neale_SGG_dir_filt,household_correlation_threshold)
   ),
   tar_target(
     Neale_to_process,
@@ -227,7 +227,7 @@ list(
     format = "file"
   ),
   tar_target(
-    path_define_cats_filled,
+    path_define_cats_filled, ## THIS IS CREATED MANUALLY
     {
       path_define_cats
       "output/tables/define_Neale_categories_filled.csv"

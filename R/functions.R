@@ -327,7 +327,7 @@ compute_trait_corr <- function(phesant_directory,UKBB_directory,pairs_filter){
 ## File A2 ----
 
 ## Description: filter phenotype correlations for > specified threshold (in settings).
-## Check which phenotypes have been downloaed, and create list of need to be downloaded
+## Check which phenotypes have been downloaded, and create list of need to be downloaded
 ## and defined here: "output/tables/define_Neale_categories.csv".
 ## Manually categorize this list and save as: "output/tables/define_Neale_categories_filled.csv"
 ## run within project folder: /data/sgg2/jenny/projects/MR_Shared_Environment
@@ -348,21 +348,21 @@ SGG_link_with_Neale <- function(Neale_SGG_dir){
     }
   }
   cat(paste0("There are: ", length(both_sex_avail), " phenotypes with Neale summary stats with joint
-  and sex-specific data that have also been processed in the SGG database.\n\n")) ###1243 traits
+  and sex-specific data that have also been processed in the SGG database.\n\n")) ###1278 traits
   Neale_SGG_dir_filt2 <- subset(Neale_SGG_dir_filt, Neale_SGG_dir_filt$phenotype %in% both_sex_avail)
   return(Neale_SGG_dir_filt2)
 }
 
-filter_by_corr <- function(trait_corr,Neale_SGG_dir_filt2,household_correlation_threshold){
+filter_by_corr <- function(traits_corr,Neale_SGG_dir_filt2,household_correlation_threshold){
 
-  merge_temp <- merge(trait_corr, Neale_SGG_dir_filt2, by.x="ID", by.y="sgg_phesant_name", fill=T)
+  merge_temp <- merge(traits_corr, Neale_SGG_dir_filt2, by.x="ID", by.y="sgg_phesant_name", fill=T)
   merge_temp$r2 <- as.numeric(as.character(merge_temp$r2))
   corr_traits <- merge_temp[which(sqrt(merge_temp$r2) > household_correlation_threshold),]
   corr_traits <- corr_traits[,-which(colnames(corr_traits) %in% c("description.x"))]
   colnames(corr_traits) <- c("SGG_PHESANT_ID", "SGG_PHESANT_ID_sub","N_pairs","r2",
                              "Neale_pheno_ID","Neale_pheno_ID_sub", "Neale_file_sex","description",
                              "variable_type", "SGG_request", "PHESANT_processed", "SGG_location",
-                             "Neale_downloaded","category","define_category:T/F",
+                             "Neale_downloaded","category","Neale_file_location", "define_category:T/F",
                              "v2_exists", "v2_downloaded")
   return(corr_traits)
 }
