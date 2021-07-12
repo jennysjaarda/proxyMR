@@ -75,7 +75,7 @@ Neale_summary_dir <- "/data/sgg2/jenny/data/Neale_UKBB_GWAS"
 Neale_output_dir <- "/data/sgg3/data/neale_files"
 
 ## files
-Neale_SGG_dir_file_cp <- "data/Neale_SGG_directory_12_06_2021.csv"
+Neale_SGG_dir_file_cp <- "data/Neale_SGG_directory_12_07_2021.csv"
 Neale_manifest_file <- "UKBB GWAS Imputed v3 - File Manifest Release 20180731 - Manifest 201807.tsv"
 Neale_variant_file <- paste0(Neale_summary_dir, "/variants.tsv")
 
