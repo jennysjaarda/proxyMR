@@ -2586,6 +2586,101 @@ MR_MLE <- function(sqc_munge, i, trait_ID, exposure_sex, phenotype_file, phenoty
 
 }
 
+
+ivt <- function(x){
+  out <- qnorm((rank(x,na.last="keep")-0.5)/sum(!is.na(x)))
+  return(out)
+}
+
+
+order_bgen <- function(bgen_file, data){
+
+  colnames(bgen_file) <- c("ID_1", "ID_2", "missing")
+  ord = match(bgen_file$ID_1[-1], data$eid)
+
+  bgen_merge <- left_join(bgen_file %>% slice(-1), data, by=c("ID_1" = "eid"))
+
+  add_na <- bgen_merge %>% mutate_at(vars(-ID_1, -ID_2, -missing), ~replace_na(., -999))
+
+  output <- add_na %>% dplyr::select(-ID_1, -ID_2, -missing)
+  return(output)
+}
+
+prep_PC_GWAS <- function(data_id_age, data_id_sex, sqc_munge, bgen_file = data_UKBB_sample){
+
+  merge_sex_age <- merge(data_id_age, data_id_sex)
+  out_list <- list()
+  for(PC in 1:40){
+
+    PC_i_data <- sqc_munge[,c("ID", paste0("PC_", PC))]
+    colnames(PC_i_data) <- c("userId", "PCi")
+    resid_data <- merge(PC_i_data, merge_sex_age)
+    resid_data <- resid_data %>% mutate(PCi_ivt = ivt(PCi))
+    PCi_resid <- resid(lm(PCi_ivt ~ ., data = subset(resid_data, select=c( -userId, -PCi) ), na.action = na.exclude))
+    out <- as.data.frame(cbind(resid_data[["userId"]], PCi_resid))
+    colnames(out) <- c("userId", paste0("PC_", PC, "_resid"))
+
+
+    out_list[[paste0("PC_", PC, "_resid")]] <- out
+
+  }
+
+  full_output <- reduce(out_list, full_join)
+
+
+  ordered_output <- order_bgen(bgen_file = data_UKBB_sample, full_output)
+
+  return(ordered_output)
+
+
+}
+
+
+write_PC_gwas_input <- function(PC_gwas_input){
+  write.table(PC_gwas_input, "data/processed/PC_ukbb_GWA_input", sep=" ", quote=F, row.names=F, col.names = T)
+  return("data/processed/PC_ukbb_GWA_input")
+}
+
+
+create_UKBB_v2_snp_list <- function(UKBB_processed){
+  chr_num = tibble(chr = 1:22)
+  output <- chr_num %>% mutate(v2_snp_list_files = paste0(UKBB_processed, "/v2_snp_list/", "snp_list_chr", chr, ".txt"))
+
+  return(output$v2_snp_list_files)
+}
+
+
+make_ukbb_chunks <- function(v2_snp_list_file, chunk_size=1e6){
+
+  v2_snp_list <- fread(v2_snp_list_file, data.table=F)
+  min_positon <- min(v2_snp_list$position)
+  max_position <- max(v2_snp_list$position)
+  chr <- as.character(v2_snp_list$chr[1])
+  if(nchar(as.character(v2_snp_list$chr[1]))==1){
+    chr_char <- paste0("0", as.character(v2_snp_list$chr[1])) } else chr_char <- as.character(v2_snp_list$chr[1])
+
+  out <- numeric()
+
+  basepositions <- sample(v2_snp_list$position)
+
+  num_chunks <- ceiling(length(basepositions)[1]/chunk_size)
+
+  chunks <- split(basepositions, ceiling(rank(basepositions)/chunk_size))
+
+  for(i in 1:length(chunks)){
+    chunk_num <- i
+    start <- min(chunks[[i]])
+    end <- max(chunks[[i]])
+
+    out_i <- cbind(chunk_num, chr, chr_char, start, end)
+    out <- rbind(out, out_i)
+  }
+
+
+  out <- as_tibble(out) %>% mutate_all(as.character)
+
+}
+
 launch_bgenie <- function(chr, phenofile, UKBB_dir, chr_char, start_pos, end_pos, chunk_num){
 
   cat(paste0("Running chr: ", chr, ".\n"))

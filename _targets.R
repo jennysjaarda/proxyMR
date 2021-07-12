@@ -14,7 +14,7 @@ tar_option_set(
                                                         ntasks = 1, partition = "sgg",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
-  packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR", "ggplot2"),
+  packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR", "ggplot2", "purrr"),
   error = "workspace",
   memory = "transient",
   garbage_collection = TRUE
@@ -85,6 +85,10 @@ list(
   tar_target(
     data_id_age,
     fread(path_first_phesant_file, header=T, select=c("userId","age"), data.table=F),
+  ),
+  tar_target(
+    data_id_sex,
+    fread(path_first_phesant_file, header=T, select=c("userId","sex"), data.table=F),
   ),
   tar_target(
     data_sqc,
@@ -481,7 +485,7 @@ list(
 
   tar_target(
     IV_variant_data,
-    extract_relevant_variant_rows(Neale_variant_file, snp_list = all_IVs$rsid),
+    extract_relevant_variant_rows(Neale_variant_file, snp_list = all_IVs$rsid)
   ),
 
   tar_target(
@@ -502,7 +506,32 @@ list(
 
     pattern = map(exposures_to_run)
 
+  ),
+
+  tar_target(
+    PC_gwas_input,
+    prep_PC_GWAS(data_id_age, data_id_sex, sqc_munge, data_UKBB_sample)
+  ),
+
+  tar_target(
+    path_PC_gwas_input,
+    write_PC_GWAS_input(PC_gwas_input),
+    format = "file"
+  ),
+
+  tar_target(
+    path_v2_snp_list,
+    create_UKBB_v2_snp_list(UKBB_processed_dir),
+    format = "file"
+  ),
+
+  tar_target(
+    bgenie_ukbb_chunks,
+    make_ukbb_chunks(path_v2_snp_list, chunk_size=1e6), pattern = map(path_v2_snp_list)
   )
+
+
+
 
 
 
