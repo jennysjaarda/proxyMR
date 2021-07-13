@@ -9,6 +9,7 @@
 # Rscript ${SGG_generic}/scripts/UKBB/merge_Neale.r --> run this manually from SGG directory
 ### reupdate Neale_SGG_dir using ${SGG_generic}/scripts/merge_Neale.r
 
+rm -f ${SGG_generic}/_rslurm_Neale_extraction/submit.sh
 process_IV_extractions=$(sbatch $SGG_generic/scripts/UKBB/gen_rslurm_Neale_extraction.sh | cut -f 4 -d' ')
 until [[ -f ${SGG_generic}/_rslurm_Neale_extraction/submit.sh ]];
 do
