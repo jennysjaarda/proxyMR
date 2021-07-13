@@ -42,11 +42,20 @@ download_neale_files  <-  function(phenotype_ids,
   phenotype_ids  =  paste0('^', phenotype_ids, ifelse(irnt, '(_irnt|)$', '(_raw|)$')) %>%
     paste(collapse = '|')
 
-  existing_files  =  list.files(output_path,
-                                recursive = TRUE,
-                                pattern = '[.]gz') %>%
-    str_match('[^/]+$') %>%
-    c
+
+  existing_files <- numeric()
+  for(path in paste0( output_path, "/", c("both_sexes", "male", "female")))
+  {
+
+      existing_files_temp  =  list.files( path,
+                                        recursive = TRUE,
+                                        pattern = '[.]gz' ) %>%
+      str_match( '[^/]+$' ) %>%
+      c
+
+    existing_files <- c(existing_files, existing_files_temp)
+  }
+
 
   to_download  =  read_tsv(reference_file) %>%
     filter(str_detect(.$'Phenotype Code', phenotype_ids)) %>%
@@ -321,7 +330,62 @@ compute_trait_corr <- function(phesant_directory,UKBB_directory,pairs_filter){
   colnames(trait_corr) <- c("ID", "ID_sub", "description", "N_pairs","r2")
   cat(paste0("Household phenotypic correlations successfully computed, and saved to:\n",
              "'output/tables/1.household_correlations.csv'.\n"))
-  return(trait_corr)
+  return(as.data.frame(trait_corr))
+}
+
+
+## got below function from: https://github.com/MRCIEU/PHESANT/blob/master/WAS/testContinuous.r
+irnt_phesant <- function(pheno) {
+  set.seed(1234)
+  numPhenos = length(which(!is.na(pheno)))
+  quantilePheno = (rank(pheno, na.last="keep", ties.method="random")-0.5)/numPhenos
+  phenoIRNT = qnorm(quantilePheno)
+  return(phenoIRNT);
+}
+
+
+
+ivt <- function(x){
+  out <- qnorm((rank(x,na.last="keep")-0.5)/sum(!is.na(x)))
+  return(out)
+}
+
+
+compute_pc_corr <- function(sqc_munge, pairs_filter){
+
+  sqc_munge <- sqc_munge %>% mutate_at(vars(starts_with("PC_")), ivt)
+  PCs <- colnames(sqc_munge)[-which(colnames(sqc_munge)=="ID")]
+  trait_corr <- numeric()
+  ID_sub <- NA
+  for (PC in PCs)
+  {
+    id <- as.character(PC)
+    r2 <- NA
+    pairs_filter_copy <- pairs_filter
+    tsv_data <- sqc_munge %>% dplyr::select(ID, !!PC)
+    pairs_filter_copy$trait1 <- tsv_data[[PC]][match(pairs_filter_copy[["HOUSEHOLD_MEMBER1"]], tsv_data$ID)]
+    pairs_filter_copy$trait2 <- tsv_data[[PC]][match(pairs_filter_copy[["HOUSEHOLD_MEMBER2"]], tsv_data$ID)]
+    complete_pairs <- pairs_filter_copy[which(complete.cases(pairs_filter_copy$trait1 ,pairs_filter_copy$trait2 )),]
+    n_completed_pairs <- length(pairs_filter_copy[which(complete.cases(pairs_filter_copy$trait2, pairs_filter_copy$trait1)),"trait2"])
+    if(n_completed_pairs>1)
+    {
+      sd1 <- sd(complete_pairs$trait1,na.rm=TRUE)
+      sd2 <- sd(complete_pairs$trait2,na.rm=TRUE)
+      if(sd1!=0 & sd2!=0)
+      {
+        r <- cor(pairs_filter_copy$trait1, pairs_filter_copy$trait2, method = c("pearson"),use = "pairwise.complete.obs")
+        r2 <- r^2
+      }
+    }
+
+    trait_row <- cbind("22009", "22009", PC, n_completed_pairs,r2)
+    trait_corr <- rbind(trait_corr, trait_row)
+  }
+  colnames(trait_corr) <- c("ID", "ID_sub", "description", "N_pairs","r2")
+  cat(paste0("Household PC correlations successfully computed.\n"))
+  return(as.data.frame(trait_corr))
+
+
 }
 
 ## File A2 ----
@@ -363,7 +427,7 @@ filter_by_corr <- function(traits_corr,Neale_SGG_dir_filt2,household_correlation
                              "Neale_pheno_ID","Neale_pheno_ID_sub", "Neale_file_sex","description",
                              "variable_type", "SGG_request", "PHESANT_processed", "SGG_location",
                              "Neale_downloaded","category","Neale_file_location", "define_category:T/F",
-                             "v2_exists", "v2_downloaded")
+                             "v2_exists", "v2_downloaded", "variant_flag_updated")
   return(corr_traits)
 }
 
@@ -540,10 +604,26 @@ get_IV_list <- function(corr_traits, Neale_pheno_ID, reference_file, IV_threshol
 
   corr_traits_both <- corr_traits[which(corr_traits[["Neale_file_sex"]]=="both"),]
 
-  existing_files_full <- list()
-  existing_files_full  =  list.files( Neale_output_path,
-                                      recursive = TRUE,
-                                      pattern = '[.]gz' )
+  existing_files_full <- numeric()
+  existing_files <- numeric()
+  for(path in paste0( Neale_output_path, "/", c("both_sexes", "male", "female")))
+  {
+
+    existing_files_full_temp  =  list.files( path,
+                                             recursive = TRUE,
+                                             pattern = '[.]gz' )
+
+    existing_files_temp  =  list.files( path,
+                                        recursive = TRUE,
+                                        pattern = '[.]gz' ) %>%
+      str_match( '[^/]+$' ) %>%
+      c
+
+    existing_files_full <- c(existing_files_full, existing_files_full_temp)
+    existing_files <- c(existing_files, existing_files_temp)
+  }
+
+
   IVs_full <- list.files(path=paste0(Neale_summary_dir,"/IVs/clump/" ), full.names=T)
   IVs <- list.files(path=paste0(Neale_summary_dir,"/IVs/clump/" ))
   irnt=TRUE
@@ -642,6 +722,8 @@ reduce_Neale_variant_data <- function(path_Neale_variants, variants_to_extract){
   SNP_rows <- which(variant_data[,"rsid"] %in% variants_to_extract)
   reduced_data <- variant_data[SNP_rows,]
 
+  reduced_data$original_row <- extract_rows
+
   return(reduced_data)
 
 }
@@ -654,6 +736,27 @@ summarize_IV_data <- function(traits, Neale_pheno_ID, variant_data, reference_fi
   existing_files_full  =  list.files( Neale_output_path,
                                       recursive = TRUE,
                                       pattern = '[.]gz' )
+
+
+  existing_files_full <- numeric()
+  existing_files <- numeric()
+  for(path in paste0( Neale_output_path, "/", c("both_sexes", "male", "female")))
+  {
+
+    existing_files_full_temp  =  list.files( path,
+                                             recursive = TRUE,
+                                             pattern = '[.]gz' )
+
+    existing_files_temp  =  list.files( path,
+                                        recursive = TRUE,
+                                        pattern = '[.]gz' ) %>%
+      str_match( '[^/]+$' ) %>%
+      c
+
+    existing_files_full <- c(existing_files_full, existing_files_full_temp)
+    existing_files <- c(existing_files, existing_files_temp)
+  }
+
 
   IVs_full <- list.files(path=paste0(Neale_summary_dir,"/IVs/clump/" ), full.names=T)
   IVs <- list.files(path=paste0(Neale_summary_dir,"/IVs/clump/" ))

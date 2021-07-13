@@ -202,6 +202,11 @@ list(
     traits_corr,
     compute_trait_corr(data_phesant_directory,data_UKBB_directory,hh_pairs_filter)
   ),
+
+  tar_target(
+    PCs_corr,
+    compute_pc_corr(sqc_munge, hh_pairs_filter)
+  ),
   # write_traits_corr = write.csv(trait_corrs, file_out( "output/tables/1.household_correlations.csv"), row.names=F),
 
   tar_target(
@@ -483,10 +488,11 @@ list(
 
   ),
 
-  tar_target(
-    IV_variant_data,
-    extract_relevant_variant_rows(Neale_variant_file, snp_list = all_IVs$rsid)
-  ),
+  ## THIS IS THE EXACT SAME AS VARIANT DATA
+  # tar_target(
+  #   IV_variant_data,
+  #   extract_relevant_variant_rows(Neale_variant_file, snp_list = all_IVs$rsid)
+  # ),
 
   tar_target(
     outcome_stats,
