@@ -13,6 +13,7 @@ editor_options:
 
 options(scipen=999)
 source("code/settings.R")
+
 library(DT)
 library(knitr)
 library(targets)
