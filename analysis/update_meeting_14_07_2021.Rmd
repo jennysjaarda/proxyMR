@@ -1,0 +1,115 @@
+---
+title: "Update Meeting: 14-07-2021"
+author: "jennysjaarda"
+date: "2021-06-14"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+  toc: true
+---
+
+
+```{r setup, include = FALSE}
+
+options(scipen=999)
+source("code/settings.R")
+library(DT)
+library(knitr)
+library(targets)
+
+```
+
+```{r, echo=FALSE,include = FALSE}
+# You need this code to conduct the magic dependences attaching...
+DT::datatable(matrix())
+```
+
+## Last week summary.
+
+- Update phenotypes, make sure blood chemistry values are included (see list of biomarkers included [here](https://biobank.ndph.ox.ac.uk/ukb/label.cgi?id=17518)).
+- Non-urgent analysis: cross partner heritability. 
+  - For this we need a full GWAS of index genotype on partner trait (up until this point only run on IVs of interest).
+- GWAS of PCs 1-40, adjusted for age and sex, to get IVs (Neale has not run this).
+- Run MR in same individual (i.e. standard MR).
+
+## Update.
+
+### Reprocessed PHESANT 
+
+- For all new phenotype files since starting the project and added them to the pipeline. 
+
+```{r new_phenos, echo = FALSE}
+
+tar_load(data_UKBB_directory)
+new_files <- c("ukb39955", "ukb42673", "ukb44073", "ukb44073")
+
+data_UKBB_directory_new <- data_UKBB_directory %>% dplyr::filter(file %in% !!new_files)
+
+DT::datatable(data_UKBB_directory_new, width = "100%")
+
+```
+
+### Identified a problem with the Neale summary stats.
+- Only affecting the `low_confidence_variant` column. 
+- This filter was applied before generating IVs for each summary file that had been downloaded.
+- See a description of the issue on [the Neale github issues page](https://github.com/Nealelab/UK_Biobank_GWAS/issues/20).
+- Currently in the process of updating the impacted files:
+  - Updated Neale GWAS files can be found here: `/data/sgg2/jenny/data/Neale_UKBB_GWAS/neale_files/variant_flag_update`.  
+  - Also will recreate the IVs for these files (~70 of our files), under the same name. 
+-  As far as I can tell the issue is only in one direction, where some SNPs that were not really low confidence variants (by their definition) were listed as `low_confidence_variant = TRUE`, not the other way around. In other words, the mistake means that we would only be filtering out variants that we should keep.
+
+### Adding PCs to the pipeline. 
+
+- Currently running GWAS of first 40 PCs, residualized for `age` and `sex`. Applied inverse normal rank transformation first.  
+- Test between partners. 
+
+```{r pc_corr, echo = FALSE}
+
+tar_load(PCs_corr)
+
+DT::datatable(PCs_corr, width = "100%")
+
+```
+
+## Next steps. 
+
+Define the following: 
+
+**Goal**: To use Mendelian Randomization (MR) to estimate a causal effect of ${X}$ on ${Y}$ between household pairs (i.e. *couples*). 
+
+Definitions: 
+
+- Let ${X}$ and ${Y}$ denote two random variables representing complex traits. 
+- Let ${X}_i$ and ${X}_p$ denote ${X}$ in an index case and in their partner. 
+- The genotype data of the SNPs to be used as instrumental variables (IVs) is denoted by ${G}$. 
+- Let ${G}_i$ and ${G}_p$ denote ${G}$ in an index case and in their partner. 
+- To simplify notation we assume that $E(X) = E(Y) = E(G) =  0$ and $Var(X) = Var(Y) = Var(G) = 1$. 
+- The effect sizes of the instruments on $X$ is denoted by ${\beta}$. 
+- The causal effect is denoted by ${\alpha}$.
+- Let us assume the following models.
+
+$$
+\begin{eqnarray*}
+	(1) \; X_{i} &=& G_{i}\cdot {\beta_{x, i\rightarrow i} } + \epsilon \\
+	(2) \; X_{p} &=& G_{i}\cdot {\beta_{x, i\rightarrow p} } + \epsilon \\
+	(3) \; Y_{i} &=& G_{i}\cdot {\beta_{y, i\rightarrow i} } + \epsilon \\
+	(4) \; Y_{p} &=& G_{i}\cdot {\beta_{y, i\rightarrow p} } + \epsilon \\
+	(5) \; Y_{i} &=& \alpha_j\cdot X_{i} +\epsilon \\
+	(6) \; X_{p} &=& \alpha_{x, am}\cdot X_{i{}} +\epsilon \\
+	(7) \; Y_{p} &=& \alpha_{y, am}\cdot Y_{i{}} +\epsilon \\
+	(8) \; Y_{p} &=& \alpha_{k}\cdot X_{i} +\epsilon
+	
+\end{eqnarray*}
+$$
+
+- Equation (1) and (3) are simply same-person GWAS result (obtained from Neale).
+- Equation (2) and (4) are household GWAS results (calculated in-house).
+- Equation (5), and ${\alpha_{j}}$, in the causal effect of a trait ${X}$ on ${Y}$ from a standard MR single-person MR.
+- Equation (6) and (7), represent assortative mating effects for traits ${X}$ and ${Y}$, respectively.
+- Equation (8) ${\alpha_{k}}$ is the result of phenotype ${X}$ in the index, having a causal effect on a phenotype ${Y}$ in the partner. 
+- This effect is either due to the product of one of the two:
+  - ${\alpha_{j}}$ with ${\alpha_{x, am}}$ 
+  - ${\alpha_{j}}$ with ${\alpha_{y, am}}$ 
+
+
+
