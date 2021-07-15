@@ -10,6 +10,7 @@ if (requireNamespace("workflowr", quietly = TRUE)) {
 }
 
 library("targets")
+library("tidyverse")
 
 if(Sys.info()["sysname"]=="Linux"){
   options("workflowr.view" = FALSE)
