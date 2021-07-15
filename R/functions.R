@@ -58,7 +58,7 @@ download_neale_files  <-  function(phenotype_ids,
 
 
   to_download  =  read_tsv(reference_file) %>%
-    filter(str_detect(.$'Phenotype Code', phenotype_ids)) %>%
+    filter(str_detect("Phenotype Code", phenotype_ids)) %>%
     dplyr::select(wget = 'wget command') %>%
     mutate(wget = str_replace(wget, '[.]bgz$', '.gz')) %>%
     filter(str_detect(.$wget, paste0('-O .*[.]', sex, '([.]v2)?[.]tsv[.]gz$'))) %>%
@@ -495,8 +495,11 @@ download_Neale <- function(filled_cats,download_rest,traits_corr_filter, referen
       in c("body", "brain", "diet", "disease", "disease_proxy", "lifestyle", "parental_pheno"))
   {
     IDs <- as.character(full_dl_list[which(full_dl_list[,"category"]==category),"Neale_pheno_ID"])
-    download_neale_files( IDs,
-                          category = category , reference_file=reference_file_name)
+    if(!length(IDs)==0){
+      download_neale_files( IDs,
+                            category = category , reference_file=reference_file_name)
+    }
+
   }
 
   corr_traits <- traits_corr_filter
