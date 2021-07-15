@@ -10,7 +10,11 @@
 ### reupdate Neale_SGG_dir using ${SGG_generic}/scripts/merge_Neale.r
 
 rm -f ${SGG_generic}/_rslurm_Neale_extraction/submit.sh
-process_IV_extractions=$(sbatch $SGG_generic/scripts/UKBB/gen_rslurm_Neale_extraction.sh | cut -f 4 -d' ')
+
+process_low_conf_flag=$(sbatch $SGG_generic/scripts/UKBB/update_low_confidence_flag.sh | cut -f 4 -d' ');
+
+
+process_IV_extractions=$(sbatch -dependency=afterok:$process_low_conf_flag $SGG_generic/scripts/UKBB/gen_rslurm_Neale_extraction.sh | cut -f 4 -d' ')
 until [[ -f ${SGG_generic}/_rslurm_Neale_extraction/submit.sh ]];
 do
   sleep 2m

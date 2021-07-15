@@ -75,7 +75,7 @@ Neale_summary_dir <- "/data/sgg2/jenny/data/Neale_UKBB_GWAS"
 Neale_output_dir <- "/data/sgg3/data/neale_files"
 
 ## files
-Neale_SGG_dir_file_cp <- "data/Neale_SGG_directory_12_07_2021.csv"
+Neale_SGG_dir_file_cp <- "data/Neale_SGG_directory_15_07_2021.csv"
 Neale_manifest_file <- "UKBB GWAS Imputed v3 - File Manifest Release 20180731 - Manifest 201807.tsv"
 Neale_variant_file <- paste0(Neale_summary_dir, "/variants.tsv")
 
@@ -85,3 +85,18 @@ household_relationships_field <- "6141_1"
 time_at_address_field <- "699"
 time_at_address_raw_field <- "699-0.0"
 
+## Input DATA
+
+files_custom_names <- c("household_info", "phesant_directory", "relatives", "fam", "sqc", "time_at_address",
+                 "time_at_address_raw", "UKBB_directory", "Neale_SGG_dir", "Neale_manifest", "code_process_Neale", "Neale_variants",
+                 "UKBB_sample")
+
+files <- c(paste0(UKBB_dir,"/pheno/ukb6881.csv"), paste0(UKBB_processed_dir,"/PHESANT/","PHESANT_file_directory.txt"),
+          paste0(UKBB_dir,"/geno/","ukb1638_rel_s488366.dat"),  paste0(UKBB_dir,"/plink/_001_ukb_cal_chr9_v2.fam"),
+          paste0(UKBB_dir,"/geno/ukb_sqc_v2.txt"),
+          paste0(UKBB_processed_dir, "/PHESANT/ukb31459/bin1/out_bin1..tsv"), paste0(UKBB_dir, "/pheno/ukb31459.csv"),
+          paste0(UKBB_processed_dir,"/UKBB_pheno_directory.csv"),
+          Neale_SGG_dir_file_cp, paste0(Neale_output_dir,"/",Neale_manifest_file), "code/process_Neale.sh",
+          Neale_variant_file, paste0(UKBB_dir, "/imp/ukb1638_imp_chr1_v2_s487398.sample"))
+
+files_ref <- tibble(custom_names = files_custom_names, files = files)

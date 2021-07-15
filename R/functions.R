@@ -508,12 +508,25 @@ download_Neale <- function(filled_cats,download_rest,traits_corr_filter, referen
 
 
 
+  existing_files_full <- numeric()
+  existing_files <- numeric()
 
-  existing_files_full  =  list.files( Neale_output_dir,
-                                      recursive = TRUE,
-                                      pattern = '[.]gz', full.names = T )
+  for(path in paste0( Neale_output_dir, "/", c("both_sexes", "male", "female")))
+  {
 
-  existing_files_full <- existing_files_full[-which(grepl(paste0("/", "variants.tsv.gz"), existing_files_full))]
+    existing_files_full_temp  =  list.files( path,
+                                             recursive = TRUE,
+                                             pattern = '[.]gz', full.names = TRUE )
+
+    existing_files_temp  =  list.files( path,
+                                        recursive = TRUE,
+                                        pattern = '[.]gz' ) %>%
+      str_match( '[^/]+$' ) %>%
+      c
+
+    existing_files_full <- c(existing_files_full, existing_files_full_temp)
+    existing_files <- c(existing_files, existing_files_temp)
+  }
 
   for(i in index){
 
@@ -528,6 +541,19 @@ download_Neale <- function(filled_cats,download_rest,traits_corr_filter, referen
       if(grepl("v2", Neale_paths )){
         corr_traits[i, "v2_exists"] <- "TRUE"
         corr_traits[i, "v2_downloaded"] <- "TRUE"
+
+        ## restrict to only v2 files
+        for(sex_cat in c("male", "female", "both_sexes")){
+          sex_specific_paths <- full_path[grepl(paste0("[.]", sex_cat, "[.]"), full_path)]
+          if(length(grep("v2", sex_specific_paths))==1){
+            file_to_remove <- sex_specific_paths[!grepl("v2", sex_specific_paths)]
+            full_path <- full_path[-which(full_path==file_to_remove)]
+          }
+
+        }
+        Neale_paths <- paste(full_path, collapse=";")
+
+
       }
     }
 
@@ -1141,10 +1167,27 @@ get_trait_info <- function(traits, Neale_pheno_ID, data_Neale_manifest, Neale_su
   IVs <- list.files(path=paste0(Neale_summary_dir,"/IVs/clump/" ))
 
   irnt=TRUE
-  existing_files_full <- list()
-  existing_files_full  =  list.files( Neale_output_path,
-                                      recursive = TRUE,
-                                      pattern = '[.]gz' )
+
+  existing_files_full <- numeric()
+  existing_files <- numeric()
+
+  for(path in paste0( Neale_output_path, "/", c("both_sexes", "male", "female")))
+  {
+
+    existing_files_full_temp  =  list.files( path,
+                                             recursive = TRUE,
+                                             pattern = '[.]gz', full.names = TRUE )
+
+    existing_files_temp  =  list.files( path,
+                                        recursive = TRUE,
+                                        pattern = '[.]gz' ) %>%
+      str_match( '[^/]+$' ) %>%
+      c
+
+    existing_files_full <- c(existing_files_full, existing_files_full_temp)
+    existing_files <- c(existing_files, existing_files_temp)
+  }
+
 
   phenotype_ids  =  paste0( '^', trait_ID, ifelse( irnt, '(_irnt|)$', '(_raw|)$' ) ) %>%
     paste( collapse = '|' )
@@ -2247,10 +2290,26 @@ household_MR_all_outcomes <- function(exposure_info, summ_stats, outcomes_to_run
 pull_Neale_effects <- function(snp_list, outcome_ID, Neale_output_path, reference_file = data_Neale_manifest){
 
 
-  existing_files_full <- list()
-  existing_files_full  =  list.files( Neale_output_path,
-                                      recursive = TRUE,
-                                      pattern = '[.]gz', full.names = T )
+  existing_files_full <- numeric()
+  existing_files <- numeric()
+
+  for(path in paste0( Neale_output_path, "/", c("both_sexes", "male", "female")))
+  {
+
+    existing_files_full_temp  =  list.files( path,
+                                             recursive = TRUE,
+                                             pattern = '[.]gz', full.names = TRUE )
+
+    existing_files_temp  =  list.files( path,
+                                        recursive = TRUE,
+                                        pattern = '[.]gz' ) %>%
+      str_match( '[^/]+$' ) %>%
+      c
+
+    existing_files_full <- c(existing_files_full, existing_files_full_temp)
+    existing_files <- c(existing_files, existing_files_temp)
+  }
+
 
   existing_files_full <- existing_files_full[-which(grepl(paste0("/","variants.tsv.gz"), existing_files_full))]
 
