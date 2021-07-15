@@ -13,6 +13,8 @@
 
 ### Set data and project directories
 
+library(tidyverse)
+
 project_dir <- "/data/sgg2/jenny/projects/proxyMR/"
 SGG_generic <- "/data/sgg2/jenny/SGG_generic/"
 
