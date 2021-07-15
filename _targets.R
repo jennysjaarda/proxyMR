@@ -259,7 +259,7 @@ list(
   ),
   tar_target(
     IV_list,
-    get_IV_list(traits_corr2_filled,traits_to_count_IVs$Neale_pheno_ID, data_Neale_manifest,IV_threshold, Neale_output_dir, Neale_summary_dir), pattern = map(traits_to_count_IVs)
+    get_IV_list(traits_corr2_filled,traits_to_count_IVs$Neale_pheno_ID,IV_threshold, Neale_summary_dir), pattern = map(traits_to_count_IVs)
   ),
   tar_target(
     path_IV_list,
