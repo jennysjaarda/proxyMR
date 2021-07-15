@@ -641,10 +641,6 @@ get_IV_list <- function(corr_traits, Neale_pheno_ID, IV_threshold, Neale_summary
 
   corr_traits_both <- corr_traits[which(corr_traits[["Neale_file_sex"]]=="both"),]
 
-  IVs_full <- list.files(path=paste0(Neale_summary_dir,"/IVs/clump/" ), full.names=T)
-  IVs <- list.files(path=paste0(Neale_summary_dir,"/IVs/clump/" ))
-  irnt=TRUE
-
   i <- which(corr_traits_both[["Neale_pheno_ID"]]==Neale_pheno_ID)
   category <- corr_traits_both[i,"category"]
   Neale_id <- corr_traits_both[i,"Neale_pheno_ID"] #same as Neale_pheno_ID
@@ -740,73 +736,31 @@ reduce_Neale_variant_data <- function(path_Neale_variants, variants_to_extract){
 }
 
 # calc_sex_het
-summarize_IV_data <- function(traits, Neale_pheno_ID, variant_data, reference_file, Neale_summary_dir, Neale_output_path, IV_threshold){
-
-  irnt=TRUE
-  existing_files_full <- list()
-  existing_files_full  =  list.files( Neale_output_path,
-                                      recursive = TRUE,
-                                      pattern = '[.]gz' )
-
-
-  existing_files_full <- numeric()
-  existing_files <- numeric()
-  for(path in paste0( Neale_output_path, "/", c("both_sexes", "male", "female")))
-  {
-
-    existing_files_full_temp  =  list.files( path,
-                                             recursive = TRUE,
-                                             pattern = '[.]gz' )
-
-    existing_files_temp  =  list.files( path,
-                                        recursive = TRUE,
-                                        pattern = '[.]gz' ) %>%
-      str_match( '[^/]+$' ) %>%
-      c
-
-    existing_files_full <- c(existing_files_full, existing_files_full_temp)
-    existing_files <- c(existing_files, existing_files_temp)
-  }
-
-
-  IVs_full <- list.files(path=paste0(Neale_summary_dir,"/IVs/clump/" ), full.names=T)
-  IVs <- list.files(path=paste0(Neale_summary_dir,"/IVs/clump/" ))
-
-  #traits$num_IVs_pass_het <- NA
-
-  result <- NA
+summarize_IV_data <- function(traits, Neale_pheno_ID, variant_data, Neale_summary_dir, IV_threshold){
 
   trait_ID <- Neale_pheno_ID
-  i <- which(traits[["Neale_pheno_ID"]]==trait_ID)
-
-  phenotype_ids  =  paste0( '^', trait_ID, ifelse( irnt, '(_irnt|)$', '(_raw|)$' ) ) %>%
-    paste( collapse = '|' )
-  file_name_temp  =  reference_file %>%
-    filter( str_detect( .$'Phenotype Code', phenotype_ids ) & Sex=="both_sexes")
-  file_name <- file_name_temp[["Phenotype Code"]][1]
-
-  #trait_info <- read.table(paste0(pheno_dir,"/trait_info.txt"), header=F, row.names=1)
 
   IV_list_both_sexes <- fread(paste0( "analysis/data_setup/IV_lists/", trait_ID, "_IVs_", IV_threshold,"_both_sexes.txt"), data.table=F, header=F)
   SNP_rows <- which(variant_data[,"rsid"] %in% IV_list_both_sexes[,1])
-  IV_folder <- IVs_full[which(grepl(paste0("/",file_name ,"\\."), IVs_full) & grepl("both_sexes", IVs))]
-  IV_file_name <- IVs[which(grepl(paste0("^", file_name ,"\\."), IVs) & grepl("both_sexes", IVs))]
 
-  if(length(IV_folder)==2){IV_folder <- IV_folder[grep("v2",IV_folder)]} ## use version 2 if it exists
-  if(length(IV_file_name)==2){IV_file_name <- IV_file_name[grep("v2",IV_file_name)]} ## use version 2 if it exists
+
+  result <- NA
+
+  i <- which(traits[["Neale_pheno_ID"]]==trait_ID)
+  category <- traits[i,"category"]
+  Neale_id <- traits[i,"Neale_pheno_ID"] #same as Neale_pheno_ID
+  ID <- traits[i,"Neale_pheno_ID"]
+  Neale_files <- traits[i,"Neale_file_location"]
+  Neale_file_list <- unlist(str_split(Neale_files, ";"))
+
 
   for(exposure_sex in c("both_sexes", "male", "female"))
   {
 
-    specific_IV_folder <- IVs_full[which(grepl(paste0("/",file_name ,"\\."), IVs_full) & grepl(paste0("[.]",exposure_sex), IVs))]
-    specific_IV_name <- IVs[which(grepl(paste0("^", file_name ,"\\."), IVs) & grepl(paste0("[.]",exposure_sex), IVs))]
-    if(length(specific_IV_folder)==2){specific_IV_folder <- specific_IV_folder[grep("v2",specific_IV_folder)]} ## use version 2 if it exists
-    if(length(specific_IV_name)==2){specific_IV_name <- specific_IV_name[grep("v2",specific_IV_name)]} ## use version 2 if it exists
-
-    original_neale_temp <- existing_files_full[which(grepl(paste0("/",gsub(".IVs", "",specific_IV_name)), existing_files_full))]
-    original_neale_file <- paste0(Neale_output_path, "/", original_neale_temp)
-    assign(paste0(exposure_sex, "_IV_folder"), specific_IV_folder)
-    assign(paste0(exposure_sex, "_original_Neale_file"), original_neale_file)
+    Neale_file_exposure_sex <- Neale_file_list[grepl(paste0("\\.", exposure_sex, "\\."), Neale_file_list)]
+    IV_folder_exposure_sex <- get_IV_clump_folder(Neale_file_exposure_sex, Neale_summary_dir)
+    assign(paste0(exposure_sex, "_IV_folder"), IV_folder_exposure_sex)
+    assign(paste0(exposure_sex, "_original_Neale_file"), Neale_file_exposure_sex)
 
   }
 

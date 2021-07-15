@@ -11,7 +11,7 @@ options(clustermq.scheduler = "slurm", clustermq.template = "slurm_clustermq.tmp
 tar_option_set(
   resources = tar_resources(
     clustermq = tar_resources_clustermq(template = list(num_cores = 1, account = "sgg",
-                                                        ntasks = 1, partition = "sgg",
+                                                        ntasks = 4, partition = "sgg",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
   packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR", "ggplot2", "purrr"),
@@ -287,15 +287,15 @@ list(
   ),
 
   tar_target(
-    IV_data_summary, # this target used to be called: sex_het_summary
-                     # could try running it as it used to be and make sure you get the same result
+    IV_data_summary,
     {
       ## This function gets info on all IVs for male and females, calcs het between and provides a summary line with number of SNPs that pass filter
       path_IV_list
       summarize_IV_data(traits_corr3$to_run, traits_to_calc_het$Neale_pheno_ID, variant_IV_data,
-                        data_Neale_manifest, Neale_summary_dir, Neale_output_dir, IV_threshold)
+                        Neale_output_dir, IV_threshold)
     }, pattern = map(traits_to_calc_het), iteration = "list"
   ),
+
   tar_target(
     path_IV_info,
     write_IV_info(IV_data_summary, traits_to_calc_het$Neale_pheno_ID),
