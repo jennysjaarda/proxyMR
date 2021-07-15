@@ -721,6 +721,9 @@ IV_filter <- function(corr_traits, count_IVs, num_IVs_threshold){
 
 }
 
+
+
+
 reduce_Neale_variant_data <- function(path_Neale_variants, variants_to_extract){
 
   variant_data <- fread(path_Neale_variants,data.table=F)
@@ -729,7 +732,7 @@ reduce_Neale_variant_data <- function(path_Neale_variants, variants_to_extract){
   SNP_rows <- which(variant_data[,"rsid"] %in% variants_to_extract)
   reduced_data <- variant_data[SNP_rows,]
 
-  reduced_data$original_row <- extract_rows
+  reduced_data$original_row <- SNP_rows
 
   return(reduced_data)
 
