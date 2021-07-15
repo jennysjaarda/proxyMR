@@ -490,7 +490,6 @@ write_download_list <- function(Neale_to_process){
 
 download_Neale <- function(filled_cats,download_rest,traits_corr_filter, reference_file_name, Neale_output_dir){
   full_dl_list <- rbind(filled_cats, download_rest)
-  select <- dplyr::select
 
   for(category
       in c("body", "brain", "diet", "disease", "disease_proxy", "lifestyle", "parental_pheno"))
