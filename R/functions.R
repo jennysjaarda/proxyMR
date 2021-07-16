@@ -1122,7 +1122,7 @@ get_trait_info <- function(traits, Neale_pheno_ID, data_Neale_manifest, Neale_su
 
 
   trait_info <- as.data.frame(trait_info)
-  df <- tibble::rownames_to_column(trait_info, "Value") %>% rename(Info = V1)
+  trait_info <- tibble::rownames_to_column(trait_info, "Value") %>% rename(Info = V1)
   return(trait_info)
 
 }
