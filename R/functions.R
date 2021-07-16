@@ -1810,7 +1810,7 @@ household_GWAS_all_outcomes <- function(exposure_info, summ_stats, outcome_ID, t
 
   #for(i in 1:dim(outcomes_to_run)[1]){
 
-    outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
+    #outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
     GWAS_file_i <- paste0(pheno_dir, "/household_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
     output_files <- c(output_files, GWAS_file_i)
 
