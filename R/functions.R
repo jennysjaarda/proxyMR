@@ -727,13 +727,9 @@ IV_filter <- function(corr_traits, count_IVs, num_IVs_threshold){
 reduce_Neale_variant_data <- function(path_Neale_variants, variants_to_extract){
 
   variant_data <- fread(path_Neale_variants,data.table=F)
-
-
   SNP_rows <- which(variant_data[,"rsid"] %in% variants_to_extract)
   reduced_data <- variant_data[SNP_rows,]
-
   reduced_data$original_row <- SNP_rows
-
   return(reduced_data)
 
 }
@@ -745,7 +741,6 @@ summarize_IV_data <- function(traits, Neale_pheno_ID, variant_data, Neale_summar
 
   IV_list_both_sexes <- fread(paste0( "analysis/data_setup/IV_lists/", trait_ID, "_IVs_", IV_threshold,"_both_sexes.txt"), data.table=F, header=F)
   SNP_rows <- which(variant_data[,"rsid"] %in% IV_list_both_sexes[,1])
-
 
   result <- NA
 
@@ -813,14 +808,8 @@ summarize_IV_data <- function(traits, Neale_pheno_ID, variant_data, Neale_summar
 
 
   IV_list_filter <- IV_list_both_sexes[which(IV_list_both_sexes$p_het > 0.05/length(SNP_rows)),]
-
   num_pass_filter <- length(which(IV_list_both_sexes$p_het > 0.05/length(SNP_rows)))
-
   colnames(IV_list_both_sexes) <- c("SNP", "P-het")
-
-
-  #write.table(IV_list_both_sexes, het_output_file, row.names=F, col.names=T, quote=F)
-
   char_row <- data.frame(lapply(traits[i,], as.character), stringsAsFactors=FALSE)
   sex_het_summary <- as.data.frame(t(unlist(c(char_row, num_pass_filter))))
   output <- list(male_IV_data = male_IV_data, female_IV_data = female_IV_data, IV_list_both_sexes = IV_list_both_sexes, sex_het_summary = sex_het_summary)
@@ -851,12 +840,9 @@ write_IV_info <- function(IV_data_summary, Neale_pheno_ID) {
     write.table(IV_data_summary$male_IV_data, male_out_file,row.names=F, col.names=T, quote=F)
     write.table(IV_data_summary$female_IV_data, female_out_file,row.names=F, col.names=T, quote=F)
     out_names <- c(male_out_file, female_out_file)
-
-
 }
 
 write_sex_het <- function(IV_data_summary, Neale_pheno_ID){
-
 
     trait_ID <- Neale_pheno_ID
     output_file <- paste0( "analysis/data_setup/sex_heterogeneity/", trait_ID, "_sex_het.txt")
@@ -1105,56 +1091,17 @@ get_trait_info <- function(traits, Neale_pheno_ID, data_Neale_manifest, Neale_su
   phesant_file <- as.character(traits[i,"SGG_location"]) #as.character(phesant_directory[which(phesant_directory[,2]==phes_ID),"File"])[1]
 
 
-  IVs_full <- list.files(path=paste0(Neale_summary_dir,"/IVs/clump/" ), full.names=T)
-  IVs <- list.files(path=paste0(Neale_summary_dir,"/IVs/clump/" ))
+  Neale_files <- traits[i,"Neale_file_location"]
+  Neale_file_list <- unlist(str_split(Neale_files, ";"))
 
-  irnt=TRUE
-
-  existing_files_full <- numeric()
-  existing_files <- numeric()
-
-  for(path in paste0( Neale_output_path, "/", c("both_sexes", "male", "female")))
-  {
-
-    existing_files_full_temp  =  list.files( path,
-                                             recursive = TRUE,
-                                             pattern = '[.]gz', full.names = TRUE )
-
-    existing_files_temp  =  list.files( path,
-                                        recursive = TRUE,
-                                        pattern = '[.]gz' ) %>%
-      str_match( '[^/]+$' ) %>%
-      c
-
-    existing_files_full <- c(existing_files_full, existing_files_full_temp)
-    existing_files <- c(existing_files, existing_files_temp)
-  }
-
-
-  phenotype_ids  =  paste0( '^', trait_ID, ifelse( irnt, '(_irnt|)$', '(_raw|)$' ) ) %>%
-    paste( collapse = '|' )
-  file_name_temp  =  reference_file %>%
-    filter( str_detect( .$'Phenotype Code', phenotype_ids ) & Sex=="both_sexes")
-  file_name <- file_name_temp[["Phenotype Code"]][1]
-  IV_folder <- IVs_full[which(grepl(paste0("/",file_name ,"\\."), IVs_full) & grepl("both_sexes", IVs))]
-  IV_file_name <- IVs[which(grepl(paste0("^", file_name ,"\\."), IVs) & grepl("both_sexes", IVs))]
-
-  if(length(IV_folder)==2){IV_folder <- IV_folder[grep("v2",IV_folder)]} ## use version 2 if it exists
-  if(length(IV_file_name)==2){IV_file_name <- IV_file_name[grep("v2",IV_file_name)]} ## use version 2 if it exists
 
   for(exposure_sex in c("both_sexes", "male", "female"))
   {
 
-    specific_IV_folder <- IVs_full[which(grepl(paste0("/",file_name ,"\\."), IVs_full) & grepl(paste0("[.]",exposure_sex), IVs))]
-    specific_IV_name <- IVs[which(grepl(paste0("^", file_name ,"\\."), IVs) & grepl(paste0("[.]",exposure_sex), IVs))]
-    if(length(specific_IV_folder)==2){specific_IV_folder <- specific_IV_folder[grep("v2",specific_IV_folder)]} ## use version 2 if it exists
-    if(length(specific_IV_name)==2){specific_IV_name <- specific_IV_name[grep("v2",specific_IV_name)]} ## use version 2 if it exists
-
-    original_neale_temp <- existing_files_full[which(grepl(paste0("/",gsub(".IVs", "",specific_IV_name)), existing_files_full))]
-    original_neale_file <- paste0(Neale_output_path, "/", original_neale_temp)
-    assign(paste0(exposure_sex, "_IV_folder"), specific_IV_folder)
-    assign(paste0(exposure_sex, "_original_Neale_file"), original_neale_file)
-
+    Neale_file_exposure_sex <- Neale_file_list[grepl(paste0("\\.", exposure_sex, "\\."), Neale_file_list)]
+    IV_folder_exposure_sex <- get_IV_clump_folder(Neale_file_exposure_sex, Neale_summary_dir)
+    assign(paste0(exposure_sex, "_IV_folder"), IV_folder_exposure_sex)
+    assign(paste0(exposure_sex, "_original_Neale_file"), Neale_file_exposure_sex)
 
   }
 
@@ -1174,6 +1121,8 @@ get_trait_info <- function(traits, Neale_pheno_ID, data_Neale_manifest, Neale_su
                       both_sexes_IV_folder, male_IV_folder, female_IV_folder)
 
 
+  trait_info <- as.data.frame(trait_info)
+  df <- tibble::rownames_to_column(trait_info, "Value") %>% rename(Info = V1)
   return(trait_info)
 
 }
@@ -1197,7 +1146,7 @@ write_data_prep <- function(traits, traits_to_run, out1, out2){
     #pheno_dir <- paste0(project_dir, "/analysis/traitMR")
     write.table(data_out[[1]]$unrelated_male_data, paste0(pheno_dir,"/pheno_files/phesant/", trait_ID, "_male.txt"),row.names=F, quote=F)
     write.table(data_out[[1]]$unrelated_female_data, paste0(pheno_dir,"/pheno_files/phesant/", trait_ID, "_female.txt"), row.names=F, quote=F)
-    write.table(data_out[[1]]$trait_info, paste0(pheno_dir,"/trait_info/", trait_ID, "_trait_info.txt"), row.names=T, col.names=F, quote=T)
+    write.table(data_out[[1]]$trait_info, paste0(pheno_dir,"/trait_info/", trait_ID, "_trait_info.txt"), row.names=F, quote=T)
   }
 }
 
@@ -1849,26 +1798,27 @@ household_GWAS_group <- function(exposure_info, summ_stats, pheno_data, outcome_
 }
 
 
-household_GWAS_all_outcomes <- function(exposure_info, summ_stats, outcomes_to_run, traits_corr2_update,
+household_GWAS_all_outcomes <- function(exposure_info, summ_stats, outcome_ID, traits_corr2_update,
                                IV_genetic_data, joint_model_adjustments, grouping_var_list, household_time_munge){
 
   output_list <- list()
   output_files <- numeric()
   exposure_ID <- as.character(exposure_info["trait_ID",1])
+
   pheno_dir <- paste0("analysis/traitMR")
   cat(paste0("\nCalculating household GWAS for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
 
-  for(i in 1:dim(outcomes_to_run)[1]){
+  #for(i in 1:dim(outcomes_to_run)[1]){
 
     outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
     GWAS_file_i <- paste0(pheno_dir, "/household_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
     output_files <- c(output_files, GWAS_file_i)
 
 
-    if(file.exists(GWAS_file_i)) {
-      cat(paste0("Skipping `", outcome_ID, "` because GWAS results already exist...\n\n"))
-      next
-    }
+    #if(file.exists(GWAS_file_i)) {
+      #cat(paste0("Skipping `", outcome_ID, "` because GWAS results already exist...\n\n"))
+      #next
+    #}
 
     cat(paste0("Loading phenotype data for phenotype `", outcome_ID, "` and performing GWAS...\n"))
 
@@ -1883,13 +1833,13 @@ household_GWAS_all_outcomes <- function(exposure_info, summ_stats, outcomes_to_r
     outcome_result <- household_GWAS_group(exposure_info, summ_stats, pheno_data, outcome_ID, traits_corr2_update,
                                        IV_genetic_data, joint_model_adjustments, grouping_var_list, household_time_munge)
 
-    write.csv(outcome_result, GWAS_file_i, row.names = F)
+    #write.csv(outcome_result, GWAS_file_i, row.names = F)
 
-    cat(paste0("Finished GWAS for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+    cat(paste0("Finished GWAS for outcome ", outcome_ID, " of ", exposure_ID, ".\n\n" ))
 
-  }
+  #}
 
-  return(output_files)
+  return(outcome_result)
 
 }
 
