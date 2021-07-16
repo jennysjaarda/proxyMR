@@ -1155,9 +1155,6 @@ create_summary_stats <- function(Neale_pheno_ID, trait_info, IV_data_summary){
   #i <- which(traits[["Neale_pheno_ID"]]==Neale_pheno_ID)
   trait_ID <- Neale_pheno_ID ## this is the Neale_id, used to be pheno_description
   pheno_dir <- paste0("analysis/traitMR/")
-  #trait_info <-  read.table(paste0(pheno_dir,"/trait_info/", trait_ID, "_trait_info.txt"), header=F, row.names=1,check.names=F)
-
-  #variant_data <- fread(variant_file_full_name,data.table=F)
 
   het_stats <- IV_data_summary$IV_list_both_sexes #fread(paste0( "analysis/data_setup/sex_heterogeneity/", trait_ID, "_sex_het.txt"), header=T, data.table=F)
   IV_list_filter <- het_stats[which(het_stats[["P-het"]] > 0.05/dim(het_stats)[1]),]
@@ -1686,7 +1683,8 @@ summarize_gwas <- function(geno, outcome, covar, tempdir = "/data/sgg2/jenny"){
 household_GWAS_bin <- function(exposure_info, summ_stats, pheno_data, outcome_ID, traits_corr2_update,
                                IV_genetic_data, joint_model_adjustments, grouping_var, household_time_munge){
 
-  exposure_ID <- as.character(exposure_info["trait_ID",1])
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+
   cat(paste0("Calculating household GWAS for phenotype `", exposure_ID, "` as exposure and phenotype `", outcome_ID, "` as outcome...\n"))
   pheno_dir <- paste0("analysis/traitMR/")
 
@@ -1697,7 +1695,7 @@ household_GWAS_bin <- function(exposure_info, summ_stats, pheno_data, outcome_ID
   IV_geno <- IV_genetic_data[[1]]
   snp_map <- IV_genetic_data[[2]]
 
-  phesant_ID <- as.character(exposure_info["phes_ID",1])
+  phesant_ID <- exposure_info %>% filter(Value=="phes_ID") %>% pull(Info)
 
   outcome_traits <- traits_corr2_update[which(traits_corr2_update[["Neale_file_sex"]]=="both"),]
   outcome_phes_ID <- as.character(outcome_traits[which(outcome_traits[["Neale_pheno_ID"]]==outcome_ID), "SGG_PHESANT_ID"])
@@ -1787,7 +1785,7 @@ household_GWAS_group <- function(exposure_info, summ_stats, pheno_data, outcome_
 
     cat(paste0("Running regression for each GWAS in all participants and bins of household pairs for group `", grouping_var, "`...\n"))
 
-    group_result <- household_GWAS_group(exposure_info, summ_stats, pheno_data, outcome_ID, traits_corr2_update,
+    group_result <- household_GWAS_bin(exposure_info, summ_stats, pheno_data, outcome_ID, traits_corr2_update,
                        IV_genetic_data, joint_model_adjustments, grouping_var, household_time_munge)
 
     assign(paste0(grouping_var, "_GWAS"), group_result)
@@ -1803,16 +1801,16 @@ household_GWAS_all_outcomes <- function(exposure_info, summ_stats, outcome_ID, t
 
   output_list <- list()
   output_files <- numeric()
-  exposure_ID <- as.character(exposure_info["trait_ID",1])
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
 
   pheno_dir <- paste0("analysis/traitMR")
-  cat(paste0("\nCalculating household GWAS for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+  #cat(paste0("\nCalculating household GWAS for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
 
   #for(i in 1:dim(outcomes_to_run)[1]){
 
     #outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
-    GWAS_file_i <- paste0(pheno_dir, "/household_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
-    output_files <- c(output_files, GWAS_file_i)
+    #GWAS_file_i <- paste0(pheno_dir, "/household_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
+    #output_files <- c(output_files, GWAS_file_i)
 
 
     #if(file.exists(GWAS_file_i)) {
