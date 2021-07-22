@@ -365,7 +365,10 @@ list(
 
   tar_target(
     path_pheno_data,
-    write_pheno_data(pheno_data, outcomes_to_run$Neale_pheno_ID),
+    {
+      path_outcome_dirs
+      write_pheno_data(pheno_data, outcomes_to_run$Neale_pheno_ID)
+    },
     format = "file",
     pattern = map(pheno_data, outcomes_to_run)
   ),
@@ -401,13 +404,17 @@ list(
   tar_target(
     household_GWAS,
     {
-      #path_pheno_data  ### map over all phenos
-      #path_outcome_dirs
+      path_pheno_data
       household_GWAS_all_outcomes(exposure_info, summ_stats, outcomes_to_run$Neale_pheno_ID, traits_corr2_filled,
-                         IV_genetic_data, joint_model_adjustments, grouping_var, household_time_munge)
+                                  IV_genetic_data, joint_model_adjustments, grouping_var, household_time_munge)
     },
     pattern = cross(map(exposure_info, summ_stats, IV_genetic_data), outcomes_to_run)
+  ),
 
+  tar_target(
+    path_household_GWAS,
+    write_household_GWAS(household_GWAS),
+    pattern = map(household_GWAS), format = "file"
   ),
 
   ## MR
@@ -421,7 +428,6 @@ list(
     pattern = map(outcomes_to_run), iteration = "list"
   ),
 
-  ## Binned results -> could change the name
   tar_target(
     household_MR_binned,
     household_MR_all_outcomes(exposure_info, summ_stats, outcomes_to_run, gwas_files = path_household_GWAS,

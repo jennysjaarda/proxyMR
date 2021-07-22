@@ -1012,7 +1012,6 @@ create_trait_dirs <- function(Neale_pheno_ID){
 
 }
 
-
 create_MR_dirs <- function(Neale_pheno_ID){
 
   trait_ID <- Neale_pheno_ID ## this is the Neale_id, used to be pheno_description
@@ -1804,41 +1803,36 @@ household_GWAS_all_outcomes <- function(exposure_info, summ_stats, outcome_ID, t
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
 
   pheno_dir <- paste0("analysis/traitMR")
-  #cat(paste0("\nCalculating household GWAS for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
 
-  #for(i in 1:dim(outcomes_to_run)[1]){
+  cat(paste0("Loading phenotype data for phenotype `", outcome_ID, "` and performing GWAS...\n"))
 
-    #outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
-    #GWAS_file_i <- paste0(pheno_dir, "/household_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
-    #output_files <- c(output_files, GWAS_file_i)
+  male_file <- paste0(pheno_dir,"/pheno_files/phesant/", outcome_ID, "_male.txt")
+  female_file <- paste0(pheno_dir,"/pheno_files/phesant/", outcome_ID, "_female.txt")
 
+  male_pheno_data <- fread( male_file,header=T, data.table=F)
+  female_pheno_data <- fread( female_file,header=T, data.table=F)
 
-    #if(file.exists(GWAS_file_i)) {
-      #cat(paste0("Skipping `", outcome_ID, "` because GWAS results already exist...\n\n"))
-      #next
-    #}
+  pheno_data <- list(unrelated_male_data = male_pheno_data, unrelated_female_data = female_pheno_data)
 
-    cat(paste0("Loading phenotype data for phenotype `", outcome_ID, "` and performing GWAS...\n"))
+  outcome_result <- household_GWAS_group(exposure_info, summ_stats, pheno_data, outcome_ID, traits_corr2_update,
+                                         IV_genetic_data, joint_model_adjustments, grouping_var_list, household_time_munge)
 
-    male_file <- paste0(pheno_dir,"/pheno_files/phesant/", outcome_ID, "_male.txt")
-    female_file <- paste0(pheno_dir,"/pheno_files/phesant/", outcome_ID, "_female.txt")
-
-    male_pheno_data <- fread( male_file,header=T, data.table=F)
-    female_pheno_data <- fread( female_file,header=T, data.table=F)
-
-    pheno_data <- list(unrelated_male_data = male_pheno_data, unrelated_female_data = female_pheno_data)
-
-    outcome_result <- household_GWAS_group(exposure_info, summ_stats, pheno_data, outcome_ID, traits_corr2_update,
-                                       IV_genetic_data, joint_model_adjustments, grouping_var_list, household_time_munge)
-
-    #write.csv(outcome_result, GWAS_file_i, row.names = F)
-
-    cat(paste0("Finished GWAS for outcome ", outcome_ID, " of ", exposure_ID, ".\n\n" ))
-
-  #}
+  cat(paste0("Finished GWAS for outcome ", outcome_ID, " of ", exposure_ID, ".\n\n" ))
 
   return(outcome_result)
 
+}
+
+write_household_GWAS <- function(GWAS_result){
+
+  pheno_dir <- paste0("analysis/traitMR")
+  exposure_ID <- GWAS_result$exposure_ID[1]
+  outcome_ID <- GWAS_result$outcome_ID[1]
+
+  GWAS_file <- paste0(pheno_dir, "/household_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
+
+  write.csv(GWAS_result, GWAS_file_i, row.names = F)
+  return(GWAS_file)
 }
 
 
