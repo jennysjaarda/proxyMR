@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="jennysjaarda" />
+
+<meta name="date" content="2021-06-14" />
+
+<title>Update Meeting: 14-07-2021</title>
+
+<script src="site_libs/header-attrs-2.8/header-attrs.js"></script>
+<script src="site_libs/jquery-3.5.1/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.5.3/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.18/datatables.js"></script>
+<link href="site_libs/dt-core-1.10.20/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.10.20/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.10.20/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.1.1/css/crosstalk.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.1.1/js/crosstalk.min.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">proxyMR</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="setup.html">Setup</a>
+</li>
+<li>
+  <a href="meetings.html">Update meetings</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jennysjaarda/proxyMR">
+    <span class="fas fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Update Meeting: 14-07-2021</h1>
+<h4 class="author">jennysjaarda</h4>
+<h4 class="date">2021-06-14</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2021-07-22
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>proxyMR/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.2). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20210602code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20210602)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20210602code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20210602)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtreeb0b81d90e8737ae4b23268917e79b60caa6ee42ftargetblankb0b81d9a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/jennysjaarda/proxyMR/tree/b0b81d90e8737ae4b23268917e79b60caa6ee42f" target="_blank">b0b81d9</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtreeb0b81d90e8737ae4b23268917e79b60caa6ee42ftargetblankb0b81d9a" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version <a href="https://github.com/jennysjaarda/proxyMR/tree/b0b81d90e8737ae4b23268917e79b60caa6ee42f" target="_blank">b0b81d9</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    renv/library/
+    Ignored:    renv/local/
+    Ignored:    renv/staging/
+
+Untracked files:
+    Untracked:  household_MR_exhaustive_summary.rds
+    Untracked:  summary.RData
+    Untracked:  traits_corr2_update.rds
+
+Unstaged changes:
+    Modified:   R/functions.R
+    Modified:   _targets.R
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/update_meeting_14_07_2021.Rmd</code>) and HTML (<code>docs/update_meeting_14_07_2021.html</code>) files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/jennysjaarda/proxyMR/blob/b0b81d90e8737ae4b23268917e79b60caa6ee42f/analysis/update_meeting_14_07_2021.Rmd" target="_blank">b0b81d9</a>
+</td>
+<td>
+jennysjaarda
+</td>
+<td>
+2021-07-22
+</td>
+<td>
+Updating website
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/jennysjaarda/proxyMR/blob/bd4d5e1e54256e0dbdd2625b6ede3df2b9dae0eb/analysis/update_meeting_14_07_2021.Rmd" target="_blank">bd4d5e1</a>
+</td>
+<td>
+jennysjaarda
+</td>
+<td>
+2021-07-14
+</td>
+<td>
+merge
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/jennysjaarda/proxyMR/blob/b02bd992526a6dd56d0acc6f649c15603557f47e/analysis/update_meeting_14_07_2021.Rmd" target="_blank">b02bd99</a>
+</td>
+<td>
+jennysjaarda
+</td>
+<td>
+2021-07-14
+</td>
+<td>
+update meeting
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/jennysjaarda/proxyMR/blob/5d9d23125e445313cb8755dfa48010aee04522ab/analysis/update_meeting_14_07_2021.Rmd" target="_blank">5d9d231</a>
+</td>
+<td>
+jennysjaarda
+</td>
+<td>
+2021-07-14
+</td>
+<td>
+update meeting
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="last-week-summary." class="section level2">
+<h2>Last week summary.</h2>
+<ul>
+<li>Update phenotypes, make sure blood chemistry values are included (see list of biomarkers included <a href="https://biobank.ndph.ox.ac.uk/ukb/label.cgi?id=17518">here</a>).</li>
+<li>Non-urgent analysis: cross partner heritability.
+<ul>
+<li>For this we need a full GWAS of index genotype on partner trait (up until this point only run on IVs of interest).</li>
+</ul></li>
+<li>GWAS of PCs 1-40, adjusted for age and sex, to get IVs (Neale has not run this).</li>
+<li>Run MR in same individual (i.e. standard MR).</li>
+</ul>
+</div>
+<div id="update." class="section level2">
+<h2>Update.</h2>
+<div id="reprocessed-phesant" class="section level3">
+<h3>Reprocessed PHESANT</h3>
+<ul>
+<li>For all new phenotype files since starting the project and added them to the pipeline.</li>
+</ul>
+</div>
+<div id="identified-a-problem-with-the-neale-summary-stats." class="section level3">
+<h3>Identified a problem with the Neale summary stats.</h3>
+<ul>
+<li>Only affecting the <code>low_confidence_variant</code> column.</li>
+<li>This filter was applied before generating IVs for each summary file that had been downloaded.</li>
+<li>See a description of the issue on <a href="https://github.com/Nealelab/UK_Biobank_GWAS/issues/20">the Neale github issues page</a>.</li>
+<li>Currently in the process of updating the impacted files:
+<ul>
+<li>Updated Neale GWAS files can be found here: <code>/data/sgg2/jenny/data/Neale_UKBB_GWAS/neale_files/variant_flag_update</code>.<br />
+</li>
+<li>Also will recreate the IVs for these files (~70 of our files), under the same name.</li>
+</ul></li>
+<li>As far as I can tell the issue is only in one direction, where some SNPs that were not really low confidence variants (by their definition) were listed as <code>low_confidence_variant = TRUE</code>, not the other way around. In other words, the mistake means that we would only be filtering out variants that we should keep.</li>
+</ul>
+</div>
+<div id="adding-pcs-to-the-pipeline." class="section level3">
+<h3>Adding PCs to the pipeline.</h3>
+<ul>
+<li>Currently running GWAS of first 40 PCs, residualized for <code>age</code> and <code>sex</code>. Applied inverse normal rank transformation first.<br />
+</li>
+<li>Test between partners.</li>
+</ul>
+</div>
+</div>
+<div id="next-steps." class="section level2">
+<h2>Next steps.</h2>
+<p>Define the following:</p>
+<p><strong>Goal</strong>: To use Mendelian Randomization (MR) to estimate a causal effect of <span class="math inline">\({X}\)</span> on <span class="math inline">\({Y}\)</span> between household pairs (i.e. <em>couples</em>).</p>
+<p>Definitions:</p>
+<ul>
+<li>Let <span class="math inline">\({X}\)</span> and <span class="math inline">\({Y}\)</span> denote two random variables representing complex traits.</li>
+<li>Let <span class="math inline">\({X}_i\)</span> and <span class="math inline">\({X}_p\)</span> denote <span class="math inline">\({X}\)</span> in an index case and in their partner.</li>
+<li>The genotype data of the SNPs to be used as instrumental variables (IVs) is denoted by <span class="math inline">\({G}\)</span>.</li>
+<li>Let <span class="math inline">\({G}_i\)</span> and <span class="math inline">\({G}_p\)</span> denote <span class="math inline">\({G}\)</span> in an index case and in their partner.</li>
+<li>To simplify notation we assume that <span class="math inline">\(E(X) = E(Y) = E(G) = 0\)</span> and <span class="math inline">\(Var(X) = Var(Y) = Var(G) = 1\)</span>.</li>
+<li>The effect sizes of the instruments on <span class="math inline">\(X\)</span> is denoted by <span class="math inline">\({\beta}\)</span>.</li>
+<li>The causal effect is denoted by <span class="math inline">\({\alpha}\)</span>.</li>
+<li>Let us assume the following models.</li>
+</ul>
+<p>BREAK1</p>
+<p>$$ (1) ; X_{i} = G_{i} + \ (2) ; X_{p} = G_{i} + \ (3) ; Y_{i} = G_{i} + \ (4) ; Y_{p} = G_{i} + \ (5) ; Y_{i} = <em>jX</em>{i} +\ (6) ; X_{p} = <em>{x, am}X</em>{i{}} +\ (7) ; Y_{p} = <em>{y, am}Y</em>{i{}} +\ (8) ; Y_{p} = <em>{k}X</em>{i} +</p>
+<p>$$</p>
+<p>BREAK2</p>
+<p><span class="math display">\[\begin{equation}
+     \; X_{p} = G_{i}\cdot {\beta_{x, i\rightarrow p} } + \epsilon \\
+     \; Y_{i} = G_{i}\cdot {\beta_{y, i\rightarrow i} } + \epsilon \\
+     \; Y_{p} = G_{i}\cdot {\beta_{y, i\rightarrow p} } + \epsilon \\
+     \; Y_{i} = \alpha_j\cdot X_{i} +\epsilon \\
+     \; X_{p} = \alpha_{x, am}\cdot X_{i{}} +\epsilon \\
+     \; Y_{p} = \alpha_{y, am}\cdot Y_{i{}} +\epsilon \\
+     \; Y_{p} = \alpha_{k}\cdot X_{i} +\epsilon
+\end{equation}\]</span></p>
+<p>BREAK3</p>
+<p><span class="math display">\[
+     \; X_{p} = G_{i}\cdot {\beta_{x, i\rightarrow p} } + \epsilon \\
+     \; Y_{i} = G_{i}\cdot {\beta_{y, i\rightarrow i} } + \epsilon \\
+     \; Y_{p} = G_{i}\cdot {\beta_{y, i\rightarrow p} } + \epsilon \\
+     \; Y_{i} = \alpha_j\cdot X_{i} +\epsilon \\
+     \; X_{p} = \alpha_{x, am}\cdot X_{i{}} +\epsilon \\
+     \; Y_{p} = \alpha_{y, am}\cdot Y_{i{}} +\epsilon \\
+     \; Y_{p} = \alpha_{k}\cdot X_{i} +\epsilon
+\]</span></p>
+<ul>
+<li>Equation (1) and (3) are simply same-person GWAS result (obtained from Neale).</li>
+<li>Equation (2) and (4) are household GWAS results (calculated in-house).</li>
+<li>Equation (5), and <span class="math inline">\({\alpha_{j}}\)</span>, in the causal effect of a trait <span class="math inline">\({X}\)</span> on <span class="math inline">\({Y}\)</span> from a standard MR single-person MR.</li>
+<li>Equation (6) and (7), represent assortative mating effects for traits <span class="math inline">\({X}\)</span> and <span class="math inline">\({Y}\)</span>, respectively.</li>
+<li>Equation (8) <span class="math inline">\({\alpha_{k}}\)</span> is the result of phenotype <span class="math inline">\({X}\)</span> in the index, having a causal effect on a phenotype <span class="math inline">\({Y}\)</span> in the partner.</li>
+<li>This effect is either due to the product of one of the two:
+<ul>
+<li><span class="math inline">\({\alpha_{j}}\)</span> with <span class="math inline">\({\alpha_{x, am}}\)</span></li>
+<li><span class="math inline">\({\alpha_{j}}\)</span> with <span class="math inline">\({\alpha_{y, am}}\)</span></li>
+</ul></li>
+</ul>
+<p><span class="math display">\[
+\sqrt{p}
+\]</span></p>
+<p><span class="math display">\[
+x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+\]</span></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.1.0 (2021-05-18)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Big Sur 11.4
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_CA.UTF-8/en_CA.UTF-8/en_CA.UTF-8/C/en_CA.UTF-8/en_CA.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices datasets  utils     methods   base     
+
+other attached packages:
+ [1] knitr_1.33         DT_0.18            forcats_0.5.1      stringr_1.4.0     
+ [5] dplyr_1.0.6        purrr_0.3.4        readr_1.4.0        tidyr_1.1.3       
+ [9] tibble_3.1.2       ggplot2_3.3.3      tidyverse_1.3.1    targets_0.5.0.9000
+[13] workflowr_1.6.2   
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.6        lubridate_1.7.10  ps_1.6.0          assertthat_0.2.1 
+ [5] rprojroot_2.0.2   digest_0.6.27     utf8_1.2.1        R6_2.5.0         
+ [9] cellranger_1.1.0  backports_1.2.1   reprex_2.0.0      evaluate_0.14    
+[13] httr_1.4.2        pillar_1.6.1      rlang_0.4.11      readxl_1.3.1     
+[17] rstudioapi_0.13   data.table_1.14.0 whisker_0.4       callr_3.7.0      
+[21] rmarkdown_2.8     htmlwidgets_1.5.3 igraph_1.2.6      munsell_0.5.0    
+[25] broom_0.7.6       compiler_4.1.0    httpuv_1.6.1      modelr_0.1.8     
+[29] xfun_0.23         pkgconfig_2.0.3   htmltools_0.5.1.1 tidyselect_1.1.1 
+[33] codetools_0.2-18  fansi_0.5.0       crayon_1.4.1      dbplyr_2.1.1     
+[37] withr_2.4.2       later_1.2.0       grid_4.1.0        jsonlite_1.7.2   
+[41] gtable_0.3.0      lifecycle_1.0.0   DBI_1.1.1         git2r_0.28.0     
+[45] magrittr_2.0.1    scales_1.1.1      cli_2.5.0         stringi_1.6.2    
+[49] renv_0.13.2-62    fs_1.5.0          promises_1.2.0.1  xml2_1.3.2       
+[53] ellipsis_0.3.2    generics_0.1.0    vctrs_0.3.8       tools_4.1.0      
+[57] glue_1.4.2        crosstalk_1.1.1   hms_1.1.0         processx_3.5.2   
+[61] yaml_2.2.1        colorspace_2.0-1  rvest_1.0.0       haven_2.4.1      </code></pre>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
