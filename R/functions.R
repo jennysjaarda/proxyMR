@@ -617,8 +617,31 @@ pull_traits_to_calc_het <- function(traits_corr3_run){
   return(output)
 }
 
-pull_traits_to_run <- function(traits_corr5){
-  output <- tibble(Neale_pheno_ID =traits_corr5[,"Neale_pheno_ID"])
+pull_traits_to_run <- function(traits_final){
+
+
+  traits_final %>% separate("Neale_file_location", c("both_sexes_original_Neale_file", "female_original_Neale_file", "male_original_Neale_file"), ";", extra = "merge")
+
+  both_sexes_original_Neale_file <- numeric()
+  female_original_Neale_file <- numeric()
+  male_original_Neale_file <- numeric()
+
+
+  for(i in 1:dim(traits_final)[1]){
+
+    Neale_files <- traits[i,"Neale_file_location"]
+    Neale_file_list <- unlist(str_split(Neale_files, ";"))
+    male_original_Neale_file <- c(male_original_Neale_file, Neale_file_list[grepl(paste0("\\.", "male", "\\."), Neale_file_list)])
+    female_original_Neale_file <- c(female_original_Neale_file, Neale_file_list[grepl(paste0("\\.", "female", "\\."), Neale_file_list)])
+    both_sexes_original_Neale_file <- c(both_sexes_original_Neale_file, Neale_file_list[grepl(paste0("\\.", "both_sexes", "\\."), Neale_file_list)])
+
+  }
+
+  output <- tibble(Neale_pheno_ID =traits_final[,"Neale_pheno_ID"],
+                   both_sexes_original_Neale_file = both_sexes_original_Neale_file,
+                   male_original_Neale_file = male_original_Neale_file,
+                   female_original_Neale_file = female_original_Neale_file)
+
   return(output)
 }
 

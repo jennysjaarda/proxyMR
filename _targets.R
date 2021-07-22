@@ -339,7 +339,7 @@ list(
 
   tar_target(
     outcomes_to_run,
-    pull_traits_to_run(traits_final) #this could be changed to traits_corr2_filled, add Neale file name column
+    pull_traits_to_run(traits_final) #this could be changed to traits_corr2_filled
   ),
 
   tar_target(
@@ -484,7 +484,7 @@ list(
   tar_target(
     outcome_stats,
     {
-      extract_Neale_outcome(Neale_file, IV_variant_data, outcomes_to_run, traits_corr2_filled)
+      extract_Neale_outcome(Neale_file, variant_data, outcomes_to_run, traits_corr2_filled)
     },
 
     pattern = map(outcomes_to_run, summ_stats)
