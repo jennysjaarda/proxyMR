@@ -20,7 +20,7 @@ library(knitr)
 ```
 
 ```{r, echo=FALSE,include = FALSE}
-# You need this code to conduct the magic dependences attaching...
+# You need this code to conduct the magic dependencies attaching...
 DT::datatable(matrix())
 ```
 
@@ -80,7 +80,7 @@ I also understood that one of the traits to explore would be PCs. To me it seems
 
 ### Traits analyzed.
 
-```{r traits, echo = FALSE}
+```{r traits, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
 
 DT::datatable(traits, width = "100%")
 
@@ -92,7 +92,7 @@ DT::datatable(traits, width = "100%")
 - MR_meta statistics refer to the meta of both-sexes combined. 
 - Sex heterogeneity column reports the p-value of the difference between the MR estimates from the two sexes.
 
-```{r sex_het, echo = FALSE}
+```{r sex_het, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
 
 reduced_mr_summary <- calc_mr_sex_het %>% dplyr::select(trait_ID, trait_description, 
                                                         exposure_sex, N_snps,"IVW/Wald_summary","IVW/Wald_pval", 
@@ -109,7 +109,7 @@ DT::datatable(reduced_mr_summary, width = "100%")
 - The second table represent the results of individuals binned by time together.
 - Q p-values report the difference amongst bins.
 
-```{r mr_summary_age, echo = FALSE}
+```{r mr_summary_age, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
 
 mr_summary_age_reduced <- mr_summary_age %>% dplyr::select(trait_ID, exposure_sex, Q_stat, Q_pval)
 DT::datatable(mr_summary_age_reduced, width = "100%")
