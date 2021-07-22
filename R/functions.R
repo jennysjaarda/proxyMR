@@ -620,8 +620,6 @@ pull_traits_to_calc_het <- function(traits_corr3_run){
 pull_traits_to_run <- function(traits_final){
 
 
-  traits_final %>% separate("Neale_file_location", c("both_sexes_original_Neale_file", "female_original_Neale_file", "male_original_Neale_file"), ";", extra = "merge")
-
   both_sexes_original_Neale_file <- numeric()
   female_original_Neale_file <- numeric()
   male_original_Neale_file <- numeric()
@@ -629,7 +627,7 @@ pull_traits_to_run <- function(traits_final){
 
   for(i in 1:dim(traits_final)[1]){
 
-    Neale_files <- traits[i,"Neale_file_location"]
+    Neale_files <- traits_final[i,"Neale_file_location"]
     Neale_file_list <- unlist(str_split(Neale_files, ";"))
     male_original_Neale_file <- c(male_original_Neale_file, Neale_file_list[grepl(paste0("\\.", "male", "\\."), Neale_file_list)])
     female_original_Neale_file <- c(female_original_Neale_file, Neale_file_list[grepl(paste0("\\.", "female", "\\."), Neale_file_list)])
@@ -1400,7 +1398,6 @@ extract_Neale_outcome <- function(Neale_file, variant_data_sub){
   outcome_cols  <- c("variant","beta","se","pval","n_complete_samples")
   outcome_raw <- outcome_raw[, outcome_cols]
 
-  variant_data_sub
   variant_cols <- c("rsid", "ref", "alt", "AF","chr")
   variant_data <- variant_data_sub[,variant_cols]
 
@@ -1412,6 +1409,21 @@ extract_Neale_outcome <- function(Neale_file, variant_data_sub){
   #outcome_format <- format_data(outcome_filter, type="outcome")
 
   return(outcome_filter)
+}
+
+extract_Neale_outcome_both_sexes <- function(Neale_pheno_ID, outcomes_to_run, variant_data){
+
+  i <- outcomes_to_run[which(outcomes_to_run$Neale_pheno_ID==Neale_pheno_ID)]
+  outcome_list <- list()
+  for(sex in c("male", "female")){
+    Neale_file <- outcomes_to_run[i, paste0(sex, "_original_Neale_file")]
+    Neale_stats <- extract_Neale_outcome(Neale_file, variant_data)
+    outcome_list[[]]
+  }
+
+
+
+
 }
 
 
