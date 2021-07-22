@@ -17,7 +17,6 @@ source("code/settings.R")
 library(DT)
 library(knitr)
 library(targets)
-
 ```
 
 ```{r, echo=FALSE,include = FALSE}
@@ -39,7 +38,7 @@ DT::datatable(matrix())
 
 - For all new phenotype files since starting the project and added them to the pipeline. 
 
-```{r new_phenos, echo = FALSE}
+```{r new_phenos, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
 
 tar_load(data_UKBB_directory)
 new_files <- c("ukb39955", "ukb42673", "ukb44073", "ukb44073")
@@ -64,7 +63,7 @@ DT::datatable(data_UKBB_directory_new, width = "100%")
 - Currently running GWAS of first 40 PCs, residualized for `age` and `sex`. Applied inverse normal rank transformation first.  
 - Test between partners. 
 
-```{r pc_corr, echo = FALSE}
+```{r pc_corr, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
 
 tar_load(PCs_corr)
 
@@ -89,18 +88,42 @@ Definitions:
 - The causal effect is denoted by ${\alpha}$.
 - Let us assume the following models.
 
+BREAK1
+
 $$
-\begin{eqnarray*}
-	(1) \; X_{i} &=& G_{i}\cdot {\beta_{x, i\rightarrow i} } + \epsilon \\
-	(2) \; X_{p} &=& G_{i}\cdot {\beta_{x, i\rightarrow p} } + \epsilon \\
-	(3) \; Y_{i} &=& G_{i}\cdot {\beta_{y, i\rightarrow i} } + \epsilon \\
-	(4) \; Y_{p} &=& G_{i}\cdot {\beta_{y, i\rightarrow p} } + \epsilon \\
-	(5) \; Y_{i} &=& \alpha_j\cdot X_{i} +\epsilon \\
-	(6) \; X_{p} &=& \alpha_{x, am}\cdot X_{i{}} +\epsilon \\
-	(7) \; Y_{p} &=& \alpha_{y, am}\cdot Y_{i{}} +\epsilon \\
-	(8) \; Y_{p} &=& \alpha_{k}\cdot X_{i} +\epsilon
-	
-\end{eqnarray*}
+    \(1) \; X_{i} = G_{i}\cdot {\beta_{x, i\rightarrow i} } + \epsilon \\
+    \(2) \; X_{p} = G_{i}\cdot {\beta_{x, i\rightarrow p} } + \epsilon \\
+    (3) \; Y_{i} = G_{i}\cdot {\beta_{y, i\rightarrow i} } + \epsilon \\
+	  (4) \; Y_{p} = G_{i}\cdot {\beta_{y, i\rightarrow p} } + \epsilon \\
+	  (5) \; Y_{i} = \alpha_j\cdot X_{i} +\epsilon \\
+	  (6) \; X_{p} = \alpha_{x, am}\cdot X_{i{}} +\epsilon \\
+	  (7) \; Y_{p} = \alpha_{y, am}\cdot Y_{i{}} +\epsilon \\
+	  (8) \; Y_{p} = \alpha_{k}\cdot X_{i} +\epsilon
+    
+$$
+    
+BREAK2
+
+\begin{equation}
+	 \; X_{p} = G_{i}\cdot {\beta_{x, i\rightarrow p} } + \epsilon \\
+	 \; Y_{i} = G_{i}\cdot {\beta_{y, i\rightarrow i} } + \epsilon \\
+	 \; Y_{p} = G_{i}\cdot {\beta_{y, i\rightarrow p} } + \epsilon \\
+	 \; Y_{i} = \alpha_j\cdot X_{i} +\epsilon \\
+	 \; X_{p} = \alpha_{x, am}\cdot X_{i{}} +\epsilon \\
+	 \; Y_{p} = \alpha_{y, am}\cdot Y_{i{}} +\epsilon \\
+	 \; Y_{p} = \alpha_{k}\cdot X_{i} +\epsilon
+\end{equation}
+
+BREAK3
+
+$$
+	 \; X_{p} = G_{i}\cdot {\beta_{x, i\rightarrow p} } + \epsilon \\
+	 \; Y_{i} = G_{i}\cdot {\beta_{y, i\rightarrow i} } + \epsilon \\
+	 \; Y_{p} = G_{i}\cdot {\beta_{y, i\rightarrow p} } + \epsilon \\
+	 \; Y_{i} = \alpha_j\cdot X_{i} +\epsilon \\
+	 \; X_{p} = \alpha_{x, am}\cdot X_{i{}} +\epsilon \\
+	 \; Y_{p} = \alpha_{y, am}\cdot Y_{i{}} +\epsilon \\
+	 \; Y_{p} = \alpha_{k}\cdot X_{i} +\epsilon
 $$
 
 - Equation (1) and (3) are simply same-person GWAS result (obtained from Neale).
@@ -112,5 +135,13 @@ $$
   - ${\alpha_{j}}$ with ${\alpha_{x, am}}$ 
   - ${\alpha_{j}}$ with ${\alpha_{y, am}}$ 
 
+
+$$
+\sqrt{p}
+$$
+
+$$
+x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+$$
 
 

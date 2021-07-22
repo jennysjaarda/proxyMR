@@ -36,19 +36,46 @@ DT::datatable(matrix())
 
 - Univariate MR. 
 
-```{r sex_het, echo = FALSE}
+```{r univar_mr, echo = FALSE}
 
-tar_load(household_MR_exhaustive_summary)
+household_MR_exhaustive_summary <- readRDS("household_MR_exhaustive_summary.rds")
+traits_corr2_update <- readRDS("traits_corr2_update.rds")
+traits_corr2_update <- traits_corr2_update[which(traits_corr2_update[["Neale_file_sex"]]=="both"),]
 
-household_MR_exhaustive_summary <- household_MR_exhaustive_summary %>% mutate(same_traits = case_when(exposure_ID == outcome_ID ~ TRUE, 
-                                                                   TRUE ~ FALSE))
+description_temp <- left_join(household_MR_exhaustive_summary, traits_corr2_update[, c("Neale_pheno_ID", "description")], by=c("exposure_ID"="Neale_pheno_ID")) %>%
+  rename(exposure_description = description)
+
+description <- left_join(description_temp, traits_corr2_update[, c("Neale_pheno_ID", "description")], by=c("outcome_ID"="Neale_pheno_ID")) %>%
+  rename(outcome_description = description)
+
+
+household_MR_exhaustive_summary <- description %>% mutate(same_traits = case_when(exposure_ID == outcome_ID ~ TRUE, 
+                                                                   TRUE ~ FALSE)) %>% dplyr::select(-exposure, -outcome) %>%
+  dplyr::select(-Egger_summary, -Egger_pval, -Egger_int_pval, -Het_IVW_Qpval, -N_snps_sensitivity, -`IVW/Wald_summary_sensitivity`, -`IVW/Wald_pval_sensitivity`, -outcome_sex)
 
 
 DT::datatable(household_MR_exhaustive_summary, width = "100%")
 
 ```
 
+- Number of BF-significant results: 
+```{r BF_sig, echo = FALSE}
 
+BF_sig <- household_MR_exhaustive_summary %>% rename(IVW_Wald_pval= `IVW/Wald_pval`) %>% 
+  mutate_at("IVW_Wald_pval", as.numeric) %>% filter(IVW_Wald_pval < 0.05/dim(.)[1]) 
+
+dim(BF_sig)
+
+```
+
+- Significant results not in the same trait
+
+```{r non_same_traits, echo = FALSE}
+
+diff_traits <- BF_sig %>% filter(same_traits==FALSE)
+DT::datatable(diff_traits, width = "100%")
+
+```
 ## Questions. 
 
 - Expand list of outcomes? 

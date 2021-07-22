@@ -9,3 +9,6 @@ editor_options:
 ---
 
 Welcome to my research website.
+
+Check-out my latex tests [here](latex_test.html)
+

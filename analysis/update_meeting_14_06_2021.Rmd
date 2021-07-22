@@ -26,6 +26,13 @@ DT::datatable(matrix())
 
 ## Last week summary.
 
+### Getting back up to speed. 
+
+- Project had been dormant for > 1 year. 
+- Since then, one key paper has been published in Nature Communications by Tenesa et al: [Evidence of horizontal indirect genetic effects in humans](https://www.nature.com/articles/s41562-020-00991-9).
+- Discussed where we left off and how to build on Tenesa paper.
+- Slides can be found [here](presentations/Xia_horizontal_genetic_effects/presentation.html#1).
+
 ### Next steps: 
 
 1. Summarize all our results to get a feel for top traits (let's call this: trait/trait MR). A logical addition that we didn't discuss would be to meta-analyze across sexes and see what traits are significant in pooled analysis and then check which of these are significantly different between sexes.
