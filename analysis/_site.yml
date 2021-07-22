@@ -10,7 +10,7 @@ navbar:
   - text: Setup
     href: setup.html
   - text: Update meetings
-    href: meeting.html
+    href: meetings.html
   right:
   - icon: fa-github
     text: Source code
