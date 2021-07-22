@@ -9,7 +9,10 @@ editor_options:
 
 In general, update meetings were held with Zoltan once per week. 
 
-Meeting minutes can be found at the links below: 
+Meeting minutes can be found at the links below (DD-MM-YYY): 
 
 - [14-06-2021](update_meeting_14_06_2021.html)
+- [05-07-2021](update_meeting_14_06_2021.html)
+- [14-07-2021](update_meeting_14_06_2021.html)
+
 
