@@ -412,12 +412,6 @@ list(
     pattern = map(exposure_info, summ_stats, IV_genetic_data), format = "file"
   ),
 
-  tar_target(
-    path_household_GWAS,
-    write_household_GWAS(household_GWAS),
-    pattern = map(household_GWAS), format = "file"
-  ),
-
   ## MR
 
   tar_target(
