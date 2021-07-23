@@ -406,7 +406,7 @@ list(
     {
       path_pheno_data
       path_outcome_dirs # delete all GWAS files and this target if you need to rerun below because it is not saved as `format = "file"`
-      household_GWAS(exposure_info, summ_stats, outcomes_to_run, traits_corr2_filled,
+      run_household_GWAS(exposure_info, summ_stats, outcomes_to_run, traits_corr2_filled,
                                   IV_genetic_data, joint_model_adjustments, grouping_var, household_time_munge)
     },
     pattern = map(exposure_info, summ_stats, IV_genetic_data), format = "file"
@@ -424,50 +424,47 @@ list(
   ),
 
   tar_target(
-    household_MR_binned,
-    household_MR_all_outcomes(exposure_info, summ_stats, outcomes_to_run, gwas_files = path_household_GWAS,
-                       traits_corr2_filled, grouping_var, MR_method_list),
+    household_MR, # MR results are given binned in full sample and binned by time-together and mean age
+    run_household_MR(exposure_info, summ_stats, outcomes_to_run, gwas_files = path_household_GWAS,
+                 traits_corr2_filled, grouping_var, MR_method_list),
     pattern = map(exposure_info, summ_stats, IV_genetic_data, path_household_GWAS), iteration = "list"
   ),
 
   tar_target(
-    path_household_MR_binned,
+    path_household_MR,
     {
       path_MR_dirs
-      write_household_MR(exposure_info, outcomes_to_run, household_MR_binned)
+      write_household_MR(exposure_info, outcomes_to_run, household_MR)
     },
-
-    pattern = map(exposure_info, household_MR_binned), format = "file"
+    pattern = map(exposure_info, household_MR), format = "file"
   ),
 
   tar_target(
     household_harmonised_data,
-    harmonise_household_data_all_outcomes(exposure_info, summ_stats, outcomes_to_run, gwas_files = path_household_GWAS, traits_corr2_filled),
+    harmonise_household_data(exposure_info, summ_stats, outcomes_to_run, gwas_files = path_household_GWAS, traits_corr2_filled),
     pattern = map(exposure_info, summ_stats, IV_genetic_data, path_household_GWAS), iteration = "list" #could remove IV_genetic data
   ),
 
-  ## RUN in full sample only, not binned
+
   tar_target(
-    household_MR_exhaustive,
-    household_MR_complete_all_outcomes(exposure_info, household_harmonised_data, outcomes_to_run, MR_method_list),
+    household_MR_comprehensive, ## `household_MR_comprehensive` is run in full sample only, not binned by age / time-together categories
+    run_household_MR_comprehensive(exposure_info, household_harmonised_data, outcomes_to_run, MR_method_list),
     pattern = map(exposure_info, household_harmonised_data), iteration = "list"
   ),
 
-  ##summarize into one table, ignore leave-1-out analyses for now
-  ## add column for outcome_ID==exposure_ID
-  ## outcome_description and exposure description
-
   tar_target(
-    household_MR_exhaustive_summary,
-    household_MR_complete_summary(household_MR_exhaustive),
-    pattern = map(household_MR_exhaustive)
+    ##summarize into one table, ignore leave-1-out analyses for now
+    ## add column for outcome_ID==exposure_ID
+    ## outcome_description and exposure description
+    household_MR_comprehensive_summary,
+    summarize_household_MR_comprehensive(household_MR_comprehensive),
+    pattern = map(household_MR_comprehensive)
   ),
 
   tar_target(
     all_IVs,
     tibble(exposure = exposures_to_run$Neale_pheno_ID, rsid = summ_stats[[1]]$rsid), # it doesn't matter if you take male or female summary stats
     pattern = map(exposures_to_run, summ_stats)
-
   ),
 
   ## THIS IS THE EXACT SAME AS VARIANT DATA

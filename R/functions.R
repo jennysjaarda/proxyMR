@@ -1844,7 +1844,7 @@ household_GWAS_group <- function(exposure_info, summ_stats, pheno_data, outcome_
 }
 
 
-household_GWAS <- function(exposure_info, summ_stats, outcomes_to_run, traits_corr2_update,
+run_household_GWAS <- function(exposure_info, summ_stats, outcomes_to_run, traits_corr2_update,
                                IV_genetic_data, joint_model_adjustments, grouping_var_list, household_time_munge){
 
   output_list <- list()
@@ -1888,20 +1888,7 @@ household_GWAS <- function(exposure_info, summ_stats, outcomes_to_run, traits_co
 
 }
 
-write_household_GWAS <- function(GWAS_result){
-
-  pheno_dir <- paste0("analysis/traitMR")
-  exposure_ID <- GWAS_result$exposure_ID[1]
-  outcome_ID <- GWAS_result$outcome_ID[1]
-
-  GWAS_file <- paste0(pheno_dir, "/household_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
-
-  write.csv(GWAS_result, GWAS_file_i, row.names = F)
-  return(GWAS_file)
-}
-
-
-household_MR_complete <- function(harmonise_dat, MR_method_list){
+household_MR_comprehensive_ind <- function(harmonise_dat, MR_method_list){
 
 
   exposure_ID <- harmonise_dat$exposure[1]
@@ -1957,7 +1944,7 @@ household_MR_complete <- function(harmonise_dat, MR_method_list){
 
 }
 
-household_MR_complete_all_outcomes <- function(exposure_info, harmonised_data, outcomes_to_run, MR_method_list){
+run_household_MR_comprehensive <- function(exposure_info, harmonised_data, outcomes_to_run, MR_method_list){
 
   output_list <- list()
   exposure_ID <- as.character(exposure_info["trait_ID",1])
@@ -1972,7 +1959,7 @@ household_MR_complete_all_outcomes <- function(exposure_info, harmonised_data, o
     for(exposure_sex in c("male", "female")){
 
       harmonised_dat_i_sex <- harmonised_data[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonise_data")]][[paste0("exp_", exposure_sex, "_harmonise_data")]]
-      MR_complete_i_sex <- household_MR_complete(harmonised_dat_i_sex, MR_method_list)
+      MR_complete_i_sex <- household_MR_comprehensive_ind(harmonised_dat_i_sex, MR_method_list)
       MR_complete_i[[paste0("exp_", exposure_sex, "_MR_complete")]] <- MR_complete_i_sex
     }
 
@@ -1986,7 +1973,7 @@ household_MR_complete_all_outcomes <- function(exposure_info, harmonised_data, o
 
 }
 
-household_MR_complete_summary <- function(household_MR_complete_result){
+summarize_household_MR_comprehensive <- function(household_MR_complete_result){
 
   result <- numeric()
   for(i in 1:length(household_MR_complete_result)){
@@ -2002,7 +1989,7 @@ household_MR_complete_summary <- function(household_MR_complete_result){
 
 }
 
-harmonise_household_data <- function(exposure_info, summ_stats, traits_corr2_update, outcome_ID, household_GWAS_result, grouping_var = "age_even_bins") {
+harmonise_household_data_ind <- function(exposure_info, summ_stats, traits_corr2_update, outcome_ID, household_GWAS_result, grouping_var = "age_even_bins") {
 
   output_list <- list()
 
@@ -2074,7 +2061,7 @@ harmonise_household_data <- function(exposure_info, summ_stats, traits_corr2_upd
 
 }
 
-harmonise_household_data_all_outcomes <- function(exposure_info, summ_stats, outcomes_to_run, gwas_files, traits_corr2_update){
+harmonise_household_data <- function(exposure_info, summ_stats, outcomes_to_run, gwas_files, traits_corr2_update){
 
   output_list <- list()
   output_files <- numeric()
@@ -2094,7 +2081,7 @@ harmonise_household_data_all_outcomes <- function(exposure_info, summ_stats, out
 
     household_GWAS_result <- fread(GWAS_file_i, sep=",", header = T, data.table=F)
 
-    harmonise_result <- harmonise_household_data(exposure_info, summ_stats, traits_corr2_update, outcome_ID, household_GWAS_result)
+    harmonise_result <- harmonise_household_data_ind(exposure_info, summ_stats, traits_corr2_update, outcome_ID, household_GWAS_result)
 
     output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonise_data")]] <- harmonise_result
 
@@ -2194,7 +2181,7 @@ household_MR_bin <- function(exposure_info, summ_stats, grouping_var, traits_cor
 
 }
 
-household_MR_all_outcomes <- function(exposure_info, summ_stats, outcomes_to_run, gwas_files, traits_corr2_update, grouping_var, MR_method_list = MR_method_list){
+run_household_MR <- function(exposure_info, summ_stats, outcomes_to_run, gwas_files, traits_corr2_update, grouping_var, MR_method_list = MR_method_list){
 
   output_list <- list()
   output_files <- numeric()
