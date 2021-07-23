@@ -1427,7 +1427,9 @@ extract_Neale_outcome <- function(both_sexes_file, male_file, female_file, varia
         if(grepl(paste0("/", sex_i, "/"), Neale_file)){
           assign("sex", sex_i)
         }
-      } if(is.null(sex)) stop('no sex was determined using file name')
+      }
+
+      if(is.null(sex)) stop('no sex was determined using file name')
 
       Neale_stats <- extract_Neale_file(Neale_file, variant_data)
       outcome_list[[paste0(sex, "_summary_stats")]] <- Neale_stats
