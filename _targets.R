@@ -405,10 +405,11 @@ list(
     household_GWAS,
     {
       path_pheno_data
-      household_GWAS_all_outcomes(exposure_info, summ_stats, outcomes_to_run$Neale_pheno_ID, traits_corr2_filled,
+      path_outcome_dirs
+      household_GWAS(exposure_info, summ_stats, outcomes_to_run, traits_corr2_filled,
                                   IV_genetic_data, joint_model_adjustments, grouping_var, household_time_munge)
     },
-    pattern = cross(map(exposure_info, summ_stats, IV_genetic_data), outcomes_to_run)
+    pattern = map(exposure_info, summ_stats, IV_genetic_data), format = "file"
   ),
 
   tar_target(

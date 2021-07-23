@@ -1392,37 +1392,49 @@ extract_relevant_variant_rows <- function(variant_file, snp_list){
 
 }
 
-extract_Neale_outcome <- function(Neale_file, variant_data_sub){
+extract_Neale_file <- function(Neale_file, variant_data){
+
+  # `variant_data` is data frame with a set of variants to extract (one row/variant) which must have at least one column `original_row`,
+  # which is the row from the Neale variant file indicating which SNPs to extract
 
   outcome_raw <- fread(paste0(Neale_file),data.table=F)
   outcome_cols  <- c("variant","beta","se","pval","n_complete_samples")
-  outcome_raw <- outcome_raw[, outcome_cols]
+
+  outcome_raw_sub <- outcome_raw[variant_data$original_row,outcome_cols]
 
   variant_cols <- c("rsid", "ref", "alt", "AF","chr")
-  variant_data <- variant_data_sub[,variant_cols]
+  variant_data_sub <- variant_data[,variant_cols]
 
-  outcome_var_merge <- cbind(outcome_raw,variant_data)
+  outcome_var_merge <- cbind(outcome_raw_sub,variant_data_sub)
 
   cols <- c("rsid", "chr", "beta", "se", "pval", "ref", "alt", "AF", "n_complete_samples")
-  outcome_filter <- outcome_filter[,cols]
+  outcome_filter <- outcome_var_merge[,cols]
   colnames(outcome_filter) <- c("SNP", "chr", "beta", "se", "pval", "other_allele", "effect_allele","eaf", "samplesize")
   #outcome_format <- format_data(outcome_filter, type="outcome")
 
   return(outcome_filter)
 }
 
-extract_Neale_outcome_both_sexes <- function(Neale_pheno_ID, outcomes_to_run, variant_data){
+extract_Neale_outcome <- function(both_sexes_file, male_file, female_file, variant_data){
 
-  i <- outcomes_to_run[which(outcomes_to_run$Neale_pheno_ID==Neale_pheno_ID)]
   outcome_list <- list()
-  for(sex in c("male", "female")){
-    Neale_file <- outcomes_to_run[i, paste0(sex, "_original_Neale_file")]
-    Neale_stats <- extract_Neale_outcome(Neale_file, variant_data)
-    outcome_list[[]]
+  for(Neale_file in c(both_sexes_file, male_file, female_file)){
+
+    sex <- NULL
+    if(!is.null(Neale_file)){
+
+      for(sex_i in c("both_sexes", "male", "female")){
+        if(grepl(paste0("/", sex_i, "/"), Neale_file)){
+          assign("sex", sex_i)
+        }
+      } if(is.null(sex)) stop('no sex was determined using file name')
+
+      Neale_stats <- extract_Neale_file(Neale_file, variant_data)
+      outcome_list[[paste0(sex, "_summary_stats")]] <- Neale_stats
+    }
+
   }
-
-
-
+  return(outcome_list)
 
 }
 
@@ -1830,7 +1842,7 @@ household_GWAS_group <- function(exposure_info, summ_stats, pheno_data, outcome_
 }
 
 
-household_GWAS_all_outcomes <- function(exposure_info, summ_stats, outcome_ID, traits_corr2_update,
+household_GWAS <- function(exposure_info, summ_stats, outcomes_to_run, traits_corr2_update,
                                IV_genetic_data, joint_model_adjustments, grouping_var_list, household_time_munge){
 
   output_list <- list()
@@ -1839,22 +1851,38 @@ household_GWAS_all_outcomes <- function(exposure_info, summ_stats, outcome_ID, t
 
   pheno_dir <- paste0("analysis/traitMR")
 
-  cat(paste0("Loading phenotype data for phenotype `", outcome_ID, "` and performing GWAS...\n"))
+  cat(paste0("\nCalculating household GWAS for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
 
-  male_file <- paste0(pheno_dir,"/pheno_files/phesant/", outcome_ID, "_male.txt")
-  female_file <- paste0(pheno_dir,"/pheno_files/phesant/", outcome_ID, "_female.txt")
+  for(i in 1:dim(outcomes_to_run)[1]){
 
-  male_pheno_data <- fread( male_file,header=T, data.table=F)
-  female_pheno_data <- fread( female_file,header=T, data.table=F)
+    outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
 
-  pheno_data <- list(unrelated_male_data = male_pheno_data, unrelated_female_data = female_pheno_data)
+    GWAS_file_i <- paste0(pheno_dir, "/household_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
+    output_files <- c(output_files, GWAS_file_i)
 
-  outcome_result <- household_GWAS_group(exposure_info, summ_stats, pheno_data, outcome_ID, traits_corr2_update,
+    if(file.exists(GWAS_file_i)) {
+      cat(paste0("Skipping `", outcome_ID, "` because GWAS results already exist...\n\n"))
+      next
+    }
+
+    male_file <- paste0(pheno_dir,"/pheno_files/phesant/", outcome_ID, "_male.txt")
+    female_file <- paste0(pheno_dir,"/pheno_files/phesant/", outcome_ID, "_female.txt")
+
+    male_pheno_data <- fread( male_file,header=T, data.table=F)
+    female_pheno_data <- fread( female_file,header=T, data.table=F)
+
+    pheno_data <- list(unrelated_male_data = male_pheno_data, unrelated_female_data = female_pheno_data)
+
+    outcome_result_i <- household_GWAS_group(exposure_info, summ_stats, pheno_data, outcome_ID, traits_corr2_update,
                                          IV_genetic_data, joint_model_adjustments, grouping_var_list, household_time_munge)
 
-  cat(paste0("Finished GWAS for outcome ", outcome_ID, " of ", exposure_ID, ".\n\n" ))
 
-  return(outcome_result)
+    write.csv(outcome_result, GWAS_file_i, row.names = F)
+
+    cat(paste0("Finished GWAS for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+  }
+
+  return(output_files)
 
 }
 
