@@ -15,7 +15,7 @@ tar_option_set(
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
   packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR", "ggplot2", "purrr"),
-  error = "workspace",
+  error = "continue",
   memory = "transient",
   garbage_collection = TRUE
 
@@ -481,13 +481,17 @@ list(
   #   extract_relevant_variant_rows(Neale_variant_file, snp_list = all_IVs$rsid)
   # ),
 
+
   tar_target(
     outcome_stats,
     {
-      extract_Neale_outcome(Neale_file, variant_data, outcomes_to_run, traits_corr2_filled)
+      extract_Neale_outcome(both_sexes_file = outcomes_to_run$both_sexes_original_Neale_file,
+                            male_file = outcomes_to_run$male_original_Neale_file, female_file = outcomes_to_run$female_original_Neale_file,
+                            extract_which = c("male", "female"),
+                            variants)
     },
 
-    pattern = map(outcomes_to_run, summ_stats)
+    pattern = map(outcomes_to_run)
 
   ),
 
