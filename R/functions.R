@@ -1879,7 +1879,7 @@ household_GWAS <- function(exposure_info, summ_stats, outcomes_to_run, traits_co
                                          IV_genetic_data, joint_model_adjustments, grouping_var_list, household_time_munge)
 
 
-    write.csv(outcome_result, GWAS_file_i, row.names = F)
+    write.csv(outcome_result_i, GWAS_file_i, row.names = F)
 
     cat(paste0("Finished GWAS for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
   }
