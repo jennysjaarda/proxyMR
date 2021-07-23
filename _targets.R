@@ -412,6 +412,19 @@ list(
     pattern = map(exposure_info, summ_stats, IV_genetic_data), format = "file"
   ),
 
+  tar_target(
+    household_GWAS,
+    read_household_GWAS(path_household_GWAS),
+    pattern = map(path_household_GWAS), iteration = "list"
+  ),
+
+  tar_target(
+    household_harmonised_data,
+    harmonise_household_data(exposure_info, summ_stats, outcomes_to_run, gwas_results = household_GWAS, traits_corr2_filled),
+    pattern = map(exposure_info, summ_stats, household_GWAS), iteration = "list"
+  ),
+
+
   ## MR
 
   tar_target(
@@ -424,31 +437,24 @@ list(
   ),
 
   tar_target(
-    household_MR, # MR results are given binned in full sample and binned by time-together and mean age
-    run_household_MR(exposure_info, summ_stats, outcomes_to_run, gwas_files = path_household_GWAS,
-                 traits_corr2_filled, grouping_var, MR_method_list),
-    pattern = map(exposure_info, summ_stats, IV_genetic_data, path_household_GWAS), iteration = "list"
+    household_MR_binned, # MR results are given binned in full sample and binned by time-together and mean age
+    run_binned_household_MR(exposure_info, outcomes_to_run, household_harmonised_data, grouping_var, MR_method_list = MR_method_list),
+    pattern = map(exposure_info, household_harmonised_data), iteration = "list"
   ),
 
   tar_target(
-    path_household_MR,
+    path_household_MR_binned,
     {
       path_MR_dirs
-      write_household_MR(exposure_info, outcomes_to_run, household_MR)
+      write_household_MR(exposure_info, outcomes_to_run, household_MR_binned)
     },
-    pattern = map(exposure_info, household_MR), format = "file"
-  ),
-
-  tar_target(
-    household_harmonised_data,
-    harmonise_household_data(exposure_info, summ_stats, outcomes_to_run, gwas_files = path_household_GWAS, traits_corr2_filled),
-    pattern = map(exposure_info, summ_stats, IV_genetic_data, path_household_GWAS), iteration = "list" #could remove IV_genetic data
+    pattern = map(exposure_info, household_MR_binned), format = "file"
   ),
 
 
   tar_target(
-    household_MR_comprehensive, ## `household_MR_comprehensive` is run in full sample only, not binned by age / time-together categories
-    run_household_MR_comprehensive(exposure_info, household_harmonised_data, outcomes_to_run, MR_method_list),
+    household_MR, ## `household_MR` is run in full sample only, not binned by age / time-together categories
+    run_household_MR_comprehensive(exposure_info, outcomes_to_run, household_harmonised_data, MR_method_list),
     pattern = map(exposure_info, household_harmonised_data), iteration = "list"
   ),
 
@@ -456,9 +462,9 @@ list(
     ##summarize into one table, ignore leave-1-out analyses for now
     ## add column for outcome_ID==exposure_ID
     ## outcome_description and exposure description
-    household_MR_comprehensive_summary,
-    summarize_household_MR_comprehensive(household_MR_comprehensive),
-    pattern = map(household_MR_comprehensive)
+    household_MR_summary,
+    summarize_household_MR_comprehensive(household_MR),
+    pattern = map(household_MR)
   ),
 
   tar_target(
