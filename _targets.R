@@ -402,10 +402,10 @@ list(
   ),
 
   tar_target(
-    household_GWAS,
+    path_household_GWAS,
     {
       path_pheno_data
-      path_outcome_dirs
+      path_outcome_dirs # delete all GWAS files and this target if you need to rerun below because it is not saved as `format = "file"`
       household_GWAS(exposure_info, summ_stats, outcomes_to_run, traits_corr2_filled,
                                   IV_genetic_data, joint_model_adjustments, grouping_var, household_time_munge)
     },
