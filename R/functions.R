@@ -2259,8 +2259,7 @@ standard_MR_all_outcomes <- function(exposure_info, summ_stats){
 
 write_household_MR <- function(exposure_info, outcomes_to_run, household_MR){
 
-  exposure_ID <- as.character(exposure_info["trait_ID",1])
-
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
   output_files <- numeric()
   pheno_dir <- paste0("analysis/traitMR")
 
