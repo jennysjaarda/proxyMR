@@ -472,7 +472,6 @@ list(
                             both_sexes_file = outcomes_to_run$both_sexes_original_Neale_file, male_file = outcomes_to_run$male_original_Neale_file,
                             female_file = outcomes_to_run$female_original_Neale_file, variant_IV_data)
     },
-
     pattern = map(outcomes_to_run), iteration = "list"
 
   ),
@@ -499,22 +498,33 @@ list(
   ),
 
   tar_target(
-    path_v2_snp_list,
-    create_UKBB_v2_snp_list(UKBB_processed_dir),
+    path_v2_snps,
+    create_UKBB_v2_snp_file_list(UKBB_processed_dir),
     format = "file"
   ),
 
-
   tar_target(
-    v2_snp_list,
+    file_v2_snps,
     path_v2_snp_list
   ),
 
   tar_target(
     bgenie_ukbb_chunks,
-    make_ukbb_chunks(v2_snp_list, chunk_size=1e6), pattern = map(v2_snp_list)
-  )
+      make_ukbb_chunks(file_v2_snps, chunk_size=1e6), pattern = map(v2_snp_list)
+  ),
 
+  tar_target(
+    path_bgenie_GWAS_dir,
+    create_bgenie_GWAS_dir()
+  ),
+
+  tar_target(
+    path_bgenie_pcs,
+    launch_bgenie(bgenie_ukbb_chunks$chr, phenofile = path_PC_gwas_input, UKBB_dir,
+                  bgenie_ukbb_chunks$chr_char, bgenie_ukbb_chunks$start, bgenie_ukbb_chunks$end, bgenie_ukbb_chunks$chunk_num,
+                  output_dir = path_bgenie_GWAS_dir, output_prefix = "PC_GWAS"),
+    pattern = map(bgenie_ukbb_chunks), format = "file"
+  )
 
 
 

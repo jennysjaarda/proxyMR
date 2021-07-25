@@ -2744,11 +2744,11 @@ prep_PC_GWAS <- function(data_id_age, data_id_sex, sqc_munge, bgen_file = data_U
 
 write_PC_gwas_input <- function(PC_gwas_input){
   write.table(PC_gwas_input, "data/processed/PC_ukbb_GWA_input", sep=" ", quote=F, row.names=F, col.names = T)
-  return("data/processed/PC_ukbb_GWAS_input")
+  return("data/processed/PC_UKBB_GWAS_input")
 }
 
 
-create_UKBB_v2_snp_list <- function(UKBB_processed){
+create_UKBB_v2_snp_file_list <- function(UKBB_processed){
   chr_num = tibble(chr = 1:22)
   output <- chr_num %>% mutate(v2_snp_list_files = paste0(UKBB_processed, "/v2_snp_list/", "snp_list_chr", chr, ".txt"))
 
@@ -2787,17 +2787,24 @@ make_ukbb_chunks <- function(v2_snp_list_file, chunk_size=1e6){
 
 }
 
-launch_bgenie <- function(chr, phenofile, UKBB_dir, chr_char, start_pos, end_pos, chunk_num){
+create_bgenie_GWAS_dir <- function(){
 
-  cat(paste0("Running chr: ", chr, ".\n"))
-  #cancel_if(file.exists(paste0("analysis/GWAS/UKBB/chr", chr, "_chunk", chunk_num, ".out")))
+  dir.create("analysis/bgnie_GWAS", showWarnings = FALSE)
+
+}
+
+launch_bgenie <- function(chr, phenofile, UKBB_dir, chr_char, start_pos, end_pos, chunk_num, output_dir, output_prefix){
+
+
+  output_file <- paste0(output_dir, "/", output_prefix, "_chr", chr, "_chunk", chunk_num, ".out")
+  cat(paste0("Running chr ", chr, ", chunk ", chunk_num, ".\n"))
   system(paste0("/data/sgg3/jonathan/bgenie_v1.3/bgenie_v1.3_static1 ",
                 "--bgen ", UKBB_dir, "imp/_001_ukb_imp_chr", chr, "_v2.bgen ",
                 "--pheno ", phenofile, " ",
                 "--range ", chr_char, " ", start_pos, " ", end_pos, " ",
-                "--pvals --out analysis/GWAS/UKBB/chr", chr, "_chunk", chunk_num, ".out"))
-  if(!file.exists(paste0("analysis/GWAS/UKBB/chr", chr, "_chunk", chunk_num, ".out.gz"))){
-    file.create(paste0("analysis/GWAS/UKBB/chr", chr, "_chunk", chunk_num, ".out.gz"))
+                "--pvals --out ", output_file))
+  if(!file.exists(paste0(output_file, ".gz"))){
+    file.create(paste0(output_file, ".gz"))
   }
   # Eleonora's command line
   # /data/sgg3/jonathan/bgenie_v1.3/bgenie_v1.3_static1 --bgen
