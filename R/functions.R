@@ -2722,12 +2722,25 @@ prep_PC_GWAS <- function(data_id_age, data_id_sex, sqc_munge, bgen_file = data_U
     colnames(PC_i_data) <- c("userId", "PCi")
     resid_data <- merge(PC_i_data, merge_sex_age)
     resid_data <- resid_data %>% mutate(PCi_ivt = ivt(PCi))
+
+    for(sex_var in c(0,1)){
+
+      resid_data_sub <- resid_data[which(resid_data$sex==sex_var),]
+      sex <- ifelse(sex_var==0, "female", "male")
+      PCi_resid <- resid(lm(PCi_ivt ~ ., data = subset(resid_data_sub, select=c( -userId, -PCi, -sex) ), na.action = na.exclude))
+      out <- as.data.frame(cbind(resid_data_sub[["userId"]], PCi_resid))
+      colnames(out) <- c("userId", paste0("PC_", PC, "_", sex, "_resid"))
+      out_list[[paste0("PC_", PC, "_", sex, "_resid")]] <- out
+
+    }
+
+
+    sex <- "both_sexes"
     PCi_resid <- resid(lm(PCi_ivt ~ ., data = subset(resid_data, select=c( -userId, -PCi) ), na.action = na.exclude))
     out <- as.data.frame(cbind(resid_data[["userId"]], PCi_resid))
-    colnames(out) <- c("userId", paste0("PC_", PC, "_resid"))
+    colnames(out) <- c("userId", paste0("PC_", PC, "_", sex, "_resid"))
+    out_list[[paste0("PC_", PC, "_", sex, "_resid")]] <- out
 
-
-    out_list[[paste0("PC_", PC, "_resid")]] <- out
 
   }
 
