@@ -2789,8 +2789,8 @@ make_ukbb_chunks <- function(v2_snp_list_file, chunk_size=1e6){
 
 create_bgenie_GWAS_dir <- function(){
 
-  dir.create("analysis/bgnie_GWAS", showWarnings = FALSE)
-
+  dir.create("analysis/begnie_GWAS", showWarnings = FALSE)
+  return("analysis/begnie_GWAS")
 }
 
 launch_bgenie <- function(chr, phenofile, UKBB_dir, chr_char, start_pos, end_pos, chunk_num, output_dir, output_prefix){
@@ -2799,7 +2799,7 @@ launch_bgenie <- function(chr, phenofile, UKBB_dir, chr_char, start_pos, end_pos
   output_file <- paste0(output_dir, "/", output_prefix, "_chr", chr, "_chunk", chunk_num, ".out")
   cat(paste0("Running chr ", chr, ", chunk ", chunk_num, ".\n"))
   system(paste0("/data/sgg3/jonathan/bgenie_v1.3/bgenie_v1.3_static1 ",
-                "--bgen ", UKBB_dir, "imp/_001_ukb_imp_chr", chr, "_v2.bgen ",
+                "--bgen ", UKBB_dir, "/imp/_001_ukb_imp_chr", chr, "_v2.bgen ",
                 "--pheno ", phenofile, " ",
                 "--range ", chr_char, " ", start_pos, " ", end_pos, " ",
                 "--pvals --out ", output_file))
