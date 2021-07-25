@@ -171,10 +171,7 @@ list(
     household_time,
     calc_time_together(joint_model_adjustments,data_time_at_address,data_time_at_address_raw, time_at_address_raw_field, time_at_address_field)
   ),
-  tar_target(
-    household_intervals,
-    interval_labels(c(seq(time_together_min,time_together_max, by=time_together_interval)))
-  ),
+
   tar_target(
     household_time_munge,
     munge_household_time(household_time, joint_model_adjustments, time_together_min,time_together_max, time_together_interval,
@@ -467,29 +464,16 @@ list(
     pattern = map(household_MR)
   ),
 
-  tar_target(
-    all_IVs,
-    tibble(exposure = exposures_to_run$Neale_pheno_ID, rsid = summ_stats[[1]]$rsid), # it doesn't matter if you take male or female summary stats
-    pattern = map(exposures_to_run, summ_stats)
-  ),
-
-  ## THIS IS THE EXACT SAME AS VARIANT DATA
-  # tar_target(
-  #   IV_variant_data,
-  #   extract_relevant_variant_rows(Neale_variant_file, snp_list = all_IVs$rsid)
-  # ),
-
 
   tar_target(
     outcome_stats,
     {
-      extract_Neale_outcome(both_sexes_file = outcomes_to_run$both_sexes_original_Neale_file,
-                            male_file = outcomes_to_run$male_original_Neale_file, female_file = outcomes_to_run$female_original_Neale_file,
-                            extract_which = c("male", "female"),
-                            variants)
+      extract_Neale_outcome(outcome_ID = outcomes_to_run$Neale_pheno_ID,
+                            both_sexes_file = outcomes_to_run$both_sexes_original_Neale_file, male_file = outcomes_to_run$male_original_Neale_file,
+                            female_file = outcomes_to_run$female_original_Neale_file, variant_IV_data)
     },
 
-    pattern = map(outcomes_to_run)
+    pattern = map(outcomes_to_run), iteration = "list"
 
   ),
 

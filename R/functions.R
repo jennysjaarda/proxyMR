@@ -1392,7 +1392,7 @@ extract_relevant_variant_rows <- function(variant_file, snp_list){
 
 }
 
-extract_Neale_file <- function(Neale_file, variant_data){
+extract_ind_Neale_file <- function(Neale_file, variant_data){
 
   # `variant_data` is data frame with a set of variants to extract (one row/variant) which must have at least one column `original_row`,
   # which is the row from the Neale variant file indicating which SNPs to extract
@@ -1415,7 +1415,7 @@ extract_Neale_file <- function(Neale_file, variant_data){
   return(outcome_filter)
 }
 
-extract_Neale_outcome <- function(both_sexes_file, male_file, female_file, variant_data){
+extract_Neale_outcome <- function(outcome_ID, both_sexes_file, male_file, female_file, variant_data){
 
   outcome_list <- list()
   for(Neale_file in c(both_sexes_file, male_file, female_file)){
@@ -1431,8 +1431,10 @@ extract_Neale_outcome <- function(both_sexes_file, male_file, female_file, varia
 
       if(is.null(sex)) stop('no sex was determined using file name')
 
-      Neale_stats <- extract_Neale_file(Neale_file, variant_data)
-      outcome_list[[paste0(sex, "_summary_stats")]] <- Neale_stats
+      Neale_stats <- extract_ind_Neale_file(Neale_file, variant_data)
+      Neale_stats$outcome_ID <- outcome_ID
+      Neale_stats$sex <- sex
+      outcome_list[[paste0(outcome_ID, "_", sex, "_summary_stats")]] <- Neale_stats
     }
 
   }
@@ -2702,7 +2704,7 @@ order_bgen <- function(bgen_file, data){
   colnames(bgen_file) <- c("ID_1", "ID_2", "missing")
   ord = match(bgen_file$ID_1[-1], data$eid)
 
-  bgen_merge <- left_join(bgen_file %>% slice(-1), data, by=c("ID_1" = "eid"))
+  bgen_merge <- left_join(bgen_file, data, by=c("ID_1" = "userId"))
 
   add_na <- bgen_merge %>% mutate_at(vars(-ID_1, -ID_2, -missing), ~replace_na(., -999))
 
@@ -2732,7 +2734,7 @@ prep_PC_GWAS <- function(data_id_age, data_id_sex, sqc_munge, bgen_file = data_U
   full_output <- reduce(out_list, full_join)
 
 
-  ordered_output <- order_bgen(bgen_file = data_UKBB_sample, full_output)
+  ordered_output <- order_bgen(bgen_file = bgen_file, full_output)
 
   return(ordered_output)
 
@@ -2742,7 +2744,7 @@ prep_PC_GWAS <- function(data_id_age, data_id_sex, sqc_munge, bgen_file = data_U
 
 write_PC_gwas_input <- function(PC_gwas_input){
   write.table(PC_gwas_input, "data/processed/PC_ukbb_GWA_input", sep=" ", quote=F, row.names=F, col.names = T)
-  return("data/processed/PC_ukbb_GWA_input")
+  return("data/processed/PC_ukbb_GWAS_input")
 }
 
 
