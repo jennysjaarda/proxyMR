@@ -2789,8 +2789,8 @@ make_ukbb_chunks <- function(v2_snp_list_file, chunk_size=1e6){
 
 create_bgenie_GWAS_dir <- function(){
 
-  dir.create("analysis/begnie_GWAS", showWarnings = FALSE)
-  return("analysis/begnie_GWAS")
+  dir.create("analysis/bgenie_GWAS", showWarnings = FALSE)
+  return("analysis/bgenie_GWAS")
 }
 
 launch_bgenie <- function(chr, phenofile, UKBB_dir, chr_char, start_pos, end_pos, chunk_num, output_dir, output_prefix){
