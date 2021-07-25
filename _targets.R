@@ -493,7 +493,7 @@ list(
 
   tar_target(
     path_PC_gwas_input,
-    write_PC_GWAS_input(PC_gwas_input),
+    write_PC_gwas_input(PC_gwas_input),
     format = "file"
   ),
 
@@ -514,16 +514,21 @@ list(
   ),
 
   tar_target(
+    bgenie_ukbb_chunks_run,
+    as_tibble(bgenie_ukbb_chunks)
+  ),
+
+  tar_target(
     path_bgenie_GWAS_dir,
     create_bgenie_GWAS_dir()
   ),
 
   tar_target(
     path_bgenie_pcs,
-    launch_bgenie(bgenie_ukbb_chunks$chr, phenofile = path_PC_gwas_input, UKBB_dir,
-                  bgenie_ukbb_chunks$chr_char, bgenie_ukbb_chunks$start, bgenie_ukbb_chunks$end, bgenie_ukbb_chunks$chunk_num,
+    launch_bgenie(bgenie_ukbb_chunks_run$chr, phenofile = path_PC_gwas_input, UKBB_dir,
+                  bgenie_ukbb_chunks_run$chr_char, bgenie_ukbb_chunks_run$start, bgenie_ukbb_chunks_run$end, bgenie_ukbb_chunks_run$chunk_num,
                   output_dir = path_bgenie_GWAS_dir, output_prefix = "PC_GWAS"),
-    pattern = map(bgenie_ukbb_chunks), format = "file"
+    pattern = map(bgenie_ukbb_chunks_run), format = "file"
   )
 
 
