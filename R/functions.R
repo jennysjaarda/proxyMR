@@ -2743,7 +2743,7 @@ prep_PC_GWAS <- function(data_id_age, data_id_sex, sqc_munge, bgen_file = data_U
 
 
 write_PC_gwas_input <- function(PC_gwas_input){
-  write.table(PC_gwas_input, "data/processed/PC_ukbb_GWA_input", sep=" ", quote=F, row.names=F, col.names = T)
+  write.table(PC_gwas_input, "data/processed/PC_UKBB_GWAS_input", sep=" ", quote=F, row.names=F, col.names = T)
   return("data/processed/PC_UKBB_GWAS_input")
 }
 
