@@ -2806,6 +2806,9 @@ launch_bgenie <- function(chr, phenofile, UKBB_dir, chr_char, start_pos, end_pos
   if(!file.exists(paste0(output_file, ".gz"))){
     file.create(paste0(output_file, ".gz"))
   }
+
+  return(paste0(output_file, ".gz"))
+
   # Eleonora's command line
   # /data/sgg3/jonathan/bgenie_v1.3/bgenie_v1.3_static1 --bgen
   # /data/sgg3/eleonora/projects/UKBB_GWAS/UK10K_SNPrs/CHR11/chr11.bgen ## this script would not include SNPs specific to HRC_list
