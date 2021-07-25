@@ -504,9 +504,15 @@ list(
     format = "file"
   ),
 
+
+  tar_target(
+    v2_snp_list,
+    path_v2_snp_list
+  ),
+
   tar_target(
     bgenie_ukbb_chunks,
-    make_ukbb_chunks(path_v2_snp_list, chunk_size=1e6), pattern = map(path_v2_snp_list)
+    make_ukbb_chunks(v2_snp_list, chunk_size=1e6), pattern = map(v2_snp_list)
   )
 
 
