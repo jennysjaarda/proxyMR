@@ -1424,7 +1424,7 @@ extract_Neale_outcome <- function(outcome_ID, both_sexes_file, male_file, female
     if(!is.null(Neale_file)){
 
       for(sex_i in c("both_sexes", "male", "female")){
-        if(grepl(paste0("/", sex_i, "/"), Neale_file)){
+        if(grepl(paste0("[.]", sex_i, "[.]tsv"), Neale_file)){
           assign("sex", sex_i)
         }
       }

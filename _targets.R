@@ -11,11 +11,11 @@ options(clustermq.scheduler = "slurm", clustermq.template = "slurm_clustermq.tmp
 tar_option_set(
   resources = tar_resources(
     clustermq = tar_resources_clustermq(template = list(num_cores = 1, account = "sgg",
-                                                        ntasks = 1, partition = "sgg",
+                                                        ntasks = 1, partition = "cluster2",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
   packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR", "ggplot2", "purrr"),
-  error = "continue",
+  error = "workspace",
   memory = "transient",
   garbage_collection = TRUE
 
@@ -475,6 +475,9 @@ list(
     pattern = map(outcomes_to_run), iteration = "list"
 
   ),
+
+  # harmonize one-sample data, could call it `stand_harmonised_data`
+  # perform standard MR
 
   tar_target(
     standard_MR,
