@@ -510,7 +510,7 @@ list(
 
   tar_target(
     bgenie_ukbb_chunks,
-      make_ukbb_chunks(file_v2_snps, chunk_size=1e5), pattern = map(file_v2_snps)
+      make_ukbb_chunks(file_v2_snps, chunk_size=5e4), pattern = map(file_v2_snps)
   ),
 
   tar_target(
