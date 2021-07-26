@@ -1418,23 +1418,17 @@ extract_ind_Neale_file <- function(Neale_file, variant_data){
 extract_Neale_outcome <- function(outcome_ID, both_sexes_file, male_file, female_file, variant_data){
 
   outcome_list <- list()
-  for(Neale_file in c(both_sexes_file, male_file, female_file)){
+  count <- 0
+  for(sex in c("both_sexes", "male", "female")){
 
-    sex <- NULL
+    Neale_file <- get(paste0(sex, "_file"))
     if(!is.null(Neale_file)){
-
-      for(sex_i in c("both_sexes", "male", "female")){
-        if(grepl(paste0("[.]", sex_i, "[.]tsv"), Neale_file)){
-          assign("sex", sex_i)
-        }
-      }
-
-      if(is.null(sex)) stop('no sex was determined using file name')
 
       Neale_stats <- extract_ind_Neale_file(Neale_file, variant_data)
       Neale_stats$outcome_ID <- outcome_ID
       Neale_stats$sex <- sex
       outcome_list[[paste0(outcome_ID, "_", sex, "_summary_stats")]] <- Neale_stats
+
     }
 
   }
