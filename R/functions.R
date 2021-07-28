@@ -1440,8 +1440,6 @@ extract_Neale_outcome <- function(outcome_ID, both_sexes_file, male_file, female
 
 write_outcome_stats <- function(outcome_ID, extract_Neale_outcome_result, exposures_to_run, summ_stats){
 
-  # Neale_pheno_ID is the outcome phenotype
-
   pheno_dir <- paste0("analysis/traitMR/" )
 
   file_list <- numeric()
@@ -1455,9 +1453,9 @@ write_outcome_stats <- function(outcome_ID, extract_Neale_outcome_result, exposu
     outcome_result_i <- numeric()
 
     for(sex in c("both_sexes", "male", "female")){
-      outcome_stats_sex <- extract_Neale_outcome_result[[paste0(Neale_pheno_ID, "_", sex, "_summary_stats")]]
+      outcome_stats_sex <- extract_Neale_outcome_result[[paste0(outcome_ID, "_", sex, "_summary_stats")]]
       outcome_stats_sex_sub <- outcome_stats_sex[which(outcome_stats_sex$SNP %in% rsids),]
-      if(!all(rsids %in% outcome_stats_sex_sub$SNP)) stop(paste0("Missing outcome info for some IVs for exposure `", exp_pheno_ID, "` in outcome `", Neale_pheno_ID, "`."))
+      if(!all(rsids %in% outcome_stats_sex_sub$SNP)) stop(paste0("Missing outcome info for some IVs for exposure `", exposure_ID, "` in outcome `", outcome_ID, "`."))
       outcome_stats_sex_sub$sex <- sex
       outcome_stats_sex_sub$exposure_ID <- exposure_ID
       outcome_result_i <- rbind(outcome_result_i, outcome_stats_sex_sub)
