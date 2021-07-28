@@ -1028,6 +1028,8 @@ create_trait_dirs <- function(Neale_pheno_ID){
   dir.create(paste0(pheno_dir, "/household_MR/", trait_ID), showWarnings = FALSE)
   dir.create(paste0(pheno_dir, "/household_GWAS/", trait_ID), showWarnings = FALSE)
 
+  dir.create(paste0(pheno_dir, "/standard_MR/", trait_ID), showWarnings = FALSE)
+  dir.create(paste0(pheno_dir, "/standard_GWAS/", trait_ID), showWarnings = FALSE)
 
   dir.create(paste0(pheno_dir, "/IVs/Neale/", trait_ID), showWarnings = FALSE)
 
@@ -1433,6 +1435,39 @@ extract_Neale_outcome <- function(outcome_ID, both_sexes_file, male_file, female
 
   }
   return(outcome_list)
+
+}
+
+write_outcome_stats <- function(outcome_ID, extract_Neale_outcome_result, exposures_to_run, summ_stats){
+
+  # Neale_pheno_ID is the outcome phenotype
+
+  pheno_dir <- paste0("analysis/traitMR/" )
+
+  file_list <- numeric()
+  for(i in 1:dim(exposures_to_run)[1]){
+    IV_stats <- summ_stats[[i]]
+    exposure_ID <- exposures_to_run$Neale_pheno_ID[i]
+    rsids <- IV_stats[[1]]$rsid
+
+    GWAS_file_i <- paste0(pheno_dir, "/standard_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
+    file_list <- c(GWAS_file_i, file_list)
+    outcome_result_i <- numeric()
+
+    for(sex in c("both_sexes", "male", "female")){
+      outcome_stats_sex <- extract_Neale_outcome_result[[paste0(Neale_pheno_ID, "_", sex, "_summary_stats")]]
+      outcome_stats_sex_sub <- outcome_stats_sex[which(outcome_stats_sex$SNP %in% rsids),]
+      if(!all(rsids %in% outcome_stats_sex_sub$SNP)) stop(paste0("Missing outcome info for some IVs for exposure `", exp_pheno_ID, "` in outcome `", Neale_pheno_ID, "`."))
+      outcome_stats_sex_sub$sex <- sex
+      outcome_stats_sex_sub$exposure_ID <- exposure_ID
+      outcome_result_i <- rbind(outcome_result_i, outcome_stats_sex_sub)
+    }
+
+    write.csv(outcome_result_i, GWAS_file_i, row.names = F)
+    cat(paste0("Finished writing standard GWAS statistics for exposure ", i, " of ", dim(exposures_to_run)[1], ".\n\n" ))
+  }
+
+  return(file_list)
 
 }
 

@@ -467,17 +467,30 @@ list(
 
   tar_target(
     outcome_stats,
-    {
-      extract_Neale_outcome(outcome_ID = outcomes_to_run$Neale_pheno_ID,
-                            both_sexes_file = outcomes_to_run$both_sexes_original_Neale_file, male_file = outcomes_to_run$male_original_Neale_file,
-                            female_file = outcomes_to_run$female_original_Neale_file, variant_IV_data)
-    },
+    extract_Neale_outcome(outcome_ID = outcomes_to_run$Neale_pheno_ID,
+                          both_sexes_file = outcomes_to_run$both_sexes_original_Neale_file, male_file = outcomes_to_run$male_original_Neale_file,
+                          female_file = outcomes_to_run$female_original_Neale_file, variant_IV_data),
     pattern = map(outcomes_to_run), iteration = "list"
+  ),
 
+  tar_target(
+    path_outcome_stats,
+    {
+      path_outcome_dirs
+      write_outcome_stats(outcomes_to_run$Neale_pheno_ID, outcome_stats, exposures_to_run, summ_stats)
+    },
+    pattern = map(outcomes_to_run, outcome_stats), format = "file"
   ),
 
   # harmonize one-sample data, could call it `stand_harmonised_data`
   # perform standard MR
+
+  tar_target(
+    standard_harmonised_data,
+    harmonise_standard_data(exposure_info, summ_stats, outcomes_to_run, gwas_results = household_GWAS, traits_corr2_filled),
+    pattern = map(exposure_info, summ_stats, household_GWAS), iteration = "list"
+  ),
+
 
   tar_target(
     standard_MR,
