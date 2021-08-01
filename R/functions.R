@@ -2004,7 +2004,7 @@ run_household_MR_comprehensive <- function(exposure_info, outcomes_to_run, house
 
     for(exposure_sex in c("male", "female")){
 
-      harmonised_dat_i_sex <- household_harmonised_data[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonise_data")]][[paste0("exp_", exposure_sex, "_harmonise_data")]]
+      harmonised_dat_i_sex <- household_harmonised_data[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data")]][[paste0("exp_", exposure_sex, "_harmonised_data")]]
       harmonised_dat_sub <- harmonised_dat_i_sex %>% filter(grouping_var == "age_even_bins") %>% filter(bin == "all")
       MR_complete_i_sex <- household_MR_comprehensive_ind(harmonised_dat_sub, MR_method_list)
       MR_complete_i[[paste0("exp_", exposure_sex, "_MR_complete")]] <- MR_complete_i_sex
@@ -2095,7 +2095,7 @@ harmonise_household_data_ind <- function(exposure_info, summ_stats, traits_corr2
     #output_table_dir <- paste0(project_dir, "/output/tables/traitMR/", trait_ID)
     #write.csv(full_MR_summary, paste0(output_table_dir, "/", trait_ID, "_household_MR.csv"), row.names=F, quote=T)
 
-    output_list[[paste0("exp_", exposure_sex, "_harmonise_data")]] <- harmonise_dat
+    output_list[[paste0("exp_", exposure_sex, "_harmonised_data")]] <- harmonise_dat
 
   }
 
@@ -2123,7 +2123,7 @@ harmonise_household_data <- function(exposure_info, summ_stats, outcomes_to_run,
 
     harmonise_result <- harmonise_household_data_ind(exposure_info, summ_stats, traits_corr2_filled, outcome_ID, household_GWAS_result)
 
-    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonise_data")]] <- harmonise_result
+    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data")]] <- harmonise_result
 
     cat(paste0("Finished harmonising data for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
   }
@@ -2131,6 +2131,100 @@ harmonise_household_data <- function(exposure_info, summ_stats, outcomes_to_run,
   return(output_list)
 
 }
+
+
+harmonise_standard_data_ind <- function(exposure_info, summ_stats, traits_corr2_filled, outcome_ID, standard_GWAS_result) {
+
+  output_list <- list()
+
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+  outcome_traits <- traits_corr2_filled[which(traits_corr2_filled[["Neale_file_sex"]]=="both"),]
+  outcome_description <- as.character(outcome_traits[which(outcome_traits[["Neale_pheno_ID"]]==outcome_ID), "description"])
+  exposure_description <- exposure_info %>% filter(Value=="description") %>% pull(Info)
+
+  for(exposure_sex in c("male", "female")){
+
+    cat(paste0("Harmonising data for ", exposure_sex, "s as exposure...\n"))
+
+    if(exposure_sex=="male"){outcome_sex="female"}
+    if(exposure_sex=="female"){outcome_sex="male"}
+    if(exposure_sex=="male"){index="HOUSEHOLD_MEMBER1"}
+    if(exposure_sex=="female"){index="HOUSEHOLD_MEMBER2"}
+    opp_index <- ifelse(index=="HOUSEHOLD_MEMBER1", "HOUSEHOLD_MEMBER2", "HOUSEHOLD_MEMBER1")
+
+    ## FORMAT IV DATA
+    IV_data <- summ_stats[[paste0(exposure_sex, "_IV_data")]]
+    colnames(IV_data)[match(c("rsid", "chr", "beta", "se", "pval", "ref", "alt", "AF", "n_complete_samples"), colnames(IV_data))] <-
+      c("SNP", "chr", "beta", "se", "pval", "other_allele", "effect_allele","eaf","samplesize")
+    IV_data$phenotype <- exposure_ID
+    data_IV_format <- format_data(IV_data, type="exposure", phenotype_col = "phenotype")
+
+    ## FILTER OUTCOME DATA - it doesn't matter which `grouping_var` we choose because we are selecting "all"
+    outcome_gwas <- standard_GWAS_result %>% filter(sex == !!exposure_sex)
+
+    outcome_dat <- format_data(outcome_gwas, type="outcome",
+                               snp_col = "SNP",
+                               beta_col = paste0("beta"),
+                               se_col = paste0("se"),
+                               effect_allele_col = "other_allele",
+                               other_allele_col = "effect_allele",
+                               pval_col = paste0("pval"),
+                               eaf_col = "eaf",
+                               phenotype_col = "phenotype",
+                               samplesize_col = "samplesize"
+    )
+
+    harmonise_dat <- harmonise_data(
+      exposure_dat = data_IV_format,
+      outcome_dat = outcome_dat, action=1
+    )
+
+    harmonise_dat$exposure_sex <- exposure_sex
+    harmonise_dat$outcome_sex <- exposure_sex # standard MR is in only one sex
+
+    harmonise_dat$exposure_description <- exposure_description
+    harmonise_dat$outcome_description <- outcome_description
+
+    #output_table_dir <- paste0(project_dir, "/output/tables/traitMR/", trait_ID)
+    #write.csv(full_MR_summary, paste0(output_table_dir, "/", trait_ID, "_household_MR.csv"), row.names=F, quote=T)
+
+    output_list[[paste0("exp_", exposure_sex, "_harmonised_data")]] <- harmonise_dat
+
+  }
+
+  return(output_list)
+
+}
+
+
+harmonise_standard_data <- function(exposure_info, summ_stats, outcomes_to_run, traits_corr2_filled){
+
+  output_list <- list()
+  output_files <- numeric()
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+
+  pheno_dir <- paste0("analysis/traitMR")
+  cat(paste0("\nHarmonising standard MR input for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+
+    outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
+    GWAS_file_i <- paste0(pheno_dir, "/standard_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
+
+    standard_GWAS_result <- fread(GWAS_file_i, sep=",", header = T, data.table=F)
+
+    harmonise_result <- harmonise_standard_data_ind(exposure_info, summ_stats, traits_corr2_filled, outcome_ID, standard_GWAS_result)
+
+    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data")]] <- harmonise_result
+
+    cat(paste0("Finished harmonising data for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+  }
+
+  return(output_list)
+
+}
+
 
 binned_household_MR_ind <- function(exposure_info, outcome_ID, household_harmonised_data, grouping_var, MR_method_list) {
 
@@ -2149,7 +2243,7 @@ binned_household_MR_ind <- function(exposure_info, outcome_ID, household_harmoni
     if(exposure_sex=="female"){index="HOUSEHOLD_MEMBER2"}
     opp_index <- ifelse(index=="HOUSEHOLD_MEMBER1", "HOUSEHOLD_MEMBER2", "HOUSEHOLD_MEMBER1")
 
-    household_harmonised_data_sex <- household_harmonised_data[[paste0("exp_", exposure_sex, "_harmonise_data")]] %>% filter(grouping_var == !!grouping_var)
+    household_harmonised_data_sex <- household_harmonised_data[[paste0("exp_", exposure_sex, "_harmonised_data")]] %>% filter(grouping_var == !!grouping_var)
 
     household_intervals <- levels(as.factor(household_harmonised_data_sex$bin))
     household_intervals_num <- strex::str_first_number(household_intervals)

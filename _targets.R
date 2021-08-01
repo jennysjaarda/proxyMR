@@ -487,8 +487,11 @@ list(
 
   tar_target(
     standard_harmonised_data,
-    harmonise_standard_data(exposure_info, summ_stats, outcomes_to_run, gwas_results = household_GWAS, traits_corr2_filled),
-    pattern = map(exposure_info, summ_stats, household_GWAS), iteration = "list"
+    {
+      path_outcome_stats
+      harmonise_standard_data(exposure_info, summ_stats, outcomes_to_run, traits_corr2_filled)
+    }
+    pattern = map(exposure_info, summ_stats), iteration = "list"
   ),
 
 
