@@ -490,7 +490,7 @@ list(
     {
       path_outcome_stats
       harmonise_standard_data(exposure_info, summ_stats, outcomes_to_run, traits_corr2_filled)
-    }
+    },
     pattern = map(exposure_info, summ_stats), iteration = "list"
   ),
 
