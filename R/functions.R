@@ -1933,108 +1933,8 @@ read_household_GWAS <- function(gwas_file_list){ #output from `run_household_GWA
 
 }
 
-
-household_MR_comprehensive_ind <- function(harmonise_dat, MR_method_list){
-
-
-  exposure_ID <- harmonise_dat$exposure[1]
-  outcome_ID <- harmonise_dat$outcome[1]
-  exposure_sex <- harmonise_dat$exposure_sex[1]
-  outcome_sex <- harmonise_dat$outcome_sex[1]
-  exposure_description <- harmonise_dat$exposure_description[1]
-  outcome_description <- harmonise_dat$outcome_description[1]
-
-
-  het_test <- mr_heterogeneity(harmonise_dat, method_list=c("mr_egger_regression", "mr_ivw"))
-  egger_test <- mr_pleiotropy_test(harmonise_dat)
-  leave1out_test <- mr_leaveoneout(harmonise_dat)
-
-  ngwas <- max(harmonise_dat$samplesize.outcome, na.rm=T)
-  nsnps <- dim(harmonise_dat)[1]
-  n_neale <- max(harmonise_dat$samplesize.exposure, na.rm=T)
-
-  # Standard MR
-  original_MR <- mr(harmonise_dat, method=MR_method_list)
-  MR_res <- include_MR_NA(original_MR)
-
-  ## Test for reverse causality
-  harmonise_dat_sensitivity <- harmonise_dat[which(harmonise_dat[["pval.exposure"]] < harmonise_dat[["pval.outcome"]]),]
-  MR_res_sensitivity <- include_MR_NA(mr(harmonise_dat_sensitivity, method=MR_method_list))
-
-  temp_summary <- summarize_mr_result (paste0(exposure_ID,"_INDEX"), paste0(outcome_ID,"_HOUSEHOLD"), exposure_sex, outcome_sex, nsnps, MR_res, het_test, egger_test,n_neale, ngwas)
-
-  MR_ivw_row <- which(MR_res[,"method"]=="Inverse variance weighted")
-  MR_wald_row <- which(MR_res[,"method"]=="Wald ratio")
-  nsnps_sensitivity <- dim(harmonise_dat_sensitivity)[1]
-  correct_row <- ifelse(nsnps_sensitivity==1, MR_wald_row, MR_ivw_row)
-  sensitivity_result <- cbind(nsnps_sensitivity, make_beta_95ci(MR_res_sensitivity[correct_row,"b"],MR_res_sensitivity[correct_row,"se"]),pretty_round(MR_res_sensitivity[correct_row,"pval"]))
-  temp_summary <- cbind(temp_summary, sensitivity_result)
-
-  same_trait <- exposure_ID == outcome_ID
-  MR_summary <- cbind(exposure_ID, outcome_ID,exposure_description, outcome_description, same_trait, temp_summary)
-
-
-  num_cols <- length(colnames(MR_summary))
-
-  colnames(MR_summary)[num_cols-1] <- "IVW/Wald_summary_sensitivity"
-  colnames(MR_summary)[num_cols] <- "IVW/Wald_pval_sensitivity"
-  colnames(MR_summary)[num_cols-2] <- "N_snps_sensitivity" #test for reverse causation
-
-  mr_plot <- household_MR_plot(harmonise_dat, original_MR)
-
-  leave1out_test$exposure_sex <- exposure_sex
-  leave1out_test$outcome_sex <- outcome_sex
-
-
-  return(list(MR_summary = MR_summary, leave1out_test = leave1out_test, MR_plot = mr_plot))
-
-}
-
-run_household_MR_comprehensive <- function(exposure_info, outcomes_to_run, household_harmonised_data, MR_method_list){
-
-  output_list <- list()
-  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
-
-  cat(paste0("\nRunning complete MR analyses for all outcomes with phenotype `", exposure_ID, "`\nas exposure (i.e. Egger, leave-one-out, sensitivity, MR plot. \n[This is only being run in full sample, not in individual bins.]\n\n"))
-
-  for(i in 1:dim(outcomes_to_run)[1]){
-
-    outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
-    MR_complete_i <- list()
-
-    for(exposure_sex in c("male", "female")){
-
-      harmonised_dat_i_sex <- household_harmonised_data[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data")]][[paste0("exp_", exposure_sex, "_harmonised_data")]]
-      harmonised_dat_sub <- harmonised_dat_i_sex %>% filter(grouping_var == "age_even_bins") %>% filter(bin == "all")
-      MR_complete_i_sex <- household_MR_comprehensive_ind(harmonised_dat_sub, MR_method_list)
-      MR_complete_i[[paste0("exp_", exposure_sex, "_MR_complete")]] <- MR_complete_i_sex
-    }
-
-    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_MR_complete")]] <- MR_complete_i
-
-    cat(paste0("Finished computing full MR results for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
-
-  }
-
-  return(output_list)
-
-}
-
-summarize_household_MR_comprehensive <- function(household_MR_comprehensive_result){
-
-  result <- numeric()
-  for(i in 1:length(household_MR_comprehensive_result)){
-    male_result <- household_MR_comprehensive_result[[i]][["exp_male_MR_complete"]][["MR_summary"]]
-    female_result <- household_MR_comprehensive_result[[i]][["exp_female_MR_complete"]][["MR_summary"]]
-    result_i <- rbind(male_result, female_result)
-    result <- rbind(result, result_i)
-
-  }
-
-  result <- as_tibble(result)
-  return(result)
-
-}
+###########################################
+### harmonise exposure and outcome data
 
 harmonise_household_data_ind <- function(exposure_info, summ_stats, traits_corr2_filled, outcome_ID, household_GWAS_result) {
 
@@ -2082,6 +1982,9 @@ harmonise_household_data_ind <- function(exposure_info, summ_stats, traits_corr2
       exposure_dat = data_IV_format,
       outcome_dat = outcome_dat, action=1
     )
+
+    harmonise_dat$exposure_ID <- exposure_ID
+    harmonise_dat$outcome_ID <- outcome_ID
 
     harmonise_dat$exposure_sex <- exposure_sex
     harmonise_dat$outcome_sex <- outcome_sex
@@ -2132,7 +2035,6 @@ harmonise_household_data <- function(exposure_info, summ_stats, outcomes_to_run,
 
 }
 
-
 harmonise_standard_data_ind <- function(exposure_info, summ_stats, traits_corr2_filled, outcome_ID, standard_GWAS_result) {
 
   output_list <- list()
@@ -2179,6 +2081,9 @@ harmonise_standard_data_ind <- function(exposure_info, summ_stats, traits_corr2_
       outcome_dat = outcome_dat, action=1
     )
 
+    harmonise_dat$exposure_ID <- exposure_ID
+    harmonise_dat$outcome_ID <- outcome_ID
+
     harmonise_dat$exposure_sex <- exposure_sex
     harmonise_dat$outcome_sex <- exposure_sex # standard MR is in only one sex
 
@@ -2195,7 +2100,6 @@ harmonise_standard_data_ind <- function(exposure_info, summ_stats, traits_corr2_
   return(output_list)
 
 }
-
 
 harmonise_standard_data <- function(exposure_info, summ_stats, outcomes_to_run, traits_corr2_filled){
 
@@ -2326,59 +2230,139 @@ run_binned_household_MR <- function(exposure_info, outcomes_to_run, household_ha
 
 }
 
-pull_Neale_effects <- function(snp_list, outcome_ID, Neale_output_path, reference_file = data_Neale_manifest){
+household_MR_comprehensive_ind <- function(harmonise_dat, MR_method_list){
 
 
-  existing_files_full <- numeric()
-  existing_files <- numeric()
-
-  for(path in paste0( Neale_output_path, "/", c("both_sexes", "male", "female")))
-  {
-
-    existing_files_full_temp  =  list.files( path,
-                                             recursive = TRUE,
-                                             pattern = '[.]gz', full.names = TRUE )
-
-    existing_files_temp  =  list.files( path,
-                                        recursive = TRUE,
-                                        pattern = '[.]gz' ) %>%
-      str_match( '[^/]+$' ) %>%
-      c
-
-    existing_files_full <- c(existing_files_full, existing_files_full_temp)
-    existing_files <- c(existing_files, existing_files_temp)
-  }
+  exposure_ID <- harmonise_dat$exposure_ID[1]
+  outcome_ID <- harmonise_dat$outcome_ID[1]
+  exposure_sex <- harmonise_dat$exposure_sex[1]
+  outcome_sex <- harmonise_dat$outcome_sex[1]
+  exposure_description <- harmonise_dat$exposure_description[1]
+  outcome_description <- harmonise_dat$outcome_description[1]
 
 
-  existing_files_full <- existing_files_full[-which(grepl(paste0("/","variants.tsv.gz"), existing_files_full))]
+  het_test <- mr_heterogeneity(harmonise_dat, method_list=c("mr_egger_regression", "mr_ivw"))
+  egger_test <- mr_pleiotropy_test(harmonise_dat)
+  leave1out_test <- mr_leaveoneout(harmonise_dat)
 
-  irnt = TRUE
-  ID <- outcome_ID
-  phenotype_ids  =  paste0( '^', ID, ifelse( irnt, '(_irnt|)$', '(_raw|)$' ) ) %>%
-    paste( collapse = '|' )
+  ngwas <- max(harmonise_dat$samplesize.outcome, na.rm=T)
+  nsnps <- dim(harmonise_dat)[1]
+  n_neale <- max(harmonise_dat$samplesize.exposure, na.rm=T)
 
-  file_name_temp  =  reference_file %>%
-    filter( str_detect( .$'Phenotype Code', phenotype_ids ) & Sex=="both_sexes")
+  # Standard MR
+  original_MR <- mr(harmonise_dat, method=MR_method_list)
+  MR_res <- include_MR_NA(original_MR)
 
-  file_name <- file_name_temp[["Phenotype Code"]][1]
+  ## Test for reverse causality
+  harmonise_dat_sensitivity <- harmonise_dat[which(harmonise_dat[["pval.exposure"]] < harmonise_dat[["pval.outcome"]]),]
+  MR_res_sensitivity <- include_MR_NA(mr(harmonise_dat_sensitivity, method=MR_method_list))
 
-  full_neale_file <- existing_files_full[which(grepl(paste0("/",file_name), existing_files_full))]
+  temp_summary <- summarize_mr_result (paste0(exposure_ID,"_INDEX"), paste0(outcome_ID,"_HOUSEHOLD"), exposure_sex, outcome_sex, nsnps, MR_res, het_test, egger_test,n_neale, ngwas)
 
-  for(sex in c("male", "female")){
+  MR_ivw_row <- which(MR_res[,"method"]=="Inverse variance weighted")
+  MR_wald_row <- which(MR_res[,"method"]=="Wald ratio")
+  nsnps_sensitivity <- dim(harmonise_dat_sensitivity)[1]
+  correct_row <- ifelse(nsnps_sensitivity==1, MR_wald_row, MR_ivw_row)
+  sensitivity_result <- cbind(nsnps_sensitivity, make_beta_95ci(MR_res_sensitivity[correct_row,"b"],MR_res_sensitivity[correct_row,"se"]),pretty_round(MR_res_sensitivity[correct_row,"pval"]))
+  temp_summary <- cbind(temp_summary, sensitivity_result)
 
-    full_neale_file_sex <- full_neale_file[which(grepl(paste0("/",sex, "/"), full_neale_file))]
-    sumstats <- fread(full_neale_file_sex)
-  }
+  same_trait <- exposure_ID == outcome_ID
+  MR_summary <- cbind(exposure_ID, outcome_ID,exposure_description, outcome_description, same_trait, temp_summary)
 
 
+  num_cols <- length(colnames(MR_summary))
 
+  colnames(MR_summary)[num_cols-1] <- "IVW/Wald_summary_sensitivity"
+  colnames(MR_summary)[num_cols] <- "IVW/Wald_pval_sensitivity"
+  colnames(MR_summary)[num_cols-2] <- "N_snps_sensitivity" #test for reverse causation
+
+  mr_plot <- household_MR_plot(harmonise_dat, original_MR)
+
+  leave1out_test$exposure_sex <- exposure_sex
+  leave1out_test$outcome_sex <- outcome_sex
+
+
+  return(list(MR_summary = MR_summary, leave1out_test = leave1out_test, MR_plot = mr_plot))
 
 }
 
-standard_MR_all_outcomes <- function(exposure_info, summ_stats){
+run_household_MR_comprehensive <- function(exposure_info, outcomes_to_run, household_harmonised_data, MR_method_list){
+
+  output_list <- list()
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+
+  cat(paste0("\nRunning complete MR analyses for all outcomes with phenotype `", exposure_ID, "`\nas exposure (i.e. Egger, leave-one-out, sensitivity, MR plot. \n[This is only being run in full sample, not in individual bins.]\n\n"))
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
+    MR_complete_i <- list()
+
+    for(exposure_sex in c("male", "female")){
+
+      harmonised_dat_i_sex <- household_harmonised_data[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data")]][[paste0("exp_", exposure_sex, "_harmonised_data")]]
+      harmonised_dat_sub <- harmonised_dat_i_sex %>% filter(grouping_var == "age_even_bins") %>% filter(bin == "all")
+      MR_complete_i_sex <- household_MR_comprehensive_ind(harmonised_dat_sub, MR_method_list)
+      MR_complete_i[[paste0("exp_", exposure_sex, "_MR_complete")]] <- MR_complete_i_sex
+    }
+
+    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_MR_complete")]] <- MR_complete_i
+
+    cat(paste0("Finished computing full MR results for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+
+  }
+
+  return(output_list)
 
 }
 
+summarize_household_MR_comprehensive <- function(household_MR_comprehensive_result){
+
+  result <- numeric()
+  for(i in 1:length(household_MR_comprehensive_result)){
+    male_result <- household_MR_comprehensive_result[[i]][["exp_male_MR_complete"]][["MR_summary"]]
+    female_result <- household_MR_comprehensive_result[[i]][["exp_female_MR_complete"]][["MR_summary"]]
+    result_i <- rbind(male_result, female_result)
+    result <- rbind(result, result_i)
+
+  }
+
+  result <- as_tibble(result)
+  return(result)
+
+}
+
+run_standard_MR_comprehensive <- function(exposure_info, outcomes_to_run, standard_harmonised_data, MR_method_list){
+
+  output_list <- list()
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+
+  cat(paste0("\nRunning complete MR analyses for all outcomes with phenotype `", exposure_ID, "`\nas exposure (i.e. Egger, leave-one-out, sensitivity, MR plot in same individual (i.e. standard MR). \n\n"))
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
+    MR_complete_i <- list()
+
+    if(outcome_ID != exposure_ID){
+      for(exposure_sex in c("male", "female")){
+
+        standard_dat_i_sex <- standard_harmonised_data[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data")]][[paste0("exp_", exposure_sex, "_harmonised_data")]]
+        MR_complete_i_sex <- household_MR_comprehensive_ind(standard_dat_i_sex, MR_method_list)
+        MR_complete_i[[paste0("exp_", exposure_sex, "_MR_complete")]] <- MR_complete_i_sex
+      }
+    }
+
+
+    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_MR_complete")]] <- MR_complete_i
+
+    cat(paste0("Finished computing full MR results for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+
+  }
+
+  return(output_list)
+
+}
 
 write_household_MR <- function(exposure_info, outcomes_to_run, household_MR){
 

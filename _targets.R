@@ -498,7 +498,9 @@ list(
   tar_target(
     standard_MR,
     {
-      standard_MR(exposures_to_run, outcomes_to_run)
+      #run_household_MR_comprehensive(exposure_info, outcomes_to_run, household_harmonised_data, MR_method_list),
+
+      run_standard_MR_comprehensive(exposure_info, outcomes_to_run, standard_harmonised_data, MR_method_list)
     },
 
     pattern = map(exposures_to_run)
