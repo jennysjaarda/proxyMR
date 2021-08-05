@@ -2337,7 +2337,7 @@ run_standard_MR_comprehensive <- function(exposure_info, outcomes_to_run, standa
   output_list <- list()
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
 
-  cat(paste0("\nRunning complete MR analyses for all outcomes with phenotype `", exposure_ID, "`\nas exposure (i.e. Egger, leave-one-out, sensitivity, MR plot in same individual (i.e. standard MR). \n\n"))
+  cat(paste0("\nRunning complete MR analyses for all outcomes with phenotype `", exposure_ID, "as exposure\n(i.e. Egger, leave-one-out, sensitivity, MR plot in same individual (i.e. standard MR). \n\n"))
 
   for(i in 1:dim(outcomes_to_run)[1]){
 
@@ -2348,7 +2348,7 @@ run_standard_MR_comprehensive <- function(exposure_info, outcomes_to_run, standa
       for(exposure_sex in c("male", "female")){
 
         standard_dat_i_sex <- standard_harmonised_data[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data")]][[paste0("exp_", exposure_sex, "_harmonised_data")]]
-        MR_complete_i_sex <- household_MR_comprehensive_ind(standard_dat_i_sex, MR_method_list)
+        MR_complete_i_sex <- household_MR_comprehensive_ind(standard_dat_i_sex, MR_method_list) ##the inner function for running the MR is the same for household and standard MR.
         MR_complete_i[[paste0("exp_", exposure_sex, "_MR_complete")]] <- MR_complete_i_sex
       }
     }
