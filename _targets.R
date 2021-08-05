@@ -457,8 +457,6 @@ list(
 
   tar_target(
     ##summarize into one table, ignore leave-1-out analyses for now
-    ## add column for outcome_ID==exposure_ID
-    ## outcome_description and exposure description
     household_MR_summary,
     summarize_household_MR_comprehensive(household_MR),
     pattern = map(household_MR)
@@ -494,18 +492,20 @@ list(
     pattern = map(exposure_info, summ_stats), iteration = "list"
   ),
 
-
   tar_target(
     standard_MR,
-    {
-      #run_household_MR_comprehensive(exposure_info, outcomes_to_run, household_harmonised_data, MR_method_list),
-
-      run_standard_MR_comprehensive(exposure_info, outcomes_to_run, standard_harmonised_data, MR_method_list)
-    },
-
-    pattern = map(exposures_to_run)
-
+    run_standard_MR_comprehensive(exposure_info, outcomes_to_run, standard_harmonised_data, MR_method_list),
+    pattern = map(exposure_info, standard_harmonised_data)
   ),
+
+
+  tar_target(
+    ##summarize into one table, ignore leave-1-out analyses for now
+    standard_MR_summary,
+    summarize_standard_MR_comprehensive(standard_MR),
+    pattern = map(standard_MR)
+  ),
+
 
   tar_target(
     PC_gwas_input,
