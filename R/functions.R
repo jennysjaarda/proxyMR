@@ -2394,7 +2394,7 @@ summarize_standard_MR_comprehensive <- function(run_standard_MR_comprehensive_re
 
   result <- numeric()
   for(i in 1:length(run_standard_MR_comprehensive_result)){
-    if(!length(run_standard_MR_comprehensive_result[[i]]==0)){
+    if(!length(run_standard_MR_comprehensive_result[[i]])==0){
       male_result <- run_standard_MR_comprehensive_result[[i]][["exp_male_MR_complete"]][["MR_summary"]]
       female_result <- run_standard_MR_comprehensive_result[[i]][["exp_female_MR_complete"]][["MR_summary"]]
       result_i <- rbind(male_result, female_result)
