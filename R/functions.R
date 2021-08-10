@@ -1579,19 +1579,22 @@ summarize_mr_result <- function(exposure, outcome, exposure_sex, outcome_sex, ns
   {
     egger_pval <- NA
     het_IVW_pval <- NA
+    egger_pval_round <- NA
+    het_IVW_pval_round <- NA
+
     for(method in c("Wald ratio","MR Egger"))
     {
       row <- which(MR_res[,"method"]==method)
       if(any(is.na(MR_res[row,c("b","se","pval")])))
       {
-        out <- cbind(out, NA, NA)
+        out <- cbind(out, NA, NA, NA, NA, NA)
       } else {
         b.ci <- make_beta_95ci(MR_res[row,"b"],MR_res[row,"se"])
         pval <- pretty_round(MR_res[row,"pval"])
-        out <- cbind(out, b.ci, pval)
+        out <- cbind(out, MR_res[row,"b"],MR_res[row,"se"], MR_res[row,"pval"], b.ci, pval)
       }
     }
-    out <- cbind(out, egger_pval,het_IVW_pval)
+    out <- cbind(out, egger_pval,het_IVW_pval, egger_pval_round, het_IVW_pval_round)
   }
   if(nsnps>1)
   {
@@ -1601,14 +1604,21 @@ summarize_mr_result <- function(exposure, outcome, exposure_sex, outcome_sex, ns
       row <- which(MR_res[,"method"]==method)
       b.ci <- make_beta_95ci(MR_res[row,"b"],MR_res[row,"se"])
       pval <- pretty_round(MR_res[row,"pval"])
-      out <- cbind(out, b.ci, pval)
+      out <- cbind(out, MR_res[row,"b"],MR_res[row,"se"], MR_res[row,"pval"], b.ci, pval)
     }
-    het_IVW_pval <- pretty_round(het_test[which(het_test[,"method"]=="Inverse variance weighted"),"Q_pval"])
-    egger_pval <- pretty_round(egger_test[1,"pval"])
-    out <- cbind(out, egger_pval,het_IVW_pval)
+    het_IVW_pval <- het_test[which(het_test[,"method"]=="Inverse variance weighted"),"Q_pval"]
+    egger_pval <- egger_test[1,"pval"]
+
+    het_IVW_pval_round <- pretty_round(het_IVW_pval)
+    egger_pval_round <- pretty_round(egger_pval)
+
+    out <- cbind(out, egger_pval,het_IVW_pval, egger_pval_round, het_IVW_pval_round)
+
   }
   colnames(out) <- c("exposure", "outcome", "exposure_sex","outcome_sex","N_snps", "N_exposure_GWAS", "N_outcome_GWAS",
-                     "IVW/Wald_summary", "IVW/Wald_pval","Egger_summary", "Egger_pval", "Egger_int_pval", "Het_IVW_Qpval")
+                     "IVW_Wald_beta", "IVW_Wald_se", "IVW_Wald_pval", "IVW_Wald_summary", "IVW_Wald_pval_round",
+                     "Egger_beta", "Egger_se", "Egger_pval", "Egger_summary", "Egger_pval_round",
+                     "Egger_int_pval", "Het_IVW_Qpval", "Egger_int_pval_round", "Het_IVW_Qpval_round")
   return(out)
 }
 
@@ -2263,7 +2273,7 @@ household_MR_comprehensive_ind <- function(harmonise_dat, MR_method_list){
   MR_wald_row <- which(MR_res[,"method"]=="Wald ratio")
   nsnps_sensitivity <- dim(harmonise_dat_sensitivity)[1]
   correct_row <- ifelse(nsnps_sensitivity==1, MR_wald_row, MR_ivw_row)
-  sensitivity_result <- cbind(nsnps_sensitivity, make_beta_95ci(MR_res_sensitivity[correct_row,"b"],MR_res_sensitivity[correct_row,"se"]),pretty_round(MR_res_sensitivity[correct_row,"pval"]))
+  sensitivity_result <- cbind(nsnps_sensitivity, MR_res_sensitivity[correct_row,"b"],MR_res_sensitivity[correct_row,"se"], MR_res_sensitivity[correct_row,"pval"], make_beta_95ci(MR_res_sensitivity[correct_row,"b"],MR_res_sensitivity[correct_row,"se"]),pretty_round(MR_res_sensitivity[correct_row,"pval"]))
   temp_summary <- cbind(temp_summary, sensitivity_result)
 
   same_trait <- exposure_ID == outcome_ID
@@ -2272,9 +2282,14 @@ household_MR_comprehensive_ind <- function(harmonise_dat, MR_method_list){
 
   num_cols <- length(colnames(MR_summary))
 
-  colnames(MR_summary)[num_cols-1] <- "IVW/Wald_summary_sensitivity"
-  colnames(MR_summary)[num_cols] <- "IVW/Wald_pval_sensitivity"
-  colnames(MR_summary)[num_cols-2] <- "N_snps_sensitivity" #test for reverse causation
+  colnames(MR_summary)[num_cols-1] <- "IVW_Wald_sensitivity_summary"
+  colnames(MR_summary)[num_cols] <- "IVW_Wald_sensitivity_pval_round"
+
+  colnames(MR_summary)[num_cols-2] <- "IVW_Wald_sensitivity_pval"
+  colnames(MR_summary)[num_cols-3] <- "IVW_Wald_sensitivity_beta"
+  colnames(MR_summary)[num_cols-4] <- "IVW_Wald_sensitivity_se"
+
+  colnames(MR_summary)[num_cols-5] <- "N_snps_sensitivity" #test for reverse causation
 
   mr_plot <- household_MR_plot(harmonise_dat, original_MR)
 
@@ -2406,6 +2421,90 @@ summarize_standard_MR_comprehensive <- function(run_standard_MR_comprehensive_re
   return(result)
 
 }
+
+standard_MR_summary <- function(standard_MR_summary, exposures_to_run, outcomes_to_run){
+
+
+  for(i in exposures_to_run){
+    for(j in outcomes_to_run){
+      exposure_ID <- exposures_to_run[["Neale_pheno_ID"]][i]
+      outcome_ID <- outcomes_to_run[["Neale_pheno_ID"]][j]
+      if(exposure_ID!=outcome_ID){
+        mr_summary <- standard_MR_summary[which(standard_MR_summary$exposure_ID==exposure_ID &
+                                                standard_MR_summary$outcome_ID==outcome_ID),]
+
+        male_row <- which(mr_summary$exposure_sex=="male")
+        female_row <- which(mr_summary$exposure_sex=="female")
+
+        beta_F <-  as.numeric(mr_summary[female_row,"MR_est"])
+        beta_M <-  as.numeric(mr_summary[male_row,"MR_est"])
+        SE_F <- as.numeric(mr_summary[female_row,"MR_se"])
+        SE_M <- as.numeric(mr_summary[male_row,"MR_se"])
+        n_M <- as.numeric(mr_summary[male_row,"N_outcome_GWAS"])
+        n_F <- as.numeric(mr_summary[male_row,"N_outcome_GWAS"])
+
+        se <- sqrt( (SE_F^2) + (SE_M^2) )
+        t <- (beta_F-beta_M)/se
+        p_het <- 2*pnorm(-abs(t))
+
+        mr_summary$sex_het[male_row] <- p_het
+        mr_summary$sex_het[female_row] <- p_het
+
+        effects <- c(beta_F, beta_M)
+        ses <- c(SE_F, SE_M)
+        n <- sum(n_M, n_F)
+        meta.result=meta.summaries(d=effects, se=ses,method=c("fixed"), conf.level=0.95)
+        b_meta=round(meta.result[3]$summary,digits=10)
+        b_meta_se=round(meta.result[4]$se.summary,digits=10)
+        lowerbound=b_meta-b_meta_se*1.96
+        upperbound=b_meta+b_meta_se*1.96
+        meta_p=round(2*(pt(abs(b_meta/b_meta_se),((n)-meta.result$het[2]),lower.tail=FALSE)),digits=10)
+
+
+      }
+
+    }
+  }
+  male_row <- which(mr_summary$trait_ID==trait & mr_summary$exposure_sex=="male")
+  female_row <- which(mr_summary$trait_ID==trait & mr_summary$exposure_sex=="female")
+
+  beta_F <-  as.numeric(mr_summary[female_row,"MR_est"])
+  beta_M <-  as.numeric(mr_summary[male_row,"MR_est"])
+  SE_F <- as.numeric(mr_summary[female_row,"MR_se"])
+  SE_M <- as.numeric(mr_summary[male_row,"MR_se"])
+  n_M <- as.numeric(mr_summary[male_row,"N_outcome_GWAS"])
+  n_F <- as.numeric(mr_summary[male_row,"N_outcome_GWAS"])
+
+  se <- sqrt( (SE_F^2) + (SE_M^2) )
+  t <- (beta_F-beta_M)/se
+  p_het <- 2*pnorm(-abs(t))
+
+  mr_summary$sex_het[male_row] <- p_het
+  mr_summary$sex_het[female_row] <- p_het
+
+  effects <- c(beta_F, beta_M)
+  ses <- c(SE_F, SE_M)
+  n <- sum(n_M, n_F)
+  meta.result=meta.summaries(d=effects, se=ses,method=c("fixed"), conf.level=0.95)
+  b_meta=round(meta.result[3]$summary,digits=10)
+  b_meta_se=round(meta.result[4]$se.summary,digits=10)
+  lowerbound=b_meta-b_meta_se*1.96
+  upperbound=b_meta+b_meta_se*1.96
+  meta_p=round(2*(pt(abs(b_meta/b_meta_se),((n)-meta.result$het[2]),lower.tail=FALSE)),digits=10)
+
+  for(sex_row in c(male_row, female_row)){
+    mr_summary$trait_description[sex_row] <- trait_description
+    mr_summary$MR_meta_est[sex_row] <- b_meta
+    mr_summary$MR_meta_se[sex_row] <- b_meta_se
+    mr_summary$MR_meta_L95[sex_row] <- lowerbound
+    mr_summary$MR_meta_U95[sex_row] <- upperbound
+    mr_summary$MR_meta_pval[sex_row] <- meta_p
+
+  }
+
+}
+
+
 
 calc_Q_stat <- function(household_MR_result, trait_ID){
 
