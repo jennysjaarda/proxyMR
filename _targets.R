@@ -495,7 +495,7 @@ list(
   tar_target(
     standard_MR,
     run_standard_MR_comprehensive(exposure_info, outcomes_to_run, standard_harmonised_data, MR_method_list),
-    pattern = map(exposure_info, standard_harmonised_data)
+    pattern = map(exposure_info, standard_harmonised_data), iteration = "list"
   ),
 
 
@@ -505,7 +505,6 @@ list(
     summarize_standard_MR_comprehensive(standard_MR),
     pattern = map(standard_MR)
   ),
-
 
   tar_target(
     PC_gwas_input,

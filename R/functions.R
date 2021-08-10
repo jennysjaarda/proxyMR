@@ -2390,6 +2390,23 @@ write_household_MR <- function(exposure_info, outcomes_to_run, household_MR){
 
 }
 
+summarize_standard_MR_comprehensive <- function(run_standard_MR_comprehensive_result){
+
+  result <- numeric()
+  for(i in 1:length(run_standard_MR_comprehensive_result)){
+    if(!length(run_standard_MR_comprehensive_result[[i]]==0)){
+      male_result <- run_standard_MR_comprehensive_result[[i]][["exp_male_MR_complete"]][["MR_summary"]]
+      female_result <- run_standard_MR_comprehensive_result[[i]][["exp_female_MR_complete"]][["MR_summary"]]
+      result_i <- rbind(male_result, female_result)
+      result <- rbind(result, result_i)
+    }
+  }
+
+  result <- as_tibble(result)
+  return(result)
+
+}
+
 calc_Q_stat <- function(household_MR_result, trait_ID){
 
   bin_result_temp <- household_MR_result[[1]]$bin_summary
