@@ -2422,7 +2422,7 @@ summarize_standard_MR_comprehensive <- function(run_standard_MR_comprehensive_re
 
 }
 
-standard_MR_summary <- function(standard_MR_summary, exposures_to_run, outcomes_to_run){
+summarize_standard_MR_comprehensive <- function(standard_MR_summary, exposures_to_run, outcomes_to_run){
 
 
   for(i in exposures_to_run){

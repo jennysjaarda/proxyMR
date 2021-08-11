@@ -507,6 +507,12 @@ list(
   ),
 
   tar_target(
+    ##summarize into one table, ignore leave-1-out analyses for now
+    standard_MR_summary_meta,
+    meta_standard_MR_summary(standard_MR_summary, exposures_to_run, outcomes_to_run)
+  ),
+
+  tar_target(
     PC_gwas_input,
     prep_PC_GWAS(data_id_age, data_id_sex, sqc_munge, data_UKBB_sample)
   ),
