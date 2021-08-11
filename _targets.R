@@ -500,16 +500,22 @@ list(
 
 
   tar_target(
-    ##summarize into one table, ignore leave-1-out analyses for now
+    ## summarize into one table, ignore leave-1-out analyses for now
     standard_MR_summary,
     summarize_standard_MR_comprehensive(standard_MR),
     pattern = map(standard_MR)
   ),
 
   tar_target(
-    ##summarize into one table, ignore leave-1-out analyses for now
+    ## meta-analyze across sexes and calculate heterogeneity statistic
     standard_MR_summary_meta,
     meta_standard_MR_summary(standard_MR_summary, exposures_to_run, outcomes_to_run)
+  ),
+
+  tar_target(
+    ## filter to only BF-sig MR results (based on meta-analyzed across sexes results)
+    standard_MR_summary_BF_sig,
+    find_sig_standard_MR_summary(standard_MR_summary_meta)
   ),
 
   tar_target(

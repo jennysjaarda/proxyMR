@@ -2424,22 +2424,26 @@ summarize_standard_MR_comprehensive <- function(run_standard_MR_comprehensive_re
 
 meta_standard_MR_summary <- function(standard_MR_summary, exposures_to_run, outcomes_to_run){
 
+  result <- numeric()
 
-  for(i in exposures_to_run){
-    for(j in outcomes_to_run){
-      exposure_ID <- exposures_to_run[["Neale_pheno_ID"]][i]
+  for(i in 1:dim(exposures_to_run)[1]){
+    exposure_ID <- exposures_to_run[["Neale_pheno_ID"]][i]
+    cat(paste0("Meta-analyzing standard MR results across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+    for(j in 1:dim(outcomes_to_run)[1]){
       outcome_ID <- outcomes_to_run[["Neale_pheno_ID"]][j]
       if(exposure_ID!=outcome_ID){
         mr_summary <- standard_MR_summary[which(standard_MR_summary$exposure_ID==exposure_ID &
                                                 standard_MR_summary$outcome_ID==outcome_ID),]
 
+        mr_summary$sex_het_pval <- NA
         male_row <- which(mr_summary$exposure_sex=="male")
         female_row <- which(mr_summary$exposure_sex=="female")
 
-        beta_F <-  as.numeric(mr_summary[female_row,"MR_est"])
-        beta_M <-  as.numeric(mr_summary[male_row,"MR_est"])
-        SE_F <- as.numeric(mr_summary[female_row,"MR_se"])
-        SE_M <- as.numeric(mr_summary[male_row,"MR_se"])
+        beta_F <-  as.numeric(mr_summary[female_row,"IVW_Wald_beta"])
+        beta_M <-  as.numeric(mr_summary[male_row,"IVW_Wald_beta"])
+        SE_F <- as.numeric(mr_summary[female_row,"IVW_Wald_se"])
+        SE_M <- as.numeric(mr_summary[male_row,"IVW_Wald_se"])
         n_M <- as.numeric(mr_summary[male_row,"N_outcome_GWAS"])
         n_F <- as.numeric(mr_summary[male_row,"N_outcome_GWAS"])
 
@@ -2447,8 +2451,8 @@ meta_standard_MR_summary <- function(standard_MR_summary, exposures_to_run, outc
         t <- (beta_F-beta_M)/se
         p_het <- 2*pnorm(-abs(t))
 
-        mr_summary$sex_het[male_row] <- p_het
-        mr_summary$sex_het[female_row] <- p_het
+        mr_summary$sex_het_pval[male_row] <- p_het
+        mr_summary$sex_het_pval[female_row] <- p_het
 
         effects <- c(beta_F, beta_M)
         ses <- c(SE_F, SE_M)
@@ -2460,50 +2464,40 @@ meta_standard_MR_summary <- function(standard_MR_summary, exposures_to_run, outc
         upperbound=b_meta+b_meta_se*1.96
         meta_p=round(2*(pt(abs(b_meta/b_meta_se),((n)-meta.result$het[2]),lower.tail=FALSE)),digits=10)
 
+        mr_summary$MR_meta_beta <- NA
+        mr_summary$MR_meta_se <- NA
+        mr_summary$MR_meta_L95 <- NA
+        mr_summary$MR_meta_U95 <- NA
+        mr_summary$MR_meta_pval <- NA
+        for(sex_row in c(male_row, female_row)){
+          mr_summary$MR_meta_beta[sex_row] <- b_meta
+          mr_summary$MR_meta_se[sex_row] <- b_meta_se
+          mr_summary$MR_meta_L95[sex_row] <- lowerbound
+          mr_summary$MR_meta_U95[sex_row] <- upperbound
+          mr_summary$MR_meta_pval[sex_row] <- meta_p
 
+        }
+
+        result <- rbind(result, mr_summary)
       }
 
     }
-  }
-  male_row <- which(mr_summary$trait_ID==trait & mr_summary$exposure_sex=="male")
-  female_row <- which(mr_summary$trait_ID==trait & mr_summary$exposure_sex=="female")
 
-  beta_F <-  as.numeric(mr_summary[female_row,"MR_est"])
-  beta_M <-  as.numeric(mr_summary[male_row,"MR_est"])
-  SE_F <- as.numeric(mr_summary[female_row,"MR_se"])
-  SE_M <- as.numeric(mr_summary[male_row,"MR_se"])
-  n_M <- as.numeric(mr_summary[male_row,"N_outcome_GWAS"])
-  n_F <- as.numeric(mr_summary[male_row,"N_outcome_GWAS"])
-
-  se <- sqrt( (SE_F^2) + (SE_M^2) )
-  t <- (beta_F-beta_M)/se
-  p_het <- 2*pnorm(-abs(t))
-
-  mr_summary$sex_het[male_row] <- p_het
-  mr_summary$sex_het[female_row] <- p_het
-
-  effects <- c(beta_F, beta_M)
-  ses <- c(SE_F, SE_M)
-  n <- sum(n_M, n_F)
-  meta.result=meta.summaries(d=effects, se=ses,method=c("fixed"), conf.level=0.95)
-  b_meta=round(meta.result[3]$summary,digits=10)
-  b_meta_se=round(meta.result[4]$se.summary,digits=10)
-  lowerbound=b_meta-b_meta_se*1.96
-  upperbound=b_meta+b_meta_se*1.96
-  meta_p=round(2*(pt(abs(b_meta/b_meta_se),((n)-meta.result$het[2]),lower.tail=FALSE)),digits=10)
-
-  for(sex_row in c(male_row, female_row)){
-    mr_summary$trait_description[sex_row] <- trait_description
-    mr_summary$MR_meta_est[sex_row] <- b_meta
-    mr_summary$MR_meta_se[sex_row] <- b_meta_se
-    mr_summary$MR_meta_L95[sex_row] <- lowerbound
-    mr_summary$MR_meta_U95[sex_row] <- upperbound
-    mr_summary$MR_meta_pval[sex_row] <- meta_p
+    cat(paste0("Finished meta-analyzing MR results for exposure ", i, " of ", dim(exposures_to_run)[1], ".\n\n" ))
 
   }
+
+  return(result)
 
 }
 
+find_sig_standard_MR_summary <- function(standard_MR_summary_meta){
+
+
+  denom <- dim(standard_MR_summary_meta)[1]/2 #divide by 2 because each meta result is there twice (one row/sex)
+  sig_only <- standard_MR_summary_meta %>% filter(MR_meta_pval < 0.05/denom)
+  return(sig_only)
+}
 
 
 calc_Q_stat <- function(household_MR_result, trait_ID){
