@@ -2078,8 +2078,8 @@ harmonise_standard_data_ind <- function(exposure_info, summ_stats, traits_corr2_
                                snp_col = "SNP",
                                beta_col = paste0("beta"),
                                se_col = paste0("se"),
-                               effect_allele_col = "other_allele",
-                               other_allele_col = "effect_allele",
+                               effect_allele_col = "effect_allele",
+                               other_allele_col = "other_allele",
                                pval_col = paste0("pval"),
                                eaf_col = "eaf",
                                phenotype_col = "phenotype",
@@ -2499,6 +2499,70 @@ find_sig_standard_MR_summary <- function(standard_MR_summary_meta){
   return(sig_only)
 }
 
+AM_filter_household_MR_summary <- function(household_MR_summary){
+
+  output <- household_MR_summary %>% filter(same_trait=="TRUE")
+  return(output)
+}
+
+run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, household_MR_summary, household_MR_summary_AM){
+
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+  MR_sub <- standard_MR_summary_BF_sig %>% filter(exposure_ID==!!exposure_ID)
+
+  summarized_result <- numeric()
+  for(i in 1:dim(MR_sub)[1]){
+    outcome_ID <- MR_sub$outcome_ID[[i]]
+    exposure_sex <- MR_sub$exposure_sex[[i]]
+    if(exposure_sex=="male"){outcome_sex="female"}
+    if(exposure_sex=="female"){outcome_sex="male"}
+
+    # p = partner / outcome
+
+    hh_MR_sub <- household_MR_summary %>% filter(exposure_sex==!!exposure_sex) %>%
+      filter(outcome_ID==!!outcome_ID)
+
+    cols_interst <- c("IVW_Wald_beta", "IVW_Wald_se", "IVW_Wald_pval", "N_outcome_GWAS", "N_snps")
+
+    ## Sex-specific proxy MR
+    xiyp_summary <- hh_MR_sub %>% dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xiyp_', names(.)))
+
+    ## Sex-specific AM MR
+    xixp_summary <- household_MR_summary_AM %>% filter(exposure_ID==!!exposure_ID) %>% filter(outcome_ID==!!exposure_ID) %>%
+      filter(exposure_sex==!!exposure_sex) %>% dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xixp_', names(.)))
+    yiyp_summary <- household_MR_summary_AM %>% filter(exposure_ID==!!outcome_ID) %>% filter(outcome_ID==!!outcome_ID) %>%
+      filter(exposure_sex==!!exposure_sex) %>% dplyr::select(all_of(cols_interst)) %>% setNames(paste0('yiyp_', names(.)))
+
+    ## Sex-specific standard MR
+    ## (y is the outcome, x is the exposure)
+    ## exposure and outcome sex are the same, i.e. exposure/outcome sex are irrelevant
+
+    xiyi_summary <- MR_sub %>% filter(exposure_sex==!!exposure_sex) %>% filter(outcome_ID==!!outcome_ID) %>%
+      dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xiyi_', names(.)))
+    xpyp_summary <- MR_sub %>% filter(outcome_sex==!!outcome_sex) %>% filter(outcome_ID==!!outcome_ID) %>%
+      dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xpyp_', names(.)))
+
+
+    summary_cols <- MR_sub %>% slice(i) %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, exposure_sex, outcome_sex)
+    row_i <- cbind(summary_cols, xiyp_summary, xixp_summary, yiyp_summary, xiyi_summary, xpyp_summary)
+
+    summarized_result <- rbind(summarized_result, row_i)
+  }
+
+
+  ### now do the products
+  summarized_result <- as_tibble(summarized_result) %>%
+    mutate_at(vars(-c("exposure_ID", "outcome_ID", "exposure_description", "outcome_description", "exposure_sex", "outcome_sex")),as.numeric)
+
+  summarized_result <- summarized_result %>%
+    mutate(xiyi_yiyp = xiyi_IVW_Wald_beta*yiyp_IVW_Wald_beta) %>%
+    mutate(xiyi_yiyp_se = yiyp_IVW_Wald_se^2*xiyi_IVW_Wald_beta^2 + xiyi_IVW_Wald_se^2*yiyp_IVW_Wald_beta^2) %>%
+
+    mutate(xixp_xpyp = xixp_IVW_Wald_beta*yiyp_IVW_Wald_beta) %>%
+    mutate(xixp_xpyp = xixp_IVW_Wald_beta*yiyp_IVW_Wald_beta)
+
+
+}
 
 calc_Q_stat <- function(household_MR_result, trait_ID){
 
