@@ -14,7 +14,7 @@ tar_option_set(
                                                         ntasks = 1, partition = "cluster",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
-  packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR", "ggplot2", "purrr"),
+  packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR", "ggplot2", "purrr", "rmeta"),
   error = "workspace",
   memory = "transient",
   garbage_collection = TRUE
