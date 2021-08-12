@@ -462,6 +462,11 @@ list(
     pattern = map(household_MR)
   ),
 
+  tar_target(
+    ##filter to only MR between same traits
+    household_MR_summary_AM,
+    AM_filter_household_MR_summary(household_MR_summary)
+  ),
 
   tar_target(
     outcome_stats,
@@ -517,6 +522,13 @@ list(
     standard_MR_summary_BF_sig,
     find_sig_standard_MR_summary(standard_MR_summary_meta)
   ),
+
+  tar_target(
+    proxyMR_comparison,
+    run_proxyMR_comparison(exposure_info, standard_MR_summary_BF_sig, household_MR_summary, household_MR_summary_AM),
+    map(exposure_info, household_MR_summary)
+  ),
+
 
   tar_target(
     PC_gwas_input,

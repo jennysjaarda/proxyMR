@@ -2505,62 +2505,85 @@ AM_filter_household_MR_summary <- function(household_MR_summary){
   return(output)
 }
 
+z.test2sam = function(a, b, var.a, var.b){
+  n.a = length(a)
+  n.b = length(b)
+  zeta = (mean(a) - mean(b)) / (sqrt(var.a/n.a + var.b/n.b))
+  return(zeta)
+}
+
 run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, household_MR_summary, household_MR_summary_AM){
 
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
   MR_sub <- standard_MR_summary_BF_sig %>% filter(exposure_ID==!!exposure_ID)
 
   summarized_result <- numeric()
-  for(i in 1:dim(MR_sub)[1]){
-    outcome_ID <- MR_sub$outcome_ID[[i]]
-    exposure_sex <- MR_sub$exposure_sex[[i]]
-    if(exposure_sex=="male"){outcome_sex="female"}
-    if(exposure_sex=="female"){outcome_sex="male"}
 
-    # p = partner / outcome
+  if(dim(MR_sub)[1]!=0){
 
-    hh_MR_sub <- household_MR_summary %>% filter(exposure_sex==!!exposure_sex) %>%
-      filter(outcome_ID==!!outcome_ID)
+    for(i in 1:dim(MR_sub)[1]){
+      outcome_ID <- MR_sub$outcome_ID[[i]]
+      exposure_sex <- MR_sub$exposure_sex[[i]]
+      if(exposure_sex=="male"){outcome_sex="female"}
+      if(exposure_sex=="female"){outcome_sex="male"}
 
-    cols_interst <- c("IVW_Wald_beta", "IVW_Wald_se", "IVW_Wald_pval", "N_outcome_GWAS", "N_snps")
+      # p = partner / outcome
 
-    ## Sex-specific proxy MR
-    xiyp_summary <- hh_MR_sub %>% dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xiyp_', names(.)))
+      hh_MR_sub <- household_MR_summary %>% filter(exposure_sex==!!exposure_sex) %>%
+        filter(outcome_ID==!!outcome_ID)
 
-    ## Sex-specific AM MR
-    xixp_summary <- household_MR_summary_AM %>% filter(exposure_ID==!!exposure_ID) %>% filter(outcome_ID==!!exposure_ID) %>%
-      filter(exposure_sex==!!exposure_sex) %>% dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xixp_', names(.)))
-    yiyp_summary <- household_MR_summary_AM %>% filter(exposure_ID==!!outcome_ID) %>% filter(outcome_ID==!!outcome_ID) %>%
-      filter(exposure_sex==!!exposure_sex) %>% dplyr::select(all_of(cols_interst)) %>% setNames(paste0('yiyp_', names(.)))
+      cols_interst <- c("IVW_Wald_beta", "IVW_Wald_se", "IVW_Wald_pval", "N_outcome_GWAS", "N_snps")
 
-    ## Sex-specific standard MR
-    ## (y is the outcome, x is the exposure)
-    ## exposure and outcome sex are the same, i.e. exposure/outcome sex are irrelevant
+      ## Sex-specific proxy MR
+      xiyp_summary <- hh_MR_sub %>% dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xiyp_', names(.)))
 
-    xiyi_summary <- MR_sub %>% filter(exposure_sex==!!exposure_sex) %>% filter(outcome_ID==!!outcome_ID) %>%
-      dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xiyi_', names(.)))
-    xpyp_summary <- MR_sub %>% filter(outcome_sex==!!outcome_sex) %>% filter(outcome_ID==!!outcome_ID) %>%
-      dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xpyp_', names(.)))
+      ## Sex-specific AM MR
+      xixp_summary <- household_MR_summary_AM %>% filter(exposure_ID==!!exposure_ID) %>% filter(outcome_ID==!!exposure_ID) %>%
+        filter(exposure_sex==!!exposure_sex) %>% dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xixp_', names(.)))
+      yiyp_summary <- household_MR_summary_AM %>% filter(exposure_ID==!!outcome_ID) %>% filter(outcome_ID==!!outcome_ID) %>%
+        filter(exposure_sex==!!exposure_sex) %>% dplyr::select(all_of(cols_interst)) %>% setNames(paste0('yiyp_', names(.)))
+
+      ## Sex-specific standard MR
+      ## (y is the outcome, x is the exposure)
+      ## exposure and outcome sex are the same, i.e. exposure/outcome sex are irrelevant
+
+      xiyi_summary <- MR_sub %>% filter(exposure_sex==!!exposure_sex) %>% filter(outcome_ID==!!outcome_ID) %>%
+        dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xiyi_', names(.)))
+      xpyp_summary <- MR_sub %>% filter(outcome_sex==!!outcome_sex) %>% filter(outcome_ID==!!outcome_ID) %>%
+        dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xpyp_', names(.)))
 
 
-    summary_cols <- MR_sub %>% slice(i) %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, exposure_sex, outcome_sex)
-    row_i <- cbind(summary_cols, xiyp_summary, xixp_summary, yiyp_summary, xiyi_summary, xpyp_summary)
+      summary_cols <- MR_sub %>% slice(i) %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, exposure_sex, outcome_sex)
+      row_i <- cbind(summary_cols, xiyp_summary, xixp_summary, yiyp_summary, xiyi_summary, xpyp_summary)
 
-    summarized_result <- rbind(summarized_result, row_i)
+      summarized_result <- rbind(summarized_result, row_i)
+    }
+
+
+    ### now do the products and calculate difference between
+    summarized_result <- as_tibble(summarized_result) %>%
+      mutate_at(vars(-c("exposure_ID", "outcome_ID", "exposure_description", "outcome_description", "exposure_sex", "outcome_sex")),as.numeric)
+
+    summarized_result <- summarized_result %>%
+
+      mutate(xixp_xpyp = xixp_IVW_Wald_beta*xpyp_IVW_Wald_beta) %>%
+      mutate(xixp_xpyp_se = xixp_IVW_Wald_beta^2*xpyp_IVW_Wald_se^2 + xpyp_IVW_Wald_beta^2*xixp_IVW_Wald_se^2) %>%
+
+      mutate(xiyi_yiyp = xiyi_IVW_Wald_beta*yiyp_IVW_Wald_beta) %>%
+      mutate(xiyi_yiyp_se = xiyi_IVW_Wald_beta^2*yiyp_IVW_Wald_se^2 + yiyp_IVW_Wald_beta^2*xiyi_IVW_Wald_se^2) %>%
+
+
+      mutate(gam = xixp_xpyp) %>% mutate(gam_se = xixp_xpyp_se) %>%
+      mutate(rho = xiyi_yiyp) %>% mutate(rho_se = xiyi_yiyp_se) %>%
+      mutate(omega = xiyp_IVW_Wald_beta) %>% mutate(omega_se = xiyp_IVW_Wald_se) %>%
+
+      mutate(omega_vs_gam = z.test2sam(omega, gam, omega_se^2, gam_se^2)) %>%
+      mutate(omega_vs_rho = z.test2sam(omega, rho, omega_se^2, rho_se^2)) %>%
+      mutate(gam_vs_rho = z.test2sam(gam, rho, gam_se^2, rho_se^2))
+
   }
 
-
-  ### now do the products
-  summarized_result <- as_tibble(summarized_result) %>%
-    mutate_at(vars(-c("exposure_ID", "outcome_ID", "exposure_description", "outcome_description", "exposure_sex", "outcome_sex")),as.numeric)
-
-  summarized_result <- summarized_result %>%
-    mutate(xiyi_yiyp = xiyi_IVW_Wald_beta*yiyp_IVW_Wald_beta) %>%
-    mutate(xiyi_yiyp_se = yiyp_IVW_Wald_se^2*xiyi_IVW_Wald_beta^2 + xiyi_IVW_Wald_se^2*yiyp_IVW_Wald_beta^2) %>%
-
-    mutate(xixp_xpyp = xixp_IVW_Wald_beta*yiyp_IVW_Wald_beta) %>%
-    mutate(xixp_xpyp = xixp_IVW_Wald_beta*yiyp_IVW_Wald_beta)
-
+  return(summarized_result)
 
 }
 
