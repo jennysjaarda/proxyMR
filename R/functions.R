@@ -2512,6 +2512,15 @@ z.test2sam = function(a, b, var.a, var.b){
   return(zeta)
 }
 
+z.test2sam2 = function(a, b, var.a, var.b){
+  n.a = length(a)
+  n.b = length(b)
+  #zeta = (mean(a) - mean(b)) / (sqrt(var.a/n.a + var.b/n.b))
+  zeta = (a-b) / (sqrt(var.a + var.b))
+
+  return(zeta)
+}
+
 run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, household_MR_summary, household_MR_summary_AM){
 
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
@@ -2577,9 +2586,14 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
       mutate(rho = xiyi_yiyp) %>% mutate(rho_se = xiyi_yiyp_se) %>%
       mutate(omega = xiyp_IVW_Wald_beta) %>% mutate(omega_se = xiyp_IVW_Wald_se) %>%
 
-      mutate(omega_vs_gam = z.test2sam(omega, gam, omega_se^2, gam_se^2)) %>%
-      mutate(omega_vs_rho = z.test2sam(omega, rho, omega_se^2, rho_se^2)) %>%
-      mutate(gam_vs_rho = z.test2sam(gam, rho, gam_se^2, rho_se^2))
+      mutate(omega_vs_gam_z = z.test(gam, gam_se, omega, omega_se)$z) %>%
+      mutate(omega_vs_rho_z = z.test(rho, rho_se, omega, omega_se)$z) %>%
+      mutate(gam_vs_rho_z = z.test(rho, rho_se, gam, gam_se)$z) %>%
+
+      mutate(omega_vs_gam_p = z.test(gam, gam_se, omega, omega_se)$p) %>%
+      mutate(omega_vs_rho_p = z.test(rho, rho_se, omega, omega_se)$p) %>%
+      mutate(gam_vs_rho_p = z.test(rho, rho_se, gam, gam_se)$p)
+
 
   }
 
