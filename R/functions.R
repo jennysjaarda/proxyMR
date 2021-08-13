@@ -2517,7 +2517,7 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
   MR_sub <- standard_MR_summary_BF_sig %>% filter(exposure_ID==!!exposure_ID)
 
-  summarized_result <- numeric()
+  summarized_result <- as_tibble(numeric())
 
   if(dim(MR_sub)[1]!=0){
 
