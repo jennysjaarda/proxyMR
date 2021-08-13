@@ -2505,21 +2505,13 @@ AM_filter_household_MR_summary <- function(household_MR_summary){
   return(output)
 }
 
-z.test2sam = function(a, b, var.a, var.b){
-  n.a = length(a)
-  n.b = length(b)
-  zeta = (mean(a) - mean(b)) / (sqrt(var.a/n.a + var.b/n.b))
-  return(zeta)
-}
 
-z.test2sam2 = function(a, b, var.a, var.b){
-  n.a = length(a)
-  n.b = length(b)
-  #zeta = (mean(a) - mean(b)) / (sqrt(var.a/n.a + var.b/n.b))
-  zeta = (a-b) / (sqrt(var.a + var.b))
+z.test_p <- Vectorize(function(x, sigma.x, y, sigma.y) {z.test(x, sigma.x, y, sigma.y)$p},
+                        vectorize.args = c("x", "sigma.x", "y", "sigma.y"))
 
-  return(zeta)
-}
+
+z.test_z <- Vectorize(function(x, sigma.x, y, sigma.y) {z.test(x, sigma.x, y, sigma.y)$statistic},
+                      vectorize.args = c("x", "sigma.x", "y", "sigma.y"))
 
 run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, household_MR_summary, household_MR_summary_AM){
 
@@ -2586,13 +2578,13 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
       mutate(rho = xiyi_yiyp) %>% mutate(rho_se = xiyi_yiyp_se) %>%
       mutate(omega = xiyp_IVW_Wald_beta) %>% mutate(omega_se = xiyp_IVW_Wald_se) %>%
 
-      mutate(omega_vs_gam_z = z.test(gam, gam_se, omega, omega_se)$z) %>%
-      mutate(omega_vs_rho_z = z.test(rho, rho_se, omega, omega_se)$z) %>%
-      mutate(gam_vs_rho_z = z.test(rho, rho_se, gam, gam_se)$z) %>%
+      mutate(omega_vs_gam_z = z.test_z(gam, gam_se, omega, omega_se)) %>%
+      mutate(omega_vs_rho_z = z.test_z(rho, rho_se, omega, omega_se)) %>%
+      mutate(gam_vs_rho_z = z.test_z(rho, rho_se, gam, gam_se)) %>%
 
-      mutate(omega_vs_gam_p = z.test(gam, gam_se, omega, omega_se)$p) %>%
-      mutate(omega_vs_rho_p = z.test(rho, rho_se, omega, omega_se)$p) %>%
-      mutate(gam_vs_rho_p = z.test(rho, rho_se, gam, gam_se)$p)
+      mutate(omega_vs_gam_p = z.test_p(gam, gam_se, omega, omega_se)) %>%
+      mutate(omega_vs_rho_p = z.test_p(rho, rho_se, omega, omega_se)) %>%
+      mutate(gam_vs_rho_p = z.test_p(rho, rho_se, gam, gam_se))
 
 
   }
