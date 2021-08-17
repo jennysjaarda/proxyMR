@@ -2558,14 +2558,6 @@ summarize_sex_specific_results  <- function(d,se,n){
 }
 
 
-b_meta=round(meta.result[3]$summary,digits=10)
-b_meta_se=round(meta.result[4]$se.summary,digits=10)
-lowerbound=b_meta-b_meta_se*1.96
-upperbound=b_meta+b_meta_se*1.96
-meta_p=round(2*(pt(abs(b_meta/b_meta_se),((n)-meta.result$het[2]),lower.tail=FALSE)),digits=10)
-
-
-
 run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, household_MR_summary, household_MR_summary_AM){
 
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
