@@ -14,7 +14,8 @@ tar_option_set(
                                                         ntasks = 1, partition = "cluster",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
-  packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR", "ggplot2", "purrr", "rmeta", "PASWR2"),
+  packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR",
+               "ggplot2", "purrr", "rmeta", "PASWR2", "tidymeta"),
   error = "workspace",
   memory = "transient",
   garbage_collection = TRUE
@@ -573,6 +574,12 @@ list(
                   bgenie_ukbb_chunks_run$chr_char, bgenie_ukbb_chunks_run$start, bgenie_ukbb_chunks_run$end, bgenie_ukbb_chunks_run$chunk_num,
                   output_dir = path_bgenie_GWAS_dir, output_prefix = "PC_GWAS"),
     pattern = map(bgenie_ukbb_chunks_run), format = "file"
+  ),
+
+  tar_target(
+    path_bgenie_pcs_unzip,
+    unzip_bgenie(path_bgenie_pcs),
+    pattern = map(path_bgenie_pcs), format = "file"
   )
 
 

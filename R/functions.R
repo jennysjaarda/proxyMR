@@ -2513,6 +2513,59 @@ z.test_p <- Vectorize(function(x, sigma.x, y, sigma.y) {z.test(x, sigma.x, y, si
 z.test_z <- Vectorize(function(x, sigma.x, y, sigma.y) {z.test(x, sigma.x, y, sigma.y)$statistic},
                       vectorize.args = c("x", "sigma.x", "y", "sigma.y"))
 
+
+meta_ <- Vectorize(function(d, se) {meta.summaries(d=gam, se=gam_se,method=c("fixed"), conf.level=0.95)[3]$summary},
+                       vectorize.args = c("d", "se"))
+
+meta_beta <- Vectorize(function(d, se) {meta.summaries(d=gam, se=gam_se,method=c("fixed"), conf.level=0.95)[3]$summary},
+                       vectorize.args = c("d", "se"))
+
+meta_beta <- function(d, se) {
+  meta.summaries(d, se, method=c("fixed"), conf.level=0.95)[3]$summary
+
+}
+
+meta_se <- function(d, se) {
+  meta.summaries(d, se, method=c("fixed"), conf.level=0.95)[3]$summary
+
+}
+
+summarize_sex_specific_results  <- function(d,se,n){
+  meta.result <- meta.summaries(d, se, method=c("fixed"), conf.level=0.95)
+
+  b_meta=round(meta.result[3]$summary,digits=10)
+  b_meta_se=round(meta.result[4]$se.summary,digits=10)
+  lowerbound=b_meta-b_meta_se*1.96
+  upperbound=b_meta+b_meta_se*1.96
+  n_total <- sum(n)
+
+  meta_p=round(2*(pt(abs(b_meta/b_meta_se),((n_total)-meta.result$het[2]),lower.tail=FALSE)),digits=10)
+
+
+  se <- sqrt( (se[1]^2) + (se[2]^2) )
+  t <- (d[1]-d[2])/se
+  p_het <- 2*pnorm(-abs(t))
+
+
+  tibble(meta_beta = b_meta,
+         meta_se = b_meta_se,
+         meta_l95 = lowerbound,
+         meta_u95 = upperbound,
+         meta_p = meta_p,
+         p_het = p_het
+         )
+
+}
+
+
+b_meta=round(meta.result[3]$summary,digits=10)
+b_meta_se=round(meta.result[4]$se.summary,digits=10)
+lowerbound=b_meta-b_meta_se*1.96
+upperbound=b_meta+b_meta_se*1.96
+meta_p=round(2*(pt(abs(b_meta/b_meta_se),((n)-meta.result$het[2]),lower.tail=FALSE)),digits=10)
+
+
+
 run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, household_MR_summary, household_MR_summary_AM){
 
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
@@ -2561,35 +2614,70 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
     }
 
 
-    ### now do the products and calculate difference between
+    ### now meta-analyze across sexes and calculate heterogeneity difference
     summarized_result <- as_tibble(summarized_result) %>%
       mutate_at(vars(-c("exposure_ID", "outcome_ID", "exposure_description", "outcome_description", "exposure_sex", "outcome_sex")),as.numeric)
 
-    summarized_result <- summarized_result %>%
 
-      mutate(xixp_xpyp = xixp_IVW_Wald_beta*xpyp_IVW_Wald_beta) %>%
-      mutate(xixp_xpyp_se = xixp_IVW_Wald_beta^2*xpyp_IVW_Wald_se^2 + xpyp_IVW_Wald_beta^2*xixp_IVW_Wald_se^2) %>%
+    meta_list <- list()
+    for(var in c("xixp", "xpyp", "xiyi", "yiyp", "xiyp")){
 
-      mutate(xiyi_yiyp = xiyi_IVW_Wald_beta*yiyp_IVW_Wald_beta) %>%
-      mutate(xiyi_yiyp_se = xiyi_IVW_Wald_beta^2*yiyp_IVW_Wald_se^2 + yiyp_IVW_Wald_beta^2*xiyi_IVW_Wald_se^2) %>%
+      meta_temp <- summarized_result %>% dplyr::select(exposure_ID, outcome_ID, starts_with(var)) %>% rename_all(~stringr::str_replace(., paste0("^", var, "_"),"")) %>%
+        dplyr::group_by(exposure_ID, outcome_ID) %>%
+        group_modify(~ summarize_sex_specific_results(.x$IVW_Wald_beta, .x$IVW_Wald_se, .x$N_outcome_GWAS))
 
+      colnames(meta_temp)[-c(1:2)] <- paste0(var, "_", colnames(meta_temp)[-c(1:2)])
+      meta_list[[var]] <- meta_temp
 
-      mutate(gam = xixp_xpyp) %>% mutate(gam_se = xixp_xpyp_se) %>%
-      mutate(rho = xiyi_yiyp) %>% mutate(rho_se = xiyi_yiyp_se) %>%
-      mutate(omega = xiyp_IVW_Wald_beta) %>% mutate(omega_se = xiyp_IVW_Wald_se) %>%
+    }
 
-      mutate(omega_vs_gam_z = z.test_z(gam, gam_se, omega, omega_se)) %>%
-      mutate(omega_vs_rho_z = z.test_z(rho, rho_se, omega, omega_se)) %>%
-      mutate(gam_vs_rho_z = z.test_z(rho, rho_se, gam, gam_se)) %>%
+    meta_result <- reduce(meta_list, full_join)
 
-      mutate(omega_vs_gam_p = z.test_p(gam, gam_se, omega, omega_se)) %>%
-      mutate(omega_vs_rho_p = z.test_p(rho, rho_se, omega, omega_se)) %>%
-      mutate(gam_vs_rho_p = z.test_p(rho, rho_se, gam, gam_se))
+    summarized_result_prev <- summarized_result
+    summarized_result <- full_join(summarized_result_prev, meta_result)
 
 
-  }
+    prod_list <- list()
 
-  return(summarized_result)
+    #calc products and calculate difference between them
+    for(var in c("IVW_Wald", "meta")){
+
+      temp_data <- summarized_result %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, exposure_sex, outcome_sex, contains(var)) %>% rename_all(~stringr::str_replace(., paste0("_", var, "_"),"_")) %>%
+        mutate(xixp_xpyp = xixp_beta*xpyp_beta) %>%
+        mutate(xixp_xpyp_se = xixp_beta^2*xpyp_se^2 + xpyp_beta^2*xixp_se^2) %>%
+
+        mutate(xiyi_yiyp = xiyi_beta*yiyp_beta) %>%
+        mutate(xiyi_yiyp_se = xiyi_beta^2*yiyp_se^2 + yiyp_beta^2*xiyi_se^2) %>%
+
+        mutate(gam = xixp_xpyp) %>% mutate(gam_se = xixp_xpyp_se) %>%
+        mutate(rho = xiyi_yiyp) %>% mutate(rho_se = xiyi_yiyp_se) %>%
+        mutate(omega = xiyp_beta) %>% mutate(omega_se = xiyp_se) %>%
+
+        mutate(omega_vs_gam_z = z.test_z(gam, gam_se, omega, omega_se)) %>%
+        mutate(omega_vs_rho_z = z.test_z(rho, rho_se, omega, omega_se)) %>%
+        mutate(gam_vs_rho_z = z.test_z(rho, rho_se, gam, gam_se)) %>%
+
+        mutate(omega_vs_gam_p = z.test_p(gam, gam_se, omega, omega_se)) %>%
+        mutate(omega_vs_rho_p = z.test_p(rho, rho_se, omega, omega_se)) %>%
+        mutate(gam_vs_rho_p = z.test_p(rho, rho_se, gam, gam_se)) %>%
+        dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, exposure_sex, outcome_sex, gam, gam_se, rho, rho_se, omega, omega_se, omega_vs_gam_z, omega_vs_rho_z, gam_vs_rho_z, omega_vs_gam_p, omega_vs_rho_p, gam_vs_rho_p)
+
+      var_description <- ifelse(var=="IVW_Wald", "sex_specific", "meta")
+      colnames(temp_data)[-c(1:6)] <- paste0(colnames(temp_data)[-c(1:6)], "_", var_description)
+      prod_list[[var_description]] <- temp_data
+
+    }
+
+    prod_result <- reduce(prod_list, full_join)
+
+    het_differences <- summarized_result %>% dplyr::select(exposure_ID, outcome_ID, ends_with("_p_het"))
+    prod_result_plus_het <- full_join(prod_result, het_differences)
+
+    output <- list(proxy_MR_result = summarized_result, proxy_MR_comparison = prod_result)
+
+  } else output <- NULL
+
+  return(output)
 
 }
 
@@ -3134,4 +3222,15 @@ launch_bgenie <- function(chr, phenofile, UKBB_dir, chr_char, start_pos, end_pos
   # /data/sgg3/jonathan/bgenie_v1.3/bgenie_v1.3_static1 --bgen
   # /data/sgg3/eleonora/projects/UKBB_GWAS/UK10K_SNPrs/CHR11/chr11.bgen ## this script would not include SNPs specific to HRC_list
   # --pheno ../phenofile --pvals --out chr11.out
+}
+
+
+unzip_bgenie <- function(bgenie_file){
+  # system(paste0("gzip -dk analysis/GWAS/UKBB/chr", chr, ".out.gz")) ## keep flag doesn't exist on this system
+
+  unzipped_file <- gsub(".gz", "", bgenie_file)
+  #cancel_if(file.exists(file))
+
+  system(paste0("gunzip < ",bgenie_file, " > ", unzipped_file))
+  return(unzipped_file)
 }
