@@ -527,7 +527,7 @@ list(
   tar_target(
     proxyMR_comparison,
     run_proxyMR_comparison(exposure_info, standard_MR_summary_BF_sig, household_MR_summary, household_MR_summary_AM),
-    map(exposure_info, household_MR_summary)
+    map(exposure_info, household_MR_summary), iteration = "list"
   ),
 
 
