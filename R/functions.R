@@ -2565,6 +2565,9 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
 
   summarized_result <- as_tibble(numeric())
 
+  cat(paste0("Comparing gamma, rho and omega estimates for phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+
   if(dim(MR_sub)[1]!=0){
 
     for(i in 1:dim(MR_sub)[1]){
@@ -2665,7 +2668,7 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
     het_differences <- summarized_result %>% dplyr::select(exposure_ID, outcome_ID, ends_with("_p_het"))
     prod_result_plus_het <- full_join(prod_result, het_differences)
 
-    output <- list(proxy_MR_result = summarized_result, proxy_MR_comparison = prod_result)
+    output <- list(proxy_MR_result = summarized_result, proxy_MR_comparison = prod_result_plus_het)
 
   } else output <- NULL
 
