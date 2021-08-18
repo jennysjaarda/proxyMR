@@ -2672,7 +2672,7 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
 
     het_differences <- summarized_result %>% dplyr::select(exposure_ID, outcome_ID, exposure_sex, ends_with("_p_het"))
 
-    prod_result_plus_het <- full_join(prod_result[1:5,1:5], het_differences[1:5,], by= c("exposure_ID", "outcome_ID", "exposure_sex"))
+    prod_result_plus_het <- full_join(prod_result, het_differences, by= c("exposure_ID", "outcome_ID", "exposure_sex"))
 
     output <- list(proxy_MR_result = summarized_result, proxy_MR_comparison = prod_result_plus_het)
 
@@ -3234,4 +3234,23 @@ unzip_bgenie <- function(bgenie_file){
 
   system(paste0("gunzip < ",bgenie_file, " > ", unzipped_file))
   return(unzipped_file)
+}
+
+
+process_bgenie <- function(directory, extension=".out", HRC_panel){
+
+  current_dir <- getwd()
+  setwd(directory)
+  system(paste0("tail -q -n +2 *", extension, " > temp"))
+
+  header_file <- fread(list.files(pattern=paste0("\\", extension, "$"))[1], nrows=2, data.table=F)
+  bgenie_columns <- colnames(header_file)
+  full_data <- fread("temp", data.table=F, header=F)
+  setwd(current_dir)
+  colnames(full_data) <- bgenie_columns
+
+  HRC_list <- fread(HRC_panel, data.table=F)
+  HRC_filtered_data <- full_data %>% filter(rsid %in%  HRC_list$ID)
+  return(HRC_filtered_data)
+
 }
