@@ -2613,6 +2613,11 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
     summarized_result <- as_tibble(summarized_result) %>%
       mutate_at(vars(-c("exposure_ID", "outcome_ID", "exposure_description", "outcome_description", "exposure_sex", "outcome_sex")),as.numeric)
 
+    expsoure_sex_temp <- summarized_result$exposure_sex
+    outcome_sex_temp <- ifelse(expsoure_sex_temp=="male", "female", "male")
+
+    ## outcome sex previously was the same as exposure sex coming from the standard MR (where exposure and outcome sex would be the same)
+    summarized_result$outcome_sex <- outcome_sex_temp
 
     meta_list <- list()
     for(var in c("xixp", "xpyp", "xiyi", "yiyp", "xiyp")){
@@ -2665,8 +2670,12 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
 
     prod_result <- reduce(prod_list, full_join)
 
-    het_differences <- summarized_result %>% dplyr::select(exposure_ID, outcome_ID, ends_with("_p_het"))
-    prod_result_plus_het <- full_join(prod_result, het_differences)
+    het_differences <- summarized_result %>% dplyr::select(exposure_ID, outcome_ID, exposure_sex, ends_with("_p_het"))
+
+    prod_result_plus_het <- full_join(prod_result[1:5,1:5], het_differences[1:5,], by= c("exposure_ID", "outcome_ID", "exposure_sex"))
+
+
+    prod_result_plus_het <- join(prod_result, het_differences, by= c("exposure_ID", "outcome_ID"))
 
     output <- list(proxy_MR_result = summarized_result, proxy_MR_comparison = prod_result_plus_het)
 
