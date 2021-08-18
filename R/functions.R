@@ -2674,9 +2674,6 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
 
     prod_result_plus_het <- full_join(prod_result[1:5,1:5], het_differences[1:5,], by= c("exposure_ID", "outcome_ID", "exposure_sex"))
 
-
-    prod_result_plus_het <- join(prod_result, het_differences, by= c("exposure_ID", "outcome_ID"))
-
     output <- list(proxy_MR_result = summarized_result, proxy_MR_comparison = prod_result_plus_het)
 
   } else output <- NULL
