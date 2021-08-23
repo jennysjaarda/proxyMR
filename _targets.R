@@ -15,7 +15,7 @@ tar_option_set(
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
   packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR",
-               "ggplot2", "purrr", "rmeta", "PASWR2", "tidymeta"),
+               "ggplot2", "purrr", "rmeta", "PASWR2", "cowplot"),
   error = "workspace",
   memory = "transient",
   garbage_collection = TRUE
@@ -219,10 +219,10 @@ list(
     format = "file"
   ),
   tar_target(
-    path_define_cats_filled, ## THIS IS CREATED MANUALLY
+    path_define_cats_filled,
     {
       path_define_cats
-      "output/tables/define_Neale_categories_filled.csv"
+      "output/tables/define_Neale_categories_filled.csv" ## THIS FILE IS CREATED MANUALLY
     },
     format = "file"
   ),
@@ -530,6 +530,20 @@ list(
     map(exposure_info, household_MR_summary), iteration = "list"
   ),
 
+  tar_target(
+    proxyMR_figure_data,
+    prep_proxyMR_figure_data(proxyMR_comparison, traits_corr2_filled)
+  ),
+
+  tar_target(
+    proxyMR_prod_comparison_figure,
+    create_proxy_prod_comparison_fig_ind(proxyMR_figure_data)
+  ),
+
+  tar_target(
+    proxyMR_sex_comparison_figure,
+    create_proxy_sex_comparison_fig_ind(proxyMR_figure_data)
+  ),
 
   tar_target(
     PC_gwas_input,

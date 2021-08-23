@@ -2664,6 +2664,237 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
 
 }
 
+prep_proxyMR_figure_data <- function(proxyMR_comparison, traits_corr2_filled){
+
+  comparison_result <- bind_rows(lapply(proxyMR_comparison, function(x) {x[[2]]}))
+
+  num_result <- dim(comparison_result)[1]/2
+
+
+  comparison_result <- comparison_result %>%
+    mutate(omega_vs_gam_BF_sig_sex_specific = case_when(TRUE ~ omega_vs_gam_p < 0.05/num_result,
+                                                        TRUE ~ TRUE)) %>%
+    mutate(omega_vs_rho_BF_sig_sex_specific = case_when(TRUE ~ omega_vs_rho_p < 0.05/num_result,
+                                                        TRUE ~ TRUE)) %>%
+    mutate(gam_vs_rho_BF_sig_sex_specific = case_when(TRUE ~ gam_vs_rho_p < 0.05/num_result,
+                                                      TRUE ~ TRUE)) %>%
+    mutate(omega_vs_gam_BF_sig_meta = case_when(TRUE ~ omega_vs_gam_meta_p < 0.05/num_result,
+                                                TRUE ~ TRUE)) %>%
+    mutate(omega_vs_rho_BF_sig_meta = case_when(TRUE ~ omega_vs_rho_meta_p < 0.05/num_result,
+                                                TRUE ~ TRUE)) %>%
+    mutate(gam_vs_rho_BF_sig_meta = case_when(TRUE ~ gam_vs_rho_meta_p < 0.05/num_result,
+                                              TRUE ~ TRUE))
+
+  comparison_result_plus_cat <- left_join(proxyMR_comparison, traits_corr2_filled %>% dplyr::select(Neale_pheno_ID, category) %>% rename(exposure_category = category), by = c("exposure_ID" = "Neale_pheno_ID")) %>%
+    left_join(traits_corr2_filled %>% dplyr::select(Neale_pheno_ID, category) %>% rename(outcome_category = category), by = c("outcome_ID" = "Neale_pheno_ID"))
+
+
+  return(comparison_result_plus_cat)
+
+}
+
+create_proxy_prod_comparison_fig_ind <- function(data, exposure_sex, x, y, overlay_var, count){
+
+  # exposure_sex <- "male"
+  # data <- comparison_result
+  # overlay_var <- "omega_vs_gam_BF_sig_sex_specific"
+  # x <- "gam_beta"
+  # y <- "omega_beta"
+
+  if(exposure_sex!="meta"){
+    fig_data <- data[which(data[["exposure_sex"]]==exposure_sex),]
+  } else fig_data <- data[which(data[["exposure_sex"]]=="male"),]
+
+  fig_data <- fig_data %>% rename(x := !!x) %>% rename(y := !!y) %>% rename(overlay_var := !!overlay_var) %>%
+    mutate(x_plot = case_when(x < 0 ~ abs(x), TRUE ~ x)) %>%
+    mutate(y_plot = case_when(x < 0 ~ -1*y, TRUE ~ y))
+
+
+
+  overlay_data <- fig_data[which(fig_data[["overlay_var"]]==TRUE),]
+
+  if(x == "gam_beta" | x == "gam_meta_beta"){x_label <- "\u03B3"}
+  if(x == "rho_beta" | x == "rho_meta_beta"){x_label <- "\u03C1"}
+
+  if(y == "omega_beta" | y == "omega_meta_beta"){y_label <- "\u03C9"}
+  if(y == "rho_beta" | y == "rho_meta_beta"){y_label <- "\u03C1"}
+
+  xmax <- 1.3
+  #if(x == "rho_beta" | x == "rho_meta_beta"){xmax = 0.9}
+
+
+  ylim <- -1.05
+  #if(x == "rho_beta" | x == "rho_meta_beta"){ylim = -0.55}
+
+  ymax <- 1.5
+  #if((x == "gam_beta" | x == "gam_meta_beta") & (y == "omega_beta" | y == "omega_meta_beta")){ymax = 1.5}
+  #if((x == "gam_beta" | x == "gam_meta_beta") & (y == "rho_beta" | y == "rho_meta_beta")){ymax = 1.05}
+
+
+  fig <- ggplot(fig_data, aes(x=x_plot, y=y_plot, label=exposure_description, label2=outcome_description, label3=exposure_sex, color=overlay_var)) +
+    geom_point(alpha = 3/4) +
+    geom_smooth(mapping = aes(x = x_plot, y = y_plot),inherit.aes = FALSE, method=lm, se=FALSE, color = custom_col[4], fullrange=TRUE) +
+    geom_smooth(data = overlay_data, mapping = aes(x = x_plot, y = y_plot),inherit.aes = FALSE, method=lm, se=FALSE, color = custom_col[2], fullrange=TRUE) +
+
+    theme_half_open(12) +
+    scale_fill_manual(values = custom_col) +
+    scale_colour_manual(values = custom_col, labels=c("Non-BF significant difference","BF significant difference")) +
+
+    geom_point(data = overlay_data, aes(x=x_plot, y=y_plot), color = custom_col[2]) +
+    theme(legend.position="top") + geom_abline(slope=1, intercept=0) + theme(legend.title = element_blank()) +
+    xlab(paste0(x_label, " ", exposure_sex)) + ylab(paste0(y_label, " ", exposure_sex)) +
+    scale_x_continuous(breaks = seq(0, xmax, by = 0.2), limits = c(0, xmax)) +
+    scale_y_continuous(breaks = seq(-2, ymax, by = 0.5)[seq(-2, ymax, by = 0.5) > ylim], limits = c(ylim, ymax))
+
+
+  # extract the legend from one of the plots
+  legend <- get_legend(
+    # create some space to the left of the legend
+    fig + theme(legend.box.margin = margin(0, 0, 0, 12))
+  )
+
+  fig_no_legend <- fig + theme(legend.position="none")
+  if(count==9){fig_no_legend <- fig_no_legend + theme(legend.position = c(0.5, 0.15))}
+
+
+  return(list(fig_no_legend = fig_no_legend, legend = legend))
+
+}
+
+create_proxy_sex_comparison_fig_ind <- function(data, var, count){
+
+
+  # data <- comparison_result
+  # var <- "rho
+
+  vars_to_select <- paste0(var, c("_beta", "_sex_het_p"))
+  sex_het_p_var <- paste0(var, "_sex_het_p")
+  beta_var <- paste0(var, "_beta")
+
+  fig_data <- data %>% dplyr::select("exposure_ID", "outcome_ID", "exposure_sex", vars_to_select) %>%
+    rename(sex_het_p := !!sex_het_p_var) %>% rename(beta := !!beta_var) %>%
+    mutate(sex_het_p_BF = case_when(TRUE ~ sex_het_p < 0.05/num_result,
+                                    TRUE ~ TRUE)) %>%
+    pivot_wider(names_from = exposure_sex, values_from = beta)
+
+  overlay_data <- fig_data[which(fig_data[["sex_het_p_BF"]]==TRUE),]
+
+  if(var == "gam"){symbol <- "\u03B3"}
+  if(var == "rho"){symbol <- "\u03C1"}
+  if(var == "omega"){symbol <- "\u03C9"}
+
+  ymin <- -1.15
+  ymax <- 1.25
+
+  xmin <- -1.1
+  xmax <- 1.25
+
+  fig <- ggplot(fig_data, aes(x = male, y = female, color = sex_het_p_BF)) +
+    geom_point(alpha = 3/4) +
+    geom_smooth(mapping = aes(x = male, y = female),inherit.aes = FALSE, method=lm, se=FALSE, color = custom_col[4], fullrange=TRUE) +
+    geom_smooth(data = overlay_data, mapping = aes(x = male, y = female),
+                inherit.aes = FALSE, method=lm, se=FALSE, color = custom_col[2], fullrange=TRUE) +
+
+    theme_half_open(12) +
+    scale_fill_manual(values = custom_col) +
+    scale_colour_manual(values = custom_col, labels=c("Non-BF significant difference","BF significant difference")) +
+
+    geom_point(data = overlay_data, aes(x = male, y = female), color = custom_col[2]) +
+    theme(legend.position="top") + geom_abline(slope=1, intercept=0) + theme(legend.title = element_blank()) +
+    xlab(paste0(symbol, " ", "male")) + ylab(paste0(symbol, " ", "female")) +
+    scale_y_continuous(breaks = seq(-2, ymax, by = 0.5)[seq(-2, ymax, by = 0.5) > ymin], limits = c(ymin, ymax)) +
+    scale_x_continuous(breaks = seq(-2, xmax, by = 0.5)[seq(-2, xmax, by = 0.5) > xmin], limits = c(xmin, xmax))
+
+
+  # extract the legend from one of the plots
+  legend <- get_legend(
+    # create some space to the left of the legend
+    fig + theme(legend.box.margin = margin(0, 0, 0, 12))
+  )
+
+  fig_no_legend <- fig + theme(legend.position="none")
+  if(count==3){fig_no_legend <- fig_no_legend + theme(legend.position = c(0.5, 0.08))}
+
+
+  return(list(fig_no_legend = fig_no_legend, legend = legend))
+
+}
+
+create_proxy_prod_comparison_fig <- function(proxyMR_figure_data){
+
+  figures <- list()
+
+  count <- 1
+  for(panel in 1:3){
+
+    if(panel==1){
+      x_start <- "gam"
+      y_start <- "omega"
+      overlay_var_start <- "omega_vs_gam_BF_sig"
+    }
+    if(panel==2){
+      x_start <- "rho"
+      y_start <- "omega"
+      overlay_var_start <- "omega_vs_rho_BF_sig"
+    }
+    if(panel==3){
+      x_start <- "gam"
+      y_start <- "rho"
+      overlay_var_start <- "gam_vs_rho_BF_sig"
+    }
+
+    for(sex in c("male", "female", "meta")){
+
+      if(sex == "male" | sex=="female"){
+        fig_temp <- create_proxy_prod_comparison_fig_ind(proxyMR_figure_data, exposure_sex=sex, x = paste0(x_start, "_beta"), y = paste0(y_start, "_beta"), overlay_var = paste0(overlay_var_start, "_sex_specific"), count)
+      } else fig_temp <- create_proxy_prod_comparison_fig_ind(proxyMR_figure_data, exposure_sex=sex, x = paste0(x_start, "_meta_beta"), y = paste0(y_start, "_meta_beta"), overlay_var = paste0(overlay_var_start, "_meta"), count)
+
+      figures[[count]] <- fig_temp[["fig_no_legend"]]
+      if(count==1) {legend <- fig_temp[["legend"]]}
+      count <- count + 1
+
+    }
+
+
+  }
+
+  figures_grid <- plot_grid(plotlist = figures, nrow=3, ncol = 3, byrow = F, labels="AUTO", rel_heights = c(1, 1, 1))
+
+  return(figures_grid)
+}
+
+create_proxy_sex_comparison_fig <- function(proxyMR_figure_data){
+
+  panel <- 1
+  sex_het_figures <- list()
+  for(panel in 1:3){
+
+    if(panel==1){
+      var <- "gam"
+
+    }
+    if(panel==2){
+      var <- "rho"
+
+    }
+    if(panel==3){
+      var <- "omega"
+
+    }
+
+    fig_temp <- create_proxy_sex_comparison_fig_ind(proxyMR_figure_data, var = var, panel)
+    sex_het_figures[[panel]] <- fig_temp[["fig_no_legend"]]
+
+    if(panel==1) {legend <- fig_temp[["legend"]]}
+    panel <- panel + 1
+
+  }
+
+  sex_het_figures_grid <- plot_grid(plotlist = sex_het_figures, nrow=1, ncol = 3, byrow = F, labels="AUTO", rel_heights = c(1, 1, 1))
+  return(sex_het_figures_grid)
+}
+
+
 calc_Q_stat <- function(household_MR_result, trait_ID){
 
   bin_result_temp <- household_MR_result[[1]]$bin_summary
