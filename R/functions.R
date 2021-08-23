@@ -2685,8 +2685,8 @@ prep_proxyMR_figure_data <- function(proxyMR_comparison, traits_corr2_filled){
     mutate(gam_vs_rho_BF_sig_meta = case_when(TRUE ~ gam_vs_rho_meta_p < 0.05/num_result,
                                               TRUE ~ TRUE))
 
-  comparison_result_plus_cat <- left_join(proxyMR_comparison, traits_corr2_filled %>% dplyr::select(Neale_pheno_ID, category) %>% rename(exposure_category = category), by = c("exposure_ID" = "Neale_pheno_ID")) %>%
-    left_join(traits_corr2_filled %>% dplyr::select(Neale_pheno_ID, category) %>% rename(outcome_category = category), by = c("outcome_ID" = "Neale_pheno_ID"))
+  comparison_result_plus_cat <- left_join(comparison_result, traits_corr2_filled %>% dplyr::select(Neale_pheno_ID, category) %>% rename(exposure_category = category) %>% unique(), by = c("exposure_ID" = "Neale_pheno_ID")) %>%
+    left_join(traits_corr2_filled %>% dplyr::select(Neale_pheno_ID, category) %>% rename(outcome_category = category) %>% unique(), by = c("outcome_ID" = "Neale_pheno_ID"))
 
 
   return(comparison_result_plus_cat)
