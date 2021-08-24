@@ -1,0 +1,70 @@
+---
+title: "Update Meeting: 25-08-2021"
+author: "jennysjaarda"
+date: "2021-08-24"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+  toc: true
+---
+
+```{r setup, include = FALSE}
+
+options(scipen=999)
+source("code/settings.R")
+library(targets)
+library(dplyr)
+library(DT)
+library(knitr)
+
+```
+
+## Last meeting summary.
+
+## Model summary
+
+```{r proxyMR_DAG, echo = FALSE}
+library(knitr)
+knitr::include_graphics("assets/proxyMR_DAG.png", error = FALSE)
+```
+
+## Results
+
+### Trends amongst bins
+
+```{r MR_binned_het, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+tar_load(household_MR_binned_het)
+DT::datatable(household_MR_binned_het, width = "100%")
+```
+
+### Standard MR 
+
+```{r standard_MR, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+tar_load(standard_MR_summary_BF_sig)
+DT::datatable(standard_MR_summary_BF_sig, width = "100%")
+```
+
+### Paths from X-index to Y-partner
+
+```{r proxyMR_products, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+tar_load(proxyMR_figure_data)
+DT::datatable(proxyMR_figure_data, width = "100%")
+```
+
+#### Heterogeneity among paths
+
+
+```{r proxyMR_figure1, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+tar_load(proxyMR_prod_comparison_figure)
+proxyMR_prod_comparison_figure
+```
+
+#### Sex heterogeneity amongst paths
+
+``````{r proxyMR_figure2, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+tar_load(proxyMR_sex_comparison_figure)
+proxyMR_sex_comparison_figure
+```
+
+#### Hierarchical clustering 
+
