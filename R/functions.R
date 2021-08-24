@@ -2298,16 +2298,21 @@ calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, househo
           mutate_if(is.factor,as.character) %>%
           as_tibble()
 
-        cat(paste0("Finished calculating heterogeneity statistics for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
 
         exposure_i_result <- rbind( exposure_i_result, out_temp)
       }
 
     }
+    cat(paste0("Finished calculating heterogeneity statistics for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
 
   }
 
-  return(exposure_i_result)
+  meta_result <- exposure_i_result %>% group_by(outcome_ID, grouping_var) %>%
+    group_modify(~ summarize_sex_specific_results(as.numeric(.x$bin_slope_beta), as.numeric(.x$bin_slope_se)))
+
+  output <- left_join(exposure_i_result, meta_result)
+
+  return(output)
 
 
 }
@@ -2669,7 +2674,6 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
     }
 
 
-    ### now meta-analyze across sexes and calculate heterogeneity difference
     summarized_result <- as_tibble(summarized_result) %>%
       mutate_at(vars(-c("exposure_ID", "outcome_ID", "exposure_description", "outcome_description", "exposure_sex", "outcome_sex")),as.numeric)
 
