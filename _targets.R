@@ -15,7 +15,7 @@ tar_option_set(
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
   packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR",
-               "ggplot2", "purrr", "rmeta", "PASWR2", "cowplot"),
+               "ggplot2", "purrr", "rmeta", "PASWR2", "cowplot", "meta"),
   error = "workspace",
   memory = "transient",
   garbage_collection = TRUE
@@ -441,6 +441,12 @@ list(
   ),
 
   tar_target(
+    household_MR_binned_het, # calc sex-het, and slope and Q-stat among bins
+    calc_binned_household_MR_het(exposure_info, household_MR_binned),
+    pattern = map(exposure_info, household_harmonised_data)
+  ),
+
+  tar_target(
     path_household_MR_binned,
     {
       path_MR_dirs
@@ -537,12 +543,12 @@ list(
 
   tar_target(
     proxyMR_prod_comparison_figure,
-    create_proxy_prod_comparison_fig_ind(proxyMR_figure_data)
+    create_proxy_prod_comparison_fig(proxyMR_figure_data)
   ),
 
   tar_target(
     proxyMR_sex_comparison_figure,
-    create_proxy_sex_comparison_fig_ind(proxyMR_figure_data)
+    create_proxy_sex_comparison_fig(proxyMR_figure_data)
   ),
 
   tar_target(

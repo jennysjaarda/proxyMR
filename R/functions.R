@@ -2240,6 +2240,81 @@ run_binned_household_MR <- function(exposure_info, outcomes_to_run, household_ha
 
 }
 
+calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, household_MR_binned){
+
+  output_list <- list()
+  output_files <- numeric()
+
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+
+  cat(paste0("\nCalculating difference in household MR between sexes and among age and time-together bins for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+
+  exposure_i_result <- numeric()
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
+
+    household_MR_binned_i <- household_MR_binned[[i]]
+    household_MR_binned_i_all <- household_MR_binned_i %>% dplyr::filter(bin=="all" & grouping_var=="time_together_even_bins")
+
+    male_beta <- household_MR_binned_i_all[which(household_MR_binned_i_all$exposure_sex=="male"),"IVW_beta"][[1]]
+    female_beta <- household_MR_binned_i_all[which(household_MR_binned_i_all$exposure_sex=="female"),"IVW_beta"][[1]]
+    male_se <- household_MR_binned_i_all[which(household_MR_binned_i_all$exposure_sex=="male"),"IVW_se"][[1]]
+    female_se <- household_MR_binned_i_all[which(household_MR_binned_i_all$exposure_sex=="female"),"IVW_se"][[1]]
+
+    sex_het_p <- z.test_p(male_beta, male_se, female_beta, female_se)
+
+
+    for(group in c("age_even_bins", "time_together_even_bins")){
+      for(exposure_sex in c("male", "female")){
+
+        if(exposure_sex=="male"){outcome_sex="female"}
+        if(exposure_sex=="female"){outcome_sex="male"}
+
+        bin_result_temp <- household_MR_binned_i %>% filter(grouping_var==group) %>% filter(exposure_sex==!!exposure_sex)
+
+        all_row <- which(bin_result_temp$bin=="all")
+        all_sum <- c(bin_result_temp[all_row,"IVW_beta"][[1]],bin_result_temp[all_row,"IVW_se"][[1]], bin_result_temp[all_row,"IVW_pval"][[1]])
+        names(all_sum) <- c("MR_est", "MR_se", "MR_pval")
+
+        result_to_analyze <- bin_result_temp %>% filter(bin != "all")
+
+        meta_bin <- metagen(TE = as.numeric(IVW_beta), seTE = as.numeric(IVW_se), studlab = bin, data = result_to_analyze)
+        Q_stat <- meta_bin$Q
+        Q_pval <- meta_bin$pval.Q
+
+        result_to_analyze <- result_to_analyze %>% separate(bin, c("bin_start_temp", "bin_stop_temp"), ",", remove = F) %>% mutate(bin_start = substring(bin_start_temp, 2)) %>%
+          mutate(bin_stop = str_sub(bin_stop_temp,1,nchar(bin_stop_temp)-1)) %>% rowwise() %>%  mutate(bin_median = median(c(as.numeric(bin_start), as.numeric(bin_stop))))
+
+
+        bin_lm <- lm(IVW_beta ~ bin_median, data = result_to_analyze)
+        lm_summary <- summary(bin_lm)$coefficients["bin_median",c(1,2,4)]
+        diff_sum <- c(sex_het_p, Q_stat, Q_pval, lm_summary)
+
+        names(diff_sum) <- c("sex_het_pval", "Q_stat", "Q_pval", "bin_slope_beta", "bin_slope_se", "bin_slope_pval")
+
+        same_trait <- ifelse(exposure_ID==outcome_ID, TRUE, FALSE)
+        description_sum <- c(exposure_ID, outcome_ID, exposure_sex, outcome_sex, same_trait)
+        names(description_sum) <- c("exposure_ID", "outcome_ID", "exposure_sex", "outcome_sex", "same_trait")
+        out_temp <- as.data.frame(t(c(description_sum, all_sum, diff_sum))) %>%
+          mutate_if(is.factor,as.character) %>%
+          as_tibble()
+
+
+        exposure_i_result <- rbind( exposure_i_result, out_temp)
+      }
+
+    }
+
+  }
+
+  return(exposure_i_result)
+
+
+}
+
+
 household_MR_comprehensive_ind <- function(harmonise_dat, MR_method_list){
 
 
