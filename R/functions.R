@@ -2310,9 +2310,10 @@ calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, househo
   meta_result <- exposure_i_result %>% group_by(outcome_ID, grouping_var) %>%
     group_modify(~ summarize_sex_specific_results(as.numeric(.x$bin_slope_beta), as.numeric(.x$bin_slope_se)))
 
+  colnames(meta_result)[-c(1:2)] <- paste0("bin_slope_", colnames(meta_result)[-c(1:2)])
   output <- left_join(exposure_i_result, meta_result)
 
-  return(output)
+  return(exposure_i_result)
 
 
 }
