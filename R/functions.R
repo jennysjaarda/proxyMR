@@ -2838,7 +2838,7 @@ create_proxy_prod_comparison_fig_ind <- function(data, exposure_sex, x, y, overl
   )
 
   fig_no_legend <- fig + theme(legend.position="none")
-  if(count==9){fig_no_legend <- fig_no_legend + theme(legend.position = c(0.5, 0.15))}
+  #if(count==9){fig_no_legend <- fig_no_legend + theme(legend.position = c(0.5, 0.15))}
 
 
   return(list(fig_no_legend = fig_no_legend, legend = legend))
@@ -2907,7 +2907,7 @@ create_proxy_sex_comparison_fig_ind <- function(data, var, count){
   )
 
   fig_no_legend <- fig + theme(legend.position="none")
-  if(count==3){fig_no_legend <- fig_no_legend + theme(legend.position = c(0.5, 0.08))}
+  #if(count==3){fig_no_legend <- fig_no_legend + theme(legend.position = c(0.5, 0.08))}
 
 
   return(list(fig_no_legend = fig_no_legend, legend = legend))
@@ -2954,7 +2954,10 @@ create_proxy_prod_comparison_fig <- function(proxyMR_figure_data){
 
   figures_grid <- plot_grid(plotlist = figures, nrow=3, ncol = 3, byrow = F, labels="AUTO", rel_heights = c(1, 1, 1))
 
-  return(figures_grid)
+  figures_grid_plus_legend <- plot_grid(figures_grid, legend, ncol = 1, nrow =2, rel_heights = c(1, 0.05))
+
+
+  return(figures_grid_plus_legend)
 }
 
 create_proxy_sex_comparison_fig <- function(proxyMR_figure_data){
@@ -2979,12 +2982,17 @@ create_proxy_sex_comparison_fig <- function(proxyMR_figure_data){
     fig_temp <- create_proxy_sex_comparison_fig_ind(proxyMR_figure_data, var = var, panel)
     sex_het_figures[[panel]] <- fig_temp[["fig_no_legend"]]
 
+
     if(panel==1) {legend <- fig_temp[["legend"]]}
     panel <- panel + 1
 
   }
 
   sex_het_figures_grid <- plot_grid(plotlist = sex_het_figures, nrow=1, ncol = 3, byrow = F, labels="AUTO", rel_heights = c(1, 1, 1))
+
+  figures_grid_plus_legend <- plot_grid(sex_het_figures_grid, legend, ncol = 1, nrow =2, rel_heights = c(1, 0.03))
+
+
   return(sex_het_figures_grid)
 }
 
