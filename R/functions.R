@@ -2773,6 +2773,12 @@ prep_proxyMR_figure_data <- function(proxyMR_comparison, traits_corr2_filled){
 
 create_proxy_prod_comparison_fig_ind <- function(data, exposure_sex, x, y, overlay_var, count){
 
+  custom_col <- c("#a6cee3",
+                  "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99",
+                  "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6",
+                  "#6a3d9a", "#ffff99", "#b15928")
+
+
   # exposure_sex <- "male"
   # data <- comparison_result
   # overlay_var <- "omega_vs_gam_BF_sig_sex_specific"
@@ -2844,6 +2850,9 @@ create_proxy_sex_comparison_fig_ind <- function(data, var, count){
 
   # data <- comparison_result
   # var <- "rho
+
+  num_result <- dim(data)[1]/2
+
 
   vars_to_select <- paste0(var, c("_beta", "_sex_het_p"))
   sex_het_p_var <- paste0(var, "_sex_het_p")
