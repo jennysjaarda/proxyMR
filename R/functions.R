@@ -2993,7 +2993,7 @@ create_proxy_sex_comparison_fig <- function(proxyMR_figure_data){
   figures_grid_plus_legend <- plot_grid(sex_het_figures_grid, legend, ncol = 1, nrow =2, rel_heights = c(1, 0.03))
 
 
-  return(sex_het_figures_grid)
+  return(figures_grid_plus_legend)
 }
 
 
