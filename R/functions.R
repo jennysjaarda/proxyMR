@@ -2242,10 +2242,7 @@ run_binned_household_MR <- function(exposure_info, outcomes_to_run, household_ha
 
 calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, household_MR_binned){
 
-  output_list <- list()
-  output_files <- numeric()
-
-  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
 
   cat(paste0("\nCalculating difference in household MR between sexes and among age and time-together bins for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
 
@@ -2301,6 +2298,7 @@ calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, househo
           mutate_if(is.factor,as.character) %>%
           as_tibble()
 
+        cat(paste0("Finished MR for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
 
         exposure_i_result <- rbind( exposure_i_result, out_temp)
       }

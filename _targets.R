@@ -442,8 +442,8 @@ list(
 
   tar_target(
     household_MR_binned_het, # calc sex-het, and slope and Q-stat among bins
-    calc_binned_household_MR_het(exposure_info, household_MR_binned),
-    pattern = map(exposure_info, household_harmonised_data)
+    calc_binned_household_MR_het(exposure_info, outcomes_to_run, household_MR_binned),
+    pattern = map(exposure_info, household_MR_binned)
   ),
 
   tar_target(
