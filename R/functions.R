@@ -2298,7 +2298,7 @@ calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, househo
           mutate_if(is.factor,as.character) %>%
           as_tibble()
 
-        cat(paste0("Finished MR for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+        cat(paste0("Finished calculating heterogeneity statistics for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
 
         exposure_i_result <- rbind( exposure_i_result, out_temp)
       }
