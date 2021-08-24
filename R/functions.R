@@ -2313,7 +2313,7 @@ calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, househo
   colnames(meta_result)[-c(1:2)] <- paste0("bin_slope_", colnames(meta_result)[-c(1:2)])
   output <- left_join(exposure_i_result, meta_result)
 
-  return(exposure_i_result)
+  return(output)
 
 
 }
