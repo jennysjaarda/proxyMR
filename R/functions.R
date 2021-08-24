@@ -2292,8 +2292,8 @@ calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, househo
         names(diff_sum) <- c("sex_het_pval", "Q_stat", "Q_pval", "bin_slope_beta", "bin_slope_se", "bin_slope_pval")
 
         same_trait <- ifelse(exposure_ID==outcome_ID, TRUE, FALSE)
-        description_sum <- c(exposure_ID, outcome_ID, exposure_sex, outcome_sex, same_trait)
-        names(description_sum) <- c("exposure_ID", "outcome_ID", "exposure_sex", "outcome_sex", "same_trait")
+        description_sum <- c(exposure_ID, outcome_ID, exposure_sex, outcome_sex, group, same_trait)
+        names(description_sum) <- c("exposure_ID", "outcome_ID", "exposure_sex", "outcome_sex", "grouping_var", "same_trait")
         out_temp <- as.data.frame(t(c(description_sum, all_sum, diff_sum))) %>%
           mutate_if(is.factor,as.character) %>%
           as_tibble()
