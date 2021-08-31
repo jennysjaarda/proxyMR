@@ -19,5 +19,6 @@ output:
   workflowr::wflow_html:
     toc: yes
     toc_float: yes
-    theme: readable
+    theme: flatly
     highlight: textmate
+    number_sections: true

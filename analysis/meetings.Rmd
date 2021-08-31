@@ -1,6 +1,6 @@
 ---
 title: "Update meetings"
-author: "jennysjaarda"
+author: "Jenny Sjaarda"
 date: "2021-06-14"
 output: workflowr::wflow_html
 editor_options:
@@ -9,11 +9,10 @@ editor_options:
 
 In general, update meetings were held with Zoltan once per week. 
 
-Meeting minutes can be found at the links below (DD-MM-YYY): 
+Meeting minutes can be found at the links below (DD-MM-YYY).
 
-- [04-06-2021](presentations/Xia_horizontal_genetic_effects/presentation.html#1)
-- [14-06-2021](update_meeting_14_06_2021.html)
-- [05-07-2021](update_meeting_14_06_2021.html)
-- [14-07-2021](update_meeting_14_06_2021.html)
-
-
+1. Initial meeting: [04-06-2021](presentations/Xia_horizontal_genetic_effects/presentation.html#1)
+2. [14-06-2021](update_meeting_14_06_2021.html)
+3. [05-07-2021](update_meeting_14_06_2021.html)
+4. [14-07-2021](update_meeting_14_06_2021.html)
+5. [25-08-2021](update_meeting_25_08_2021.html)

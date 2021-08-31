@@ -2,13 +2,126 @@
 title: "Home"
 site: workflowr::wflow_site
 output:
-  workflowr::wflow_html:
-    toc: false
+  bookdown::html_document2:
+    toc: true
 editor_options:
   chunk_output_type: console
 ---
 
-Welcome to my research website.
+This is the website for the research project "proxyMR".
 
-Check-out my latex tests [here](latex_test.html)
+If you have cloned the project to a local computer this website is rendered in the `docs` subdirectory of the project directory.
+
+If you are using `workflowr` to publish the research website it will also be rendered online to GitHub Pages.
+
+This page acts as a table of contents for the website. There are links to the web pages generated from the analysis notebooks and to the rendered versions of manuscripts/documents/presentations.
+
+------------------------------------------------------------------------
+
+# Overview documents {.unnumbered}
+
+## [About](about.html) {.unnumbered}
+
+This notebook explains the central ideas behind the project.
+
+## [Notes](notes.html) {.unnumbered}
+
+This notebook is for keeping notes of any points that may be useful for
+later project or manuscript development and which are not covered in the
+analysis notebooks or at risk of getting lost in the notebooks.
+
+## [Workflow management](workflow.html) {.unnumbered}
+
+This project uses the [`targets`](https://wlandau.github.io/targets/) and [`workflowr`](https://github.com/jdblischak/workflowr) packages for managing the workflow of the project (making sure that the dependencies between computational steps are satisfied). This notebook contains notes on the proposed workflow for
+using `targets` and `workflowr`.
+
+## [Meetings](meetings.html) {.unnumbered}
+
+## [Project Workflow Status](m_00_status.html) {.unnumbered}
+
+This notebook displays the computational status of the project, that is,
+whether everything is up to date. Ironically, this is currently the only
+notebook that must be run manually, so this notebook only displays the
+status **when the notebook was last executed** and there is no
+indication whether the project status has changed since then.
+
+------------------------------------------------------------------------
+
+# Publications and Presentations {.unnumbered}
+
+Links to rendered manuscripts and presentations will go here.
+
+------------------------------------------------------------------------
+
+# Analayses Notebooks {.unnumbered}
+
+These notebooks capture the analyses that were carried out to develop
+the code of the core processing pipeline. They are organised as
+side-chains to the core processing pipeline.
+
+Typically, a meta notebook will analyse the data available at one stage
+of the core pipeline, to guide the writing of the functions required to
+get to the next stage of the core pipeline. These meta notebooks
+generally conclude with the definition of a function that will be used
+in the core pipeline.
+
+There may be multiple notebooks all relating to different aspects of the
+same stage of the core pipeline.
+
+Sometimes the analyses are more diffuse - characterising the data in a
+way that may be helpful for guiding the development of future core
+stages, but not immediately resulting in the development of functions
+for the core pipeline.
+
+## 01 Read, check, and standardise the entity data {.unnumbered}
+
+Determine the initial data preparation of the imported entity records.
+
+### [m_01_1\_read_raw_entity_data](m_01_1_read_raw_entity_data.html) {.unnumbered}
+
+Read the raw entity data.
+
+### [m_01_2\_exclusions](m_01_2_exclusions.html) {.unnumbered}
+
+Apply the row exclusions (exclude test records and all records with
+status other than ACTIVE & VERIFIED).
+
+### [m_01_3\_drop_novar](m_01_3_drop_novar.html) {.unnumbered}
+
+Drop variables with no variation.
+
+### [m_01_4\_parse_dates](m_01_4_parse_dates.html) {.unnumbered}
+
+Parse the date columns.
+
+### [m_01_5\_check_admin](m_01_5_check_admin.html) {.unnumbered}
+
+Check the administrative variables (data relating to the administration
+of voter registration).
+
+### [m_01_6\_check_resid](m_01_6_check_resid.html) {.unnumbered}
+
+Check the residence variables - residential address and phone number.
+
+### [m_01_7\_check_demog](m_01_7_check_demog.html) {.unnumbered}
+
+Check the demographic variables - sex, age, and birth place.
+
+### [m_01_8\_check_name](m_01_8_check_name.html) {.unnumbered}
+
+Check the name variables.
+
+### [m_01_9\_clean_vars](m_01_9_clean_vars.html) {.unnumbered}
+
+Clean all the variables.
+
+------------------------------------------------------------------------
+
+# Acknowledgements
+
+Primary analysis performed by: [Jenny Sjaarda](jennysjaarda@gmail.com).
+
+Project supervisor: [Professor Zoltan Kutalik](https://wp.unil.ch/sgg/people/zoltan/).
+
+This work has been supported by the [Swiss National Science Foundation](http://www.snf.ch/en/funding/Pages/default.aspx).
 

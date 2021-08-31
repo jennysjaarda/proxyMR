@@ -1,11 +1,8 @@
 ---
 title: "Project setup"
-author: "jennysjaarda"
+author: "Jenny Sjaarda"
 date: "2021-06-14"
 output: workflowr::wflow_html
-editor_options:
-    toc: true
-    number_sections: true
 ---
 
 **Last updated:** `r Sys.Date()`
@@ -15,8 +12,6 @@ editor_options:
 **To reproduce the results from this project, please follow these instructions.**
 
 *In general, [`targets`](https://books.ropensci.org/targets/dynamic.html) was used to manage long-running code and [`workflowr`](https://jdblischak.github.io/workflowr/index.html) was used to manage the [website](https://jennysjaarda.github.io/proxymr/index.html).*
-
-***
 
 
 # Initiate project on remote server.
@@ -57,20 +52,218 @@ cd ~/Dropbox/UNIL/projects/
 git clone https://GitHub.com/jennysjaarda/proxyMR.git proxyMR
 ```
 
-Open project in atom (or preferred text editor) and modify the following files:
+Open project in Rstudio (or preferred text editor) and modify the following files:
 
 - Because Terminal cannot generate a preview and `workflowr` doesn't like the sysgit, to the `.Rprofile` file, add:
   - `options(workflowr.sysgit = "")`
   - `options("workflowr.view" = FALSE)`
-- To ensure git hub isn't manaaging large files, modify the `.gitignore` file, by adding the following lines:
-  - `analysis/*`
-  - `data/*`
-  - `!analysis/*.Rmd`
-  - `!data/*.md`
-  - `.git/`
-  - `.drake/`
+- To ensure git hub isn't managing large files, modify the `.gitignore` file, by adding the following lines:
+```
+analysis/*
+data/*
+!analysis/*.Rmd
+_targets
+*.out
+*.rds
+*.RData
+```
 - Save and push these changes to GitHub.
 - Pull to the server.
 
+# Create internal project folders.
 
+Return to sgg server and run the following:
+
+```{r, engine = 'bash', eval = FALSE}
+project_dir=/data/sgg2/jenny/projects/proxyMR
+mkdir $project_dir/data/raw
+mkdir $project_dir/data/processed
+mkdir $project_dir/docs/assets
+mkdir $project_dir/docs/generated_reports
+mkdir $project_dir/analysis/data_setup
+mkdir $project_dir/analysis/data_setup/IV_lists
+mkdir $project_dir/analysis/data_setup/IV_info
+mkdir $project_dir/analysis/data_setup/sex_heterogeneity
+mkdir $project_dir/analysis/traitMR
+mkdir $project_dir/analysis/traitMR/IVs
+mkdir $project_dir/analysis/traitMR/IVs/Neale
+mkdir $project_dir/analysis/traitMR/household_MR
+mkdir $project_dir/analysis/traitMR/household_GWAS
+mkdir $project_dir/analysis/traitMR/standard_GWAS
+mkdir $project_dir/analysis/traitMR/standard_MR
+mkdir $project_dir/analysis/traitMR/trait_info
+mkdir $project_dir/analysis/traitMR/pheno_files
+mkdir $project_dir/analysis/traitMR/pheno_files/phesant
+mkdir $project_dir/analysis/traitMR/pheno_files/raw_change
+mkdir $project_dir/output/figures
+mkdir $project_dir/output/tables
+mkdir $project_dir/output/figures/traitMR
+mkdir $project_dir/output/tables/traitMR
+
+```
+
+This will create the following directory structure in `proxyMR/`:
+
+```{r, engine = 'bash', eval = FALSE}
+proxyMR/
+├── .gitignore
+├── .gitattributes
+├── .Rprofile
+├── _workflowr.yml
+├── analysis/
+│   ├── data_setup/
+│   │   ├── sex_heterogeneity/
+│   │   ├── IV_info/
+│   │   └── IV_lists/
+│   ├── trait_MR/
+│   │   ├── IVs/
+│   │   │   └── Neale/
+│   │   ├── household_MR/
+│   │   ├── standard_MR/
+│   │   ├── household_GWAS/
+│   │   ├── standard_GWAS/
+│   │   ├── pheno_files/
+│   │   │   ├── phesant/
+│   │   │   └── raw_change/
+│   │   └── trait_info/
+│   ├── about.Rmd
+│   ├── index.Rmd
+│   ├── license.Rmd
+│   └── _site.yml
+├── code/
+│   ├── README.md
+├── data/
+│   ├── README.md
+│   ├── raw/
+│   └── processed/
+├── docs/
+│   ├── generated_reports/
+│   └── assets/
+├── proxyMR.Rproj
+├── output/
+│   ├── figures/
+│   │   └── trait_MR/
+│   ├── tables/
+│   │   └── trait_MR/
+│   └── README.md
+└── README.md
+```
+
+Note that after `renv` and `targets` is initialized below a few other directories and files will also be created, namely:
+
+```{r, engine = 'bash', eval = FALSE}
+proxyMR/
+├── renv/
+├── _targets/
+├── renv.lock
+└── .renvignore
+```
+
+
+# Initialize a renv directory
+
+[Renv](https://rstudio.github.io/renv/index.html) is a dependency management system for R. It is useful for making your project:
+
+Isolated: Installing a new or updated package for one project won’t break your other projects, and vice versa. That’s because `renv` gives each project its own private package library.
+
+Portable: Easily transport your projects from one computer to another, even across different platforms. `renv` makes it easy to install the packages your project depends on.
+
+Reproducible: `renv` records the exact package versions you depend on, and ensures those exact versions are the ones that get installed wherever you go.
+
+The renv package is a new effort to bring project-local R dependency management to your projects. The goal is for renv to be a robust, stable replacement for the Packrat package, with fewer surprises and better default behaviors.
+
+Initialize a `renv` project by simply running:
+
+```{r eval=FALSE}
+renv::init()
+tar_renv()
+```
+
+This creates a `renv` directory in your project folder.
+
+Now, every time you launch `R` from this directory or run `install.packages()`, `renv` will automatically keep track of your packages and versions. You are no longer in an ordinary R project; you’re in a `renv` project. The main difference is that a `renv` project has its own private package library. Any packages you install from inside a `renv` project are only available to that project; and packages you install outside of the project are not available to the project.
+
+Periodically call `renv::snapshot()` to save the state of the project library to the lockfile (called renv.lock), continue working on your project, installing and updating R packages as needed. Call `renv::restore()` to revert to the previous state as encoded in the lockfile if your attempts to update packages introduced some new problems. 
+
+# Copy relevant files to project directory. 
+
+Only do this once. The `Neale_SGG_directory.csv` file gives a summary of all SGG UKBB phenotypes that we have in our database and Neale phenotypes that have been downloaded. This file changes overtime as new phenotypes are requested from the UKBB and/or new Neale files are downloaded (i.e. more rows are added to the file). Because the `targets` package tracks input files and their changes, the current state of this file was copied to the project directory and this file was then used as an input file into the pipeline. This file is merely a reference file and changes to it don't correspond to changes in the underlying data used in the analyses.
+
+```{r eval = FALSE}
+Neale_summary_dir <- "/data/sgg2/jenny/data/Neale_UKBB_GWAS"
+Neale_SGG_dir_org <- paste0(Neale_summary_dir,"/Neale_SGG_directory.csv") 
+Neale_SGG_dir_cp <- paste0("data/Neale_SGG_directory_", format(Sys.Date(), "%d_%m_%Y"), ".csv")
+file.copy(Neale_SGG_dir_org, Neale_SGG_dir_cp)
+```
+
+
+# Run and summarize analyses.
+
+## Setup targets and execute plan.
+
+**Note that Part A and B are happening in parallel.**
+
+The [`targets`](https://books.ropensci.org/targets/index.html) package was used to manage teh pipeline and maintain a reproducible workflow. It integrates well with [HPC clusters](https://books.ropensci.org/targets/hpc.html) making it an ideal choice for this project. 
+
+```{r eval=FALSE}
+library(targets)
+```
+
+For execution of `targets` plan: see the [`_targets.R`](https://github.com/jennysjaarda/proxyMR/blob/master/_targets.R) file.
+
+Configure a slurm template
+```{r eval=FALSE}
+options(clustermq.scheduler = "slurm", clustermq.template = "slurm_clustermq.tmpl")
+drake_hpc_template_file("slurm_clustermq.tmpl")
+
+# Write the file slurm_clustermq.tmpl. and edit manually
+```
+The file created using the `clustermq` template was edited manually to match [`slurm_clustermq.tmpl`](https://GitHub.com/jennysjaarda/proxyMR/blob/master/slurm_clustermq.tmpl)
+
+```{r comment=''}
+cat(readLines('slurm_clustermq.tmpl'), sep = '\n')
+```
+
+## Build and maintain website.
+
+Follow the general workflow outlined by [workflowr](https://jdblischak.GitHub.io/workflowr/articles/wflow-01-getting-started.html#the-workflow), with some minor revisions to accommodate workflow between personal computer and remote server:
+
+  1. Open a new or existing R Markdown file in `analysis/` (optionally using `wflow_open()`). (Usually created manually on personal computer and push to server to build later.) If creating manually, add the following to the top of the R Markdown file with an appropriate name for `Title`:
+
+```{r eval=FALSE}
+---
+title: "Title"
+site: workflowr::wflow_site
+output:
+  workflowr::wflow_html:
+    toc: true
+---
+```
+
+  2. Write documentation and perform analyses in the R Markdown file.
+
+  3. Run `commit` and `push` to upload revised R Markdown file to GitHub repository.
+
+  4. On server, pull changes using `wflow_git_pull()` (optionally using `git pull` from Terminal within cloned repository).
+
+  5. Within R console, run `wflow_build()`. This will create html files with `docs/` folder. These files cannot be viewed directly on server, but can be transferred and viewed via [FileZilla](https://filezilla-project.org/) or viewed directly by mounting the remote directory to your personal computer using [SSHFS](https://en.wikipedia.org/wiki/SSHFS) (recommended). Alternatively, Rmd files can be built within the targets pipeline using [`tar_render`](https://rdrr.io/github/wlandau/tarchetypes/man/tar_render.html), see examples in the `targets` manual [here](https://books.ropensci.org/targets/files.html#literate-programming). Perhaps the second option is preferred  as `tar_render` tracks all the Finds all the `tar_load()` / `tar_read() `dependencies in the report and inserts them into the target’s command. This enforces the proper dependency relationships.   
+
+  6. Return to step 2 until satisfied with the result (optionally, edit Rmd file directly on server using `vi` if only small modifications are necessary).
+
+  7. Run `wflow_status()` to track repository.
+
+  8. Run `wflow_publish()` to commit the source files (R Markdown files or other files in `code/`, `data/`, and `output/`), build the HTML files, and commit the HTML files. If there are uncommited files in the directory that are not ".Rmd", `wflow_publish(all=T)` does not work. Alternatively, run the following with an informative `message`:
+
+```{r eval=FALSE}
+repo_status <- wflow_status()
+rmd_commit <- c(rownames(repo_status$status)[repo_status$status$modified],
+         rownames(repo_status$status)[repo_status$status$unpublished],
+         rownames(repo_status$status)[repo_status$status$scratch])
+
+wflow_publish(rmd_commit,
+              message="Updating website")
+
+```
+
+  9. Push the changes to GitHub with `wflow_git_push()` (or `git push` in the Terminal).
 
