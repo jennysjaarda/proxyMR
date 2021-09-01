@@ -2543,13 +2543,13 @@ meta_standard_MR_summary <- function(standard_MR_summary, exposures_to_run, outc
         upperbound=b_meta+b_meta_se*1.96
         meta_p=round(2*(pt(abs(b_meta/b_meta_se),((n)-meta.result$het[2]),lower.tail=FALSE)),digits=10)
 
-        mr_summary$MR_meta_beta <- NA
+        mr_summary$MR_meta_est <- NA
         mr_summary$MR_meta_se <- NA
         mr_summary$MR_meta_L95 <- NA
         mr_summary$MR_meta_U95 <- NA
         mr_summary$MR_meta_pval <- NA
         for(sex_row in c(male_row, female_row)){
-          mr_summary$MR_meta_beta[sex_row] <- b_meta
+          mr_summary$MR_meta_est[sex_row] <- b_meta
           mr_summary$MR_meta_se[sex_row] <- b_meta_se
           mr_summary$MR_meta_L95[sex_row] <- lowerbound
           mr_summary$MR_meta_U95[sex_row] <- upperbound
@@ -2689,10 +2689,14 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
 
     summarized_result <- summarized_result %>% #dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, exposure_sex, outcome_sex, contains(var), contains("N_outcome_GWAS"), contains("N_snps")) %>% rename_all(~stringr::str_replace(., paste0("_", var, "_"),"_")) %>%
       mutate(xixp_xpyp_beta = xixp_IVW_Wald_beta*xpyp_IVW_Wald_beta) %>%
-      mutate(xixp_xpyp_se = xixp_IVW_Wald_beta^2*xpyp_IVW_Wald_se^2 + xpyp_IVW_Wald_beta^2*xixp_IVW_Wald_se^2) %>%
+      mutate(xixp_xpyp_se = xixp_IVW_Wald_beta^2*xpyp_IVW_Wald_se^2 +
+               xpyp_IVW_Wald_beta^2*xixp_IVW_Wald_se^2 +
+               xpyp_IVW_Wald_se^2*xixp_IVW_Wald_se^2) %>%
 
       mutate(xiyi_yiyp_beta = xiyi_IVW_Wald_beta*yiyp_IVW_Wald_beta) %>%
-      mutate(xiyi_yiyp_se = xiyi_IVW_Wald_beta^2*yiyp_IVW_Wald_se^2 + yiyp_IVW_Wald_beta^2*xiyi_IVW_Wald_se^2) %>%
+      mutate(xiyi_yiyp_se = xiyi_IVW_Wald_beta^2*yiyp_IVW_Wald_se^2 +
+               yiyp_IVW_Wald_beta^2*xiyi_IVW_Wald_se^2 +
+               yiyp_IVW_Wald_se^2*yiyp_IVW_Wald_se^2) %>%
 
       mutate(gam_beta = xixp_xpyp_beta) %>% mutate(gam_se = xixp_xpyp_se) %>%
       mutate(rho_beta = xiyi_yiyp_beta) %>% mutate(rho_se = xiyi_yiyp_se) %>%
@@ -2822,7 +2826,7 @@ create_proxy_prod_comparison_fig_ind <- function(data, exposure_sex, x, y, overl
 
     theme_half_open(12) +
     scale_fill_manual(values = custom_col) +
-    scale_colour_manual(values = custom_col, labels=c("Non-BF significant difference","BF significant difference")) +
+    scale_colour_manual(values = custom_col, labels=c("Non-BF significant\ndifference","BF significant\ndifference")) +
 
     geom_point(data = overlay_data, aes(x=x_plot, y=y_plot), color = custom_col[2]) +
     theme(legend.position="top") + geom_abline(slope=1, intercept=0) + theme(legend.title = element_blank()) +
@@ -2891,7 +2895,7 @@ create_proxy_sex_comparison_fig_ind <- function(data, var, count){
 
     theme_half_open(12) +
     scale_fill_manual(values = custom_col) +
-    scale_colour_manual(values = custom_col, labels=c("Non-BF significant difference","BF significant difference")) +
+    scale_colour_manual(values = custom_col, labels=c("Non-BF significant\ndifference","BF significant\ndifference")) +
 
     geom_point(data = overlay_data, aes(x = male, y = female), color = custom_col[2]) +
     theme(legend.position="top") + geom_abline(slope=1, intercept=0) + theme(legend.title = element_blank()) +
