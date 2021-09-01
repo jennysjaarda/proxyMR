@@ -2444,6 +2444,9 @@ summarize_sex_specific_results  <- function(d,se){
 
 summarize_household_MR_comprehensive <- function(household_MR){
 
+  exposure_ID <- household_MR[[1]][["exp_male_MR_complete"]][["MR_summary"]][,"exposure_ID"][[1]]
+  cat(paste0("Summarizing and meta-analyzing household MR results across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+
   result <- numeric()
   for(i in 1:length(household_MR)){
     male_result <- household_MR[[i]][["exp_male_MR_complete"]][["MR_summary"]]
@@ -2523,6 +2526,9 @@ write_household_MR <- function(exposure_info, outcomes_to_run, household_MR){
 }
 
 summarize_standard_MR_comprehensive <- function(standard_MR){
+
+  exposure_ID <- standard_MR[[1]][["exp_male_MR_complete"]][["MR_summary"]][,"exposure_ID"][[1]]
+  cat(paste0("Summarizing and meta-analyzing standard MR results across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
 
   result <- numeric()
   for(i in 1:length(standard_MR)){
