@@ -463,7 +463,7 @@ list(
   ),
 
   tar_target(
-    ##summarize into one table, ignore leave-1-out analyses for now
+    ## summarize into one table, ignore leave-1-out analyses for now, meta-analyze across sexes and calculate heterogeneity statistic between sexes.
     household_MR_summary,
     summarize_household_MR_comprehensive(household_MR),
     pattern = map(household_MR)
@@ -492,9 +492,6 @@ list(
     pattern = map(outcomes_to_run, outcome_stats), format = "file"
   ),
 
-  # harmonize one-sample data, could call it `stand_harmonised_data`
-  # perform standard MR
-
   tar_target(
     standard_harmonised_data,
     {
@@ -510,9 +507,8 @@ list(
     pattern = map(exposure_info, standard_harmonised_data), iteration = "list"
   ),
 
-
   tar_target(
-    ## summarize into one table, ignore leave-1-out analyses for now
+    ## summarize into one table, ignore leave-1-out analyses for now, meta-analyze across sexes and calculate heterogeneity statistic between sexes.
     standard_MR_summary,
     summarize_standard_MR_comprehensive(standard_MR),
     pattern = map(standard_MR)
@@ -521,19 +517,26 @@ list(
   tar_target(
     ## meta-analyze across sexes and calculate heterogeneity statistic
     standard_MR_summary_meta,
-    meta_standard_MR_summary(standard_MR_summary, exposures_to_run, outcomes_to_run)
+    meta_standard_MR_summary(standard_MR_summary, exposures_to_run, outcomes_to_run),
   ),
 
   tar_target(
     ## filter to only BF-sig MR results (based on meta-analyzed across sexes results)
+
+    ## used to be based on above target which we can remove --> dim was 8542 38
     standard_MR_summary_BF_sig,
-    find_sig_standard_MR_summary(standard_MR_summary_meta)
+    find_sig_standard_MR_summary(standard_MR_summary)
   ),
 
   tar_target(
     proxyMR_comparison,
     run_proxyMR_comparison(exposure_info, standard_MR_summary_BF_sig, household_MR_summary, household_MR_summary_AM),
     map(exposure_info, household_MR_summary), iteration = "list"
+  ),
+
+  tar_target(
+    MV_z,
+    find_MV_z(standard_MR_summary_BF_sig, standard_MR_summary_meta)
   ),
 
   tar_target(
