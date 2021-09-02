@@ -2500,7 +2500,7 @@ summarize_standard_MR_comprehensive <- function(standard_MR){
     }
   }
 
-  result <- as_tibble(result) %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character())
+  result <- as_tibble(result) %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character)
 
   meta_result <- result %>% group_by(exposure_ID, outcome_ID) %>% group_modify(~ summarize_sex_specific_results(.x$IVW_Wald_beta, .x$IVW_Wald_se))
 
@@ -3490,3 +3490,41 @@ process_bgenie <- function(directory, extension=".out", HRC_panel){
   return(HRC_filtered_data)
 
 }
+
+bin_plot <- function(household_mr_output, grouping_var, i, trait_info){
+
+  harmonise_dat_full <- household_mr_output$harmonise_dat_full %>% dplyr::filter(outcome != "all") %>% mutate_at('outcome', as.factor)
+
+  outcome_levels <- levels(harmonise_dat_full$outcome)
+  outcome_levels_num <- str_first_number(outcome_levels)
+
+  harmonise_dat_full$outcome <- factor(harmonise_dat_full$outcome, levels = outcome_levels[order(outcome_levels_num)])
+
+  bin_summary <- household_mr_output$bin_summary %>% as_tibble %>% dplyr::filter(bin != "all") %>% mutate_at('bin', as.factor)
+  bin_summary$bin <- factor(bin_summary$bin, levels = outcome_levels[order(outcome_levels_num)])
+
+
+  trait_info <-  shiny_data[[i]][["trait_info"]]
+  trait_description <- as.character(trait_info["description",1])
+
+  legend_title <- ifelse(grouping_var=="age_even_bins", "Median age \n of couples", "Time together \n in same household")
+  bin_summary <- as.data.frame(bin_summary) %>% mutate_if(is.factor,as.character) %>%
+    mutate_at(vars(IVW_beta, IVW_se, IVW_pval), as.numeric)
+
+  plot <- ggplot2::ggplot(data = harmonise_dat_full, ggplot2::aes(x = beta.exposure,
+                                                                  y = beta.outcome)) +
+    ggplot2::geom_errorbar(ggplot2::aes(ymin = beta.outcome - se.outcome, ymax = beta.outcome + se.outcome),
+                           colour = "grey", width = 0) +
+    ggplot2::geom_errorbarh(ggplot2::aes(xmin = beta.exposure - se.exposure, xmax = beta.exposure + se.exposure), colour = "grey", height = 0) +
+    ggplot2::geom_point(ggplot2::aes(colour = factor(outcome))) +
+    ggplot2::geom_abline(data = bin_summary, ggplot2::aes(intercept = 0,
+                                                          slope = IVW_beta, colour = factor(bin)), show.legend = TRUE) +
+    ggplot2::scale_colour_manual(values = brewer.pal(n = 9, name = "Blues")[-c(1:2)]) +
+    theme_minimal() +
+    ggplot2::labs(colour = legend_title, x = paste("SNP effect on", trait_description),
+                  y = paste("SNP effect on", "partner")) +
+    ggplot2::theme(legend.position = "right", legend.direction = "vertical") +
+    ggplot2::guides(colour = ggplot2::guide_legend(ncol = 1))
+  return(plot)
+}
+
