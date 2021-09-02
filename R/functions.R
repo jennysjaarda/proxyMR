@@ -1208,59 +1208,19 @@ create_summary_stats <- function(Neale_pheno_ID, trait_info, IV_data_summary){
 
 }
 
-write_summ_stats <- function(summ_stats_create, traits, traits_to_run, GRS_thresholds, out1, out2){
+write_summ_stats <- function(Neale_pheno_ID, summ_stats){
+
+  trait_ID <- Neale_pheno_ID ## this is the Neale_id, used to be pheno_description
+  pheno_dir <- paste0("analysis/traitMR/")
 
   pheno_dir <- paste0("analysis/traitMR/")
-  for(i in 1:dim(traits)[1]){
-    print(i)
-    data_out <- readd(summ_stats_create, subtargets=i)
-    trait_ID <- as.character(traits[i,"Neale_pheno_ID"]) ## this is the Neale_id, used to be pheno_description
+  male_file <- paste0(pheno_dir,"/IVs/Neale/", trait_ID, "/male_IVs.txt")
+  female_file <- paste0(pheno_dir,"/IVs/Neale/", trait_ID, "/female_IVs.txt")
 
+  write.table(summ_stats[["male_IV_data"]],male_file, row.names=F, col.names=T, quote=F)
+  write.table(summ_stats[["female_IV_data"]],female_file, row.names=F, col.names=T, quote=F)
 
-    write.table(data_out[[1]][["male_IV_data"]],paste0(pheno_dir,"/IVs/Neale/", trait_ID, "/male_IVs.txt"), row.names=F, col.names=T, quote=F)
-    write.table(data_out[[1]][["female_IV_data"]],paste0(pheno_dir,"/IVs/Neale/", trait_ID, "/female_IVs.txt"), row.names=F, col.names=T, quote=F)
-
-
-    for(sex in c("male", "female")){
-
-      for(GRS_threshold in GRS_thresholds){
-
-        if(file.exists(paste0( pheno_dir,"/GRS/",trait_ID, "/", sex,"/", GRS_threshold,"/", sex,"_GRS_",GRS_threshold,".txt")))
-        {file.remove(paste0( pheno_dir,"/GRS/",trait_ID, "/", sex, "/", GRS_threshold,"/", sex,"_GRS_",GRS_threshold,".txt"))}
-      }
-
-      for (chr in 1:22){
-
-        for(GRS_threshold in GRS_thresholds){
-
-
-          list_name <- paste0(sex, "_chr", chr, "_GRSthresh_", GRS_threshold)
-
-          write.table(data_out[[1]][["GRS_list"]][[list_name]], paste0( pheno_dir,"/GRS/", trait_ID, "/", sex, "/", GRS_threshold,"/", sex,"_GRS_",GRS_threshold,"_chr",chr,".txt"), append=F, row.names=F, col.names=T, quote=F)
-          write.table(data_out[[1]][["GRS_list"]][[list_name]], paste0( pheno_dir,"/GRS/", trait_ID, "/", sex, "/", GRS_threshold,"/", sex,"_GRS_",GRS_threshold,".txt"), append=T, row.names=F, col.names=F, quote=F)
-        }
-
-      }
-    }
-
-    ## add colnames
-    colnames_GRS <- colnames(summ_stats_create[[i]][["GRS_list"]][[list_name]])
-    for(sex in c("male", "female"))
-    {
-      for(GRS_threshold in GRS_thresholds)
-      {
-        file <- read.table(paste0( pheno_dir, "/GRS/", trait_ID, "/", sex, "/", GRS_threshold, "/", sex, "_GRS_", GRS_threshold, ".txt"), header=F)
-        colnames(file) <- colnames_GRS
-        write.table(file, paste0( pheno_dir, "/GRS/", trait_ID, "/", sex, "/", GRS_threshold, "/", sex, "_GRS_", GRS_threshold, ".txt"), row.names=F, col.names=T, quote=F)
-      }
-
-    }
-
-    #write.table(male_IV_data,paste0(pheno_dir,"/IVs/", trait_ID, "/male_IVs.txt"), row.names=F, col.names=T, quote=F)
-    #write.table(female_IV_data,paste0(pheno_dir,"/IVs/", trait_ID, "/female_IVs.txt"), row.names=F, col.names=T, quote=F)
-
-  }
-
+  return(c(male_file, female_file))
 
 }
 
@@ -2653,6 +2613,15 @@ find_MV_z <- function(standard_MR_summary_BF_sig, standard_MR_summary_meta){
 
   return(standard_MR_summary_BF_sig)
 }
+
+pull_z_summ_stats <- function(){
+
+  for(z in z_list){
+
+
+  }
+}
+
 
 
 find_sig_standard_MR_summary <- function(standard_MR_summary){

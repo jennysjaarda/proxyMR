@@ -378,6 +378,7 @@ list(
     pattern = map(exposures_to_run), iteration = "list"
   ),
 
+
   tar_target(
     IV_data_summary_run,
     IV_data_summary[[IV_indices_to_run]],
@@ -391,6 +392,15 @@ list(
     create_summary_stats(exposures_to_run$Neale_pheno_ID, exposure_info, IV_data_summary_run),
     pattern = map(exposures_to_run, exposure_info, IV_data_summary_run),
     iteration = "list"
+  ),
+
+  tar_target(
+    path_summ_stats,
+    {
+      create_trait_dirs
+      write_summ_stats(exposures_to_run$Neale_pheno_ID, summ_stats)
+    },
+    pattern = map(exposures_to_run, summ_stats), format = "file"
   ),
 
   tar_target(
@@ -543,6 +553,7 @@ list(
     proxyMR_figure_data,
     prep_proxyMR_figure_data(proxyMR_comparison, traits_corr2_filled)
   ),
+
 
   tar_target(
     proxyMR_prod_comparison_figure,
