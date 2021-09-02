@@ -2416,7 +2416,7 @@ summarize_household_MR_comprehensive <- function(household_MR){
 
   }
 
-  result <- as_tibble(result) %>% mutate_all(parse_guess)
+  result <- as_tibble(result) %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character())
 
   meta_result <- result %>% group_by(exposure_ID, outcome_ID) %>% group_modify(~ summarize_sex_specific_results(.x$IVW_Wald_beta, .x$IVW_Wald_se))
 
@@ -2500,7 +2500,7 @@ summarize_standard_MR_comprehensive <- function(standard_MR){
     }
   }
 
-  result <- as_tibble(result) %>% mutate_all(parse_guess)
+  result <- as_tibble(result) %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character())
 
   meta_result <- result %>% group_by(exposure_ID, outcome_ID) %>% group_modify(~ summarize_sex_specific_results(.x$IVW_Wald_beta, .x$IVW_Wald_se))
 
