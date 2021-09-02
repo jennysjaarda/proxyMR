@@ -2204,7 +2204,7 @@ meta_binned_household_MR <- function(exposure_info, outcomes_to_run, household_M
 
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
 
-  cat(paste0("\Meta-analyzing binned household MR result across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+  cat(paste0("\nMeta-analyzing binned household MR result across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
 
 
   output_list <- list()
