@@ -451,7 +451,13 @@ list(
   ),
 
   tar_target(
-    household_MR_binned_het, # calc sex-het, and slope and Q-stat among bins
+    household_MR_binned_meta, # meta-analyze binned results by sex
+    meta_binned_household_MR(exposure_info, outcomes_to_run, household_MR_binned),
+    pattern = map(exposure_info, household_MR_binned), iteration = "list"
+  ),
+
+  tar_target(
+    household_MR_binned_het, # calc sex-het, and slope and Q-stat among bins, sex-specific and binned
     calc_binned_household_MR_het(exposure_info, outcomes_to_run, household_MR_binned),
     pattern = map(exposure_info, household_MR_binned)
   ),
@@ -460,9 +466,9 @@ list(
     path_household_MR_binned,
     {
       path_MR_dirs
-      write_household_MR(exposure_info, outcomes_to_run, household_MR_binned)
+      write_household_MR(exposure_info, outcomes_to_run, household_MR_binned_meta)
     },
-    pattern = map(exposure_info, household_MR_binned), format = "file"
+    pattern = map(exposure_info, household_MR_binned_meta), format = "file"
   ),
 
 
@@ -525,15 +531,6 @@ list(
   ),
 
   tar_target(
-    ## meta-analyze across sexes and calculate heterogeneity statistic
-    standard_MR_summary_meta,
-    meta_standard_MR_summary(standard_MR_summary, exposures_to_run, outcomes_to_run),
-  ),
-
-  tar_target(
-    ## filter to only BF-sig MR results (based on meta-analyzed across sexes results)
-
-    ## used to be based on above target which we can remove --> dim was 8542 38
     standard_MR_summary_BF_sig,
     find_sig_standard_MR_summary(standard_MR_summary)
   ),
@@ -546,7 +543,7 @@ list(
 
   tar_target(
     MV_z,
-    find_MV_z(standard_MR_summary_BF_sig, standard_MR_summary_meta)
+    find_MV_z(standard_MR_summary_BF_sig, standard_MR_summary)
   ),
 
   tar_target(

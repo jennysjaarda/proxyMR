@@ -2393,7 +2393,7 @@ household_MR_comprehensive_ind <- function(harmonise_dat, MR_method_list){
 
 
   MR_summary <- MR_summary %>% as_tibble() %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character)
-  colnames(MR_summary) <- gsub("_Wald", "", colnames(MR_summary2)) #remove the Wald from the name because Wald results are only returned if there is only 1 SNP in the MR and we know there are more than this for each MR.
+  colnames(MR_summary) <- gsub("_Wald", "", colnames(MR_summary)) #remove the Wald from the name because Wald results are only returned if there is only 1 SNP in the MR and we know there are more than this for each MR.
 
   return(list(MR_summary = MR_summary, leave1out_test = leave1out_test, MR_plot = mr_plot))
 
