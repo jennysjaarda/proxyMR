@@ -1576,7 +1576,7 @@ summarize_mr_result <- function(exposure, outcome, exposure_sex, outcome_sex, ns
 
   }
   colnames(out) <- c("exposure", "outcome", "exposure_sex","outcome_sex","N_snps", "N_exposure_GWAS", "N_outcome_GWAS",
-                     "IVW_Wald_beta", "IVW_Wald_se", "IVW_Wald_pval", "IVW_Wald_summary", "IVW_Wald_pval_round",
+                     "IVW_beta", "IVW_se", "IVW_pval", "IVW_summary", "IVW_pval_round",
                      "Egger_beta", "Egger_se", "Egger_pval", "Egger_summary", "Egger_pval_round",
                      "Egger_int_pval", "Het_IVW_Qpval", "Egger_int_pval_round", "Het_IVW_Qpval_round")
   return(out)
@@ -2200,7 +2200,51 @@ run_binned_household_MR <- function(exposure_info, outcomes_to_run, household_ha
 
 }
 
-calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, household_MR_binned){
+meta_binned_household_MR <- function(exposure_info, outcomes_to_run, household_MR_binned){
+
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+
+  cat(paste0("\Meta-analyzing binned household MR result across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+
+  output_list <- list()
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
+
+    household_MR_binned_i <- household_MR_binned[[i]]
+    household_MR_binned_i_all <- household_MR_binned_i %>% dplyr::filter(bin=="all" & grouping_var=="time_together_even_bins")
+
+    male_beta <- household_MR_binned_i_all[which(household_MR_binned_i_all$exposure_sex=="male"),"IVW_beta"][[1]]
+    female_beta <- household_MR_binned_i_all[which(household_MR_binned_i_all$exposure_sex=="female"),"IVW_beta"][[1]]
+    male_se <- household_MR_binned_i_all[which(household_MR_binned_i_all$exposure_sex=="male"),"IVW_se"][[1]]
+    female_se <- household_MR_binned_i_all[which(household_MR_binned_i_all$exposure_sex=="female"),"IVW_se"][[1]]
+
+    sex_het_p <- z.test_p(male_beta, male_se, female_beta, female_se)
+
+
+    result <- as_tibble(result) %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character())
+
+    meta_result <- household_MR_binned_i %>% group_by(grouping_var, bin) %>% group_modify(~ summarize_sex_specific_results(.x$IVW_beta, .x$IVW_se))
+    meta_counts <- household_MR_binned_i %>% group_by(grouping_var, bin) %>% mutate(meta_n_outcome = sum(n_outcome)) %>% mutate(meta_n_exposure = sum(n_exposure)) %>% dplyr::select(grouping_var, bin, meta_n_outcome, meta_n_exposure)
+
+    colnames(meta_result)[-c(1:2)] <- paste0("IVW", "_", colnames(meta_result)[-c(1:2)])
+
+    meta_result <- full_join(meta_result, meta_counts) %>% unique()
+    summarized_result <- full_join(household_MR_binned_i, meta_result)
+
+    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_MR_meta")]] <- summarized_result
+
+    cat(paste0("Finished meta-anlayzing across bins for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+
+  }
+
+  return(output_list)
+
+}
+
+
+calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, household_MR_binned_meta){
 
    exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
 
@@ -2221,6 +2265,18 @@ calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, househo
     female_se <- household_MR_binned_i_all[which(household_MR_binned_i_all$exposure_sex=="female"),"IVW_se"][[1]]
 
     sex_het_p <- z.test_p(male_beta, male_se, female_beta, female_se)
+
+
+    result <- as_tibble(result) %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character())
+
+    meta_result <- household_MR_binned_i %>% group_by(grouping_var, bin) %>% group_modify(~ summarize_sex_specific_results(.x$IVW_beta, .x$IVW_se))
+    meta_counts <- household_MR_binned_i %>% group_by(grouping_var, bin) %>% mutate(meta_n_outcome = sum(n_outcome)) %>% mutate(meta_n_exposure = sum(n_exposure)) %>% dplyr::select(grouping_var, bin, meta_n_outcome, meta_n_exposure)
+
+    colnames(meta_result)[-c(1:2)] <- paste0("IVW", "_", colnames(meta_result)[-c(1:2)])
+
+    meta_result <- full_join(meta_result, meta_counts) %>% unique()
+    summarized_result <- full_join(household_MR_binned_i, meta_result)
+
 
 
     for(group in c("age_even_bins", "time_together_even_bins")){
@@ -2321,12 +2377,12 @@ household_MR_comprehensive_ind <- function(harmonise_dat, MR_method_list){
 
   num_cols <- length(colnames(MR_summary))
 
-  colnames(MR_summary)[num_cols-1] <- "IVW_Wald_sensitivity_summary"
-  colnames(MR_summary)[num_cols] <- "IVW_Wald_sensitivity_pval_round"
+  colnames(MR_summary)[num_cols-1] <- "IVW_sensitivity_summary"
+  colnames(MR_summary)[num_cols] <- "IVW_sensitivity_pval_round"
 
-  colnames(MR_summary)[num_cols-2] <- "IVW_Wald_sensitivity_pval"
-  colnames(MR_summary)[num_cols-3] <- "IVW_Wald_sensitivity_beta"
-  colnames(MR_summary)[num_cols-4] <- "IVW_Wald_sensitivity_se"
+  colnames(MR_summary)[num_cols-2] <- "IVW_sensitivity_pval"
+  colnames(MR_summary)[num_cols-3] <- "IVW_sensitivity_beta"
+  colnames(MR_summary)[num_cols-4] <- "IVW_sensitivity_se"
 
   colnames(MR_summary)[num_cols-5] <- "N_snps_sensitivity" #test for reverse causation
 
@@ -2335,6 +2391,9 @@ household_MR_comprehensive_ind <- function(harmonise_dat, MR_method_list){
   leave1out_test$exposure_sex <- exposure_sex
   leave1out_test$outcome_sex <- outcome_sex
 
+
+  MR_summary <- MR_summary %>% as_tibble() %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character)
+  colnames(MR_summary) <- gsub("_Wald", "", colnames(MR_summary2)) #remove the Wald from the name because Wald results are only returned if there is only 1 SNP in the MR and we know there are more than this for each MR.
 
   return(list(MR_summary = MR_summary, leave1out_test = leave1out_test, MR_plot = mr_plot))
 
@@ -2416,11 +2475,11 @@ summarize_household_MR_comprehensive <- function(household_MR){
 
   }
 
-  result <- as_tibble(result) %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character())
+  result <- as_tibble(result) %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character)
 
-  meta_result <- result %>% group_by(exposure_ID, outcome_ID) %>% group_modify(~ summarize_sex_specific_results(.x$IVW_Wald_beta, .x$IVW_Wald_se))
+  meta_result <- result %>% group_by(exposure_ID, outcome_ID) %>% group_modify(~ summarize_sex_specific_results(.x$IVW_beta, .x$IVW_se))
 
-  colnames(meta_result)[-c(1:2)] <- paste0("MR", "_", colnames(meta_result)[-c(1:2)])
+  colnames(meta_result)[-c(1:2)] <- paste0("IVW", "_", colnames(meta_result)[-c(1:2)])
   summarized_result <- full_join(result, meta_result)
 
   return(summarized_result)
@@ -2502,81 +2561,12 @@ summarize_standard_MR_comprehensive <- function(standard_MR){
 
   result <- as_tibble(result) %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character)
 
-  meta_result <- result %>% group_by(exposure_ID, outcome_ID) %>% group_modify(~ summarize_sex_specific_results(.x$IVW_Wald_beta, .x$IVW_Wald_se))
+  meta_result <- result %>% group_by(exposure_ID, outcome_ID) %>% group_modify(~ summarize_sex_specific_results(.x$IVW_beta, .x$IVW_se))
 
-  colnames(meta_result)[-c(1:2)] <- paste0("MR", "_", colnames(meta_result)[-c(1:2)])
+  colnames(meta_result)[-c(1:2)] <- paste0("IVW", "_", colnames(meta_result)[-c(1:2)])
   summarized_result <- full_join(result, meta_result)
 
   return(summarized_result)
-
-}
-
-meta_standard_MR_summary <- function(standard_MR_summary, exposures_to_run, outcomes_to_run){
-
-  result <- numeric()
-
-  for(i in 1:dim(exposures_to_run)[1]){
-    exposure_ID <- exposures_to_run[["Neale_pheno_ID"]][i]
-    cat(paste0("Meta-analyzing standard MR results across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
-
-    for(j in 1:dim(outcomes_to_run)[1]){
-      outcome_ID <- outcomes_to_run[["Neale_pheno_ID"]][j]
-      if(exposure_ID!=outcome_ID){
-        mr_summary <- standard_MR_summary[which(standard_MR_summary$exposure_ID==exposure_ID &
-                                                standard_MR_summary$outcome_ID==outcome_ID),]
-
-        mr_summary$sex_het_pval <- NA
-        male_row <- which(mr_summary$exposure_sex=="male")
-        female_row <- which(mr_summary$exposure_sex=="female")
-
-        beta_F <-  as.numeric(mr_summary[female_row,"IVW_Wald_beta"])
-        beta_M <-  as.numeric(mr_summary[male_row,"IVW_Wald_beta"])
-        SE_F <- as.numeric(mr_summary[female_row,"IVW_Wald_se"])
-        SE_M <- as.numeric(mr_summary[male_row,"IVW_Wald_se"])
-        n_M <- as.numeric(mr_summary[male_row,"N_outcome_GWAS"])
-        n_F <- as.numeric(mr_summary[male_row,"N_outcome_GWAS"])
-
-        se <- sqrt( (SE_F^2) + (SE_M^2) )
-        t <- (beta_F-beta_M)/se
-        p_het <- 2*pnorm(-abs(t))
-
-        mr_summary$sex_het_pval[male_row] <- p_het
-        mr_summary$sex_het_pval[female_row] <- p_het
-
-        effects <- c(beta_F, beta_M)
-        ses <- c(SE_F, SE_M)
-        n <- sum(n_M, n_F)
-        meta.result=meta.summaries(d=effects, se=ses,method=c("fixed"), conf.level=0.95)
-        b_meta=round(meta.result[3]$summary,digits=10)
-        b_meta_se=round(meta.result[4]$se.summary,digits=10)
-        lowerbound=b_meta-b_meta_se*1.96
-        upperbound=b_meta+b_meta_se*1.96
-        meta_p=round(2*(pt(abs(b_meta/b_meta_se),((n)-meta.result$het[2]),lower.tail=FALSE)),digits=10)
-
-        mr_summary$MR_meta_beta <- NA
-        mr_summary$MR_meta_se <- NA
-        mr_summary$MR_meta_L95 <- NA
-        mr_summary$MR_meta_U95 <- NA
-        mr_summary$MR_meta_pval <- NA
-        for(sex_row in c(male_row, female_row)){
-          mr_summary$MR_meta_beta[sex_row] <- b_meta
-          mr_summary$MR_meta_se[sex_row] <- b_meta_se
-          mr_summary$MR_meta_L95[sex_row] <- lowerbound
-          mr_summary$MR_meta_U95[sex_row] <- upperbound
-          mr_summary$MR_meta_pval[sex_row] <- meta_p
-
-        }
-
-        result <- rbind(result, mr_summary)
-      }
-
-    }
-
-    cat(paste0("Finished meta-analyzing MR results for exposure ", i, " of ", dim(exposures_to_run)[1], ".\n\n" ))
-
-  }
-
-  return(result)
 
 }
 
@@ -2669,7 +2659,7 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
       hh_MR_sub <- household_MR_summary %>% filter(exposure_sex==!!exposure_sex) %>%
         filter(outcome_ID==!!outcome_ID)
 
-      cols_interst <- c("IVW_Wald_beta", "IVW_Wald_se", "IVW_Wald_pval", "N_outcome_GWAS", "N_snps")
+      cols_interst <- c("IVW_beta", "IVW_se", "IVW_pval", "N_outcome_GWAS", "N_snps")
 
       ## Sex-specific proxy MR
       xiyp_summary <- hh_MR_sub %>% dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xiyp_', names(.)))
@@ -2697,7 +2687,7 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
     }
 
 
-    summarized_result <- as_tibble(summarized_result) %>% mutate_all(parse_guess)
+    summarized_result <- as_tibble(summarized_result) %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character())
 
     expsoure_sex_temp <- summarized_result$exposure_sex
     outcome_sex_temp <- ifelse(expsoure_sex_temp=="male", "female", "male")
@@ -2709,24 +2699,24 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
     # Calc products and their SEs
 
     summarized_result <- summarized_result %>% #dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, exposure_sex, outcome_sex, contains(var), contains("N_outcome_GWAS"), contains("N_snps")) %>% rename_all(~stringr::str_replace(., paste0("_", var, "_"),"_")) %>%
-      mutate(xixp_xpyp_beta = xixp_IVW_Wald_beta*xpyp_IVW_Wald_beta) %>%
-      mutate(xixp_xpyp_se = xixp_IVW_Wald_beta^2*xpyp_IVW_Wald_se^2 +
-               xpyp_IVW_Wald_beta^2*xixp_IVW_Wald_se^2 +
-               xpyp_IVW_Wald_se^2*xixp_IVW_Wald_se^2) %>%
+      mutate(xixp_xpyp_beta = xixp_IVW_beta*xpyp_IVW_beta) %>%
+      mutate(xixp_xpyp_se = xixp_IVW_beta^2*xpyp_IVW_se^2 +
+               xpyp_IVW_beta^2*xixp_IVW_se^2 +
+               xpyp_IVW_se^2*xixp_IVW_se^2) %>%
 
-      mutate(xiyi_yiyp_beta = xiyi_IVW_Wald_beta*yiyp_IVW_Wald_beta) %>%
-      mutate(xiyi_yiyp_se = xiyi_IVW_Wald_beta^2*yiyp_IVW_Wald_se^2 +
-               yiyp_IVW_Wald_beta^2*xiyi_IVW_Wald_se^2 +
-               yiyp_IVW_Wald_se^2*yiyp_IVW_Wald_se^2) %>%
+      mutate(xiyi_yiyp_beta = xiyi_IVW_beta*yiyp_IVW_beta) %>%
+      mutate(xiyi_yiyp_se = xiyi_IVW_beta^2*yiyp_IVW_se^2 +
+               yiyp_IVW_beta^2*xiyi_IVW_se^2 +
+               yiyp_IVW_se^2*yiyp_IVW_se^2) %>%
 
       mutate(gam_beta = xixp_xpyp_beta) %>% mutate(gam_se = xixp_xpyp_se) %>%
       mutate(rho_beta = xiyi_yiyp_beta) %>% mutate(rho_se = xiyi_yiyp_se) %>%
-      mutate(omega_beta = xiyp_IVW_Wald_beta) %>% mutate(omega_se = xiyp_IVW_Wald_se)
+      mutate(omega_beta = xiyp_IVW_beta) %>% mutate(omega_se = xiyp_IVW_se)
 
     # Meta analyzed MRs estimates and gam, rho and omega across sexes and calculate heterogeneity between them
 
     meta_list <- list()
-    for(var in c("xixp_IVW_Wald", "xpyp_IVW_Wald", "xiyi_IVW_Wald", "yiyp_IVW_Wald", "xiyp_IVW_Wald", "gam", "rho", "omega")){
+    for(var in c("xixp_IVW", "xpyp_IVW", "xiyi_IVW", "yiyp_IVW", "xiyp_IVW", "gam", "rho", "omega")){
 
       meta_temp <- summarized_result %>% dplyr::select(exposure_ID, outcome_ID, starts_with(var)) %>% rename_all(~stringr::str_replace(., paste0("^", var, "_"),"")) %>%
         dplyr::group_by(exposure_ID, outcome_ID) %>%
