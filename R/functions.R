@@ -2331,7 +2331,7 @@ calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, househo
 
   #output <- left_join(exposure_i_result, meta_result)
 
-  output <- exposure_i_result %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character())
+  output <- exposure_i_result %>% type_convert() %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character)
 
   return(output)
 
@@ -2396,7 +2396,7 @@ household_MR_comprehensive_ind <- function(harmonise_dat, MR_method_list){
   leave1out_test$outcome_sex <- outcome_sex
 
 
-  MR_summary <- MR_summary %>% as_tibble() %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character)
+  MR_summary <- MR_summary %>% as_tibble() %>% type_convert() %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character)
   colnames(MR_summary) <- gsub("_Wald", "", colnames(MR_summary)) #remove the Wald from the name because Wald results are only returned if there is only 1 SNP in the MR and we know there are more than this for each MR.
 
   return(list(MR_summary = MR_summary, leave1out_test = leave1out_test, MR_plot = mr_plot))
@@ -2479,7 +2479,7 @@ summarize_household_MR_comprehensive <- function(household_MR){
 
   }
 
-  result <- as_tibble(result) %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character)
+  result <- as_tibble(result) %>% type_convert() %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character)
 
   meta_result <- result %>% group_by(exposure_ID, outcome_ID) %>% group_modify(~ summarize_sex_specific_results(.x$IVW_beta, .x$IVW_se))
 
@@ -2563,7 +2563,7 @@ summarize_standard_MR_comprehensive <- function(standard_MR){
     }
   }
 
-  result <- as_tibble(result) %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character)
+  result <- as_tibble(result) %>% type_convert() %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character)
 
   meta_result <- result %>% group_by(exposure_ID, outcome_ID) %>% group_modify(~ summarize_sex_specific_results(.x$IVW_beta, .x$IVW_se))
 
@@ -2691,7 +2691,7 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
     }
 
 
-    summarized_result <- as_tibble(summarized_result) %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character())
+    summarized_result <- as_tibble(summarized_result) %>% type_convert() %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character
 
     expsoure_sex_temp <- summarized_result$exposure_sex
     outcome_sex_temp <- ifelse(expsoure_sex_temp=="male", "female", "male")
