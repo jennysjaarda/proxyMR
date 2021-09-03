@@ -411,7 +411,7 @@ SGG_link_with_Neale <- function(Neale_SGG_dir){
       both_sex_avail <- c(both_sex_avail,id)
     }
   }
-  cat(paste0("There are: ", length(both_sex_avail), " phenotypes with Neale summary stats with joint
+  cat(paste0("There are: ", length(unique(both_sex_avail)), " phenotypes with Neale summary stats with joint
   and sex-specific data that have also been processed in the SGG database.\n\n")) ###1278 traits
   Neale_SGG_dir_filt2 <- subset(Neale_SGG_dir_filt, Neale_SGG_dir_filt$phenotype %in% both_sex_avail)
   return(Neale_SGG_dir_filt2)
@@ -2222,9 +2222,6 @@ meta_binned_household_MR <- function(exposure_info, outcomes_to_run, household_M
 
     sex_het_p <- z.test_p(male_beta, male_se, female_beta, female_se)
 
-
-    result <- as_tibble(result) %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character())
-
     meta_result <- household_MR_binned_i %>% group_by(grouping_var, bin) %>% group_modify(~ summarize_sex_specific_results(.x$IVW_beta, .x$IVW_se))
     meta_counts <- household_MR_binned_i %>% group_by(grouping_var, bin) %>% mutate(meta_n_outcome = sum(n_outcome)) %>% mutate(meta_n_exposure = sum(n_exposure)) %>% dplyr::select(grouping_var, bin, meta_n_outcome, meta_n_exposure)
 
@@ -2246,7 +2243,7 @@ meta_binned_household_MR <- function(exposure_info, outcomes_to_run, household_M
 
 calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, household_MR_binned_meta){
 
-   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
 
   cat(paste0("\nCalculating difference in household MR between sexes and among age and time-together bins for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
 
@@ -2256,40 +2253,25 @@ calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, househo
 
     outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
 
-    household_MR_binned_i <- household_MR_binned[[i]]
-    household_MR_binned_i_all <- household_MR_binned_i %>% dplyr::filter(bin=="all" & grouping_var=="time_together_even_bins")
-
-    male_beta <- household_MR_binned_i_all[which(household_MR_binned_i_all$exposure_sex=="male"),"IVW_beta"][[1]]
-    female_beta <- household_MR_binned_i_all[which(household_MR_binned_i_all$exposure_sex=="female"),"IVW_beta"][[1]]
-    male_se <- household_MR_binned_i_all[which(household_MR_binned_i_all$exposure_sex=="male"),"IVW_se"][[1]]
-    female_se <- household_MR_binned_i_all[which(household_MR_binned_i_all$exposure_sex=="female"),"IVW_se"][[1]]
-
-    sex_het_p <- z.test_p(male_beta, male_se, female_beta, female_se)
+    household_MR_binned_meta_i <- household_MR_binned_meta[[i]]
+    household_MR_binned_meta_i_all <- household_MR_binned_meta_i %>% dplyr::filter(bin=="all" & grouping_var=="time_together_even_bins")
 
 
-    result <- as_tibble(result) %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character())
-
-    meta_result <- household_MR_binned_i %>% group_by(grouping_var, bin) %>% group_modify(~ summarize_sex_specific_results(.x$IVW_beta, .x$IVW_se))
-    meta_counts <- household_MR_binned_i %>% group_by(grouping_var, bin) %>% mutate(meta_n_outcome = sum(n_outcome)) %>% mutate(meta_n_exposure = sum(n_exposure)) %>% dplyr::select(grouping_var, bin, meta_n_outcome, meta_n_exposure)
-
-    colnames(meta_result)[-c(1:2)] <- paste0("IVW", "_", colnames(meta_result)[-c(1:2)])
-
-    meta_result <- full_join(meta_result, meta_counts) %>% unique()
-    summarized_result <- full_join(household_MR_binned_i, meta_result)
-
-
+    sex_het_p <- household_MR_binned_meta_i_all$IVW_sex_het_pval[[1]]
 
     for(group in c("age_even_bins", "time_together_even_bins")){
+
+      group_i_result <- numeric()
       for(exposure_sex in c("male", "female")){
 
         if(exposure_sex=="male"){outcome_sex="female"}
         if(exposure_sex=="female"){outcome_sex="male"}
 
-        bin_result_temp <- household_MR_binned_i %>% filter(grouping_var==group) %>% filter(exposure_sex==!!exposure_sex)
+        bin_result_temp <- household_MR_binned_meta_i %>% filter(grouping_var==group) %>% filter(exposure_sex==!!exposure_sex)
 
         all_row <- which(bin_result_temp$bin=="all")
         all_sum <- c(bin_result_temp[all_row,"IVW_beta"][[1]],bin_result_temp[all_row,"IVW_se"][[1]], bin_result_temp[all_row,"IVW_pval"][[1]])
-        names(all_sum) <- c("MR_beta", "MR_se", "MR_pval")
+        names(all_sum) <- c("IVW_beta", "IVW_se", "IVW_pval")
 
         result_to_analyze <- bin_result_temp %>% filter(bin != "all")
 
@@ -2300,7 +2282,6 @@ calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, househo
         result_to_analyze <- result_to_analyze %>% separate(bin, c("bin_start_temp", "bin_stop_temp"), ",", remove = F) %>% mutate(bin_start = substring(bin_start_temp, 2)) %>%
           mutate(bin_stop = str_sub(bin_stop_temp,1,nchar(bin_stop_temp)-1)) %>% rowwise() %>%  mutate(bin_median = median(c(as.numeric(bin_start), as.numeric(bin_stop))))
 
-
         bin_lm <- lm(IVW_beta ~ bin_median, data = result_to_analyze)
         lm_summary <- summary(bin_lm)$coefficients["bin_median",c(1,2,4)]
         diff_sum <- c(sex_het_p, Q_stat, Q_pval, lm_summary)
@@ -2310,24 +2291,47 @@ calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, househo
         same_trait <- ifelse(exposure_ID==outcome_ID, TRUE, FALSE)
         description_sum <- c(exposure_ID, outcome_ID, exposure_sex, outcome_sex, group, same_trait)
         names(description_sum) <- c("exposure_ID", "outcome_ID", "exposure_sex", "outcome_sex", "grouping_var", "same_trait")
-        out_temp <- as.data.frame(t(c(description_sum, all_sum, diff_sum))) %>%
+
+        ## generate the Q-stat and slope for the meta-analyzed results
+
+        meta_bin_meta <- metagen(TE = as.numeric(IVW_meta_beta), seTE = as.numeric(IVW_meta_se), studlab = bin, data = result_to_analyze)
+        Q_stat_meta <- meta_bin_meta$Q
+        Q_pval_meta <- meta_bin_meta$pval.Q
+        bin_lm_meta <- lm(IVW_meta_beta ~ bin_median, data = result_to_analyze)
+        lm_summary_meta <- summary(bin_lm_meta)$coefficients["bin_median",c(1,2,4)]
+
+        meta_summ <- c(Q_stat_meta, Q_pval_meta, lm_summary_meta)
+        names(meta_summ) <- c("Q_stat_meta", "Q_pval_meta", "bin_slope_beta_meta", "bin_slope_se_meta", "bin_slope_pval_meta")
+
+        out_temp <- as.data.frame(t(c(description_sum, all_sum, diff_sum, meta_summ))) %>%
           mutate_if(is.factor,as.character) %>%
           as_tibble()
 
+        group_i_result <- rbind( group_i_result, out_temp)
 
-        exposure_i_result <- rbind( exposure_i_result, out_temp)
       }
+
+      ## get the heterogeneity p-value for the slope
+      betas <- as.numeric(group_i_result$bin_slope_beta)
+      ses <- as.numeric(group_i_result$bin_slope_se)
+      bin_slope_sex_het_p = z.test_p(betas[1], ses[1], betas[2], ses[2])
+      group_i_result$bin_slope_sex_het_pval <- bin_slope_sex_het_p
+
+      exposure_i_result <- rbind(exposure_i_result, group_i_result)
 
     }
     cat(paste0("Finished calculating heterogeneity statistics for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
 
   }
 
-  meta_result <- exposure_i_result %>% group_by(outcome_ID, grouping_var) %>%
-    group_modify(~ summarize_sex_specific_results(as.numeric(.x$bin_slope_beta), as.numeric(.x$bin_slope_se)))
+  #meta_result <- exposure_i_result %>% group_by(outcome_ID, grouping_var) %>% ## DO THE GUESS THING
+  # group_modify(~ summarize_sex_specific_results(as.numeric(.x$bin_slope_beta), as.numeric(.x$bin_slope_se)))
 
-  colnames(meta_result)[-c(1:2)] <- paste0("bin_slope_", colnames(meta_result)[-c(1:2)])
-  output <- left_join(exposure_i_result, meta_result)
+  #colnames(meta_result)[-c(1:2)] <- paste0("bin_slope_", colnames(meta_result)[-c(1:2)])
+
+  #output <- left_join(exposure_i_result, meta_result)
+
+  output <- exposure_i_result %>% mutate_all(parse_guess) %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character())
 
   return(output)
 
