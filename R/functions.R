@@ -2691,7 +2691,7 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
     }
 
 
-    summarized_result <- as_tibble(summarized_result) %>% type_convert() %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character
+    summarized_result <- as_tibble(summarized_result) %>% type_convert() %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character)
 
     expsoure_sex_temp <- summarized_result$exposure_sex
     outcome_sex_temp <- ifelse(expsoure_sex_temp=="male", "female", "male")
