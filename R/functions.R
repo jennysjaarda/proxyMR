@@ -2715,12 +2715,13 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
 
       mutate(gam_beta = xixp_xpyp_beta) %>% mutate(gam_se = xixp_xpyp_se) %>%
       mutate(rho_beta = xiyi_yiyp_beta) %>% mutate(rho_se = xiyi_yiyp_se) %>%
-      mutate(omega_beta = xiyp_IVW_beta) %>% mutate(omega_se = xiyp_IVW_se)
+      mutate(omega_beta = xiyp_IVW_beta) %>% mutate(omega_se = xiyp_IVW_se) %>%
+      mutate(gam_rho_beta = gam_beta + rho_beta) %>% mutate(gam_rho_se = gam_se + rho_se)
 
     # Meta analyzed MRs estimates and gam, rho and omega across sexes and calculate heterogeneity between them
 
     meta_list <- list()
-    for(var in c("xixp_IVW", "xpyp_IVW", "xiyi_IVW", "yiyp_IVW", "xiyp_IVW", "gam", "rho", "omega")){
+    for(var in c("xixp_IVW", "xpyp_IVW", "xiyi_IVW", "yiyp_IVW", "xiyp_IVW", "gam", "rho", "omega", "gam_rho")){
 
       meta_temp <- summarized_result %>% dplyr::select(exposure_ID, outcome_ID, starts_with(var)) %>% rename_all(~stringr::str_replace(., paste0("^", var, "_"),"")) %>%
         dplyr::group_by(exposure_ID, outcome_ID) %>%
@@ -2743,10 +2744,14 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
     prod_diff_result <- summarized_result %>%
       mutate(omega_vs_gam_p = z.test_p(gam_beta, gam_se, omega_beta, omega_se)) %>%
       mutate(omega_vs_rho_p = z.test_p(rho_beta, rho_se, omega_beta, omega_se)) %>%
+      mutate(omega_vs_gam_rho_p = z.test_p(gam_rho_beta, gam_rho_se, omega_beta, omega_se)) %>%
       mutate(gam_vs_rho_p = z.test_p(rho_beta, rho_se, gam_beta, gam_se)) %>%
+
 
       mutate(omega_vs_gam_meta_p = z.test_p(gam_meta_beta, gam_meta_se, omega_meta_beta, omega_meta_se)) %>%
       mutate(omega_vs_rho_meta_p = z.test_p(rho_meta_beta, rho_meta_se, omega_meta_beta, omega_meta_se)) %>%
+      mutate(omega_vs_gam_rho_meta_p = z.test_p(gam_rho_meta_beta, gam_rho_meta_se, omega_meta_beta, omega_meta_se)) %>%
+
       mutate(gam_vs_rho_meta_p = z.test_p(rho_meta_beta, rho_meta_se, gam_meta_beta, gam_meta_se)) %>%
 
       dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, exposure_sex, outcome_sex, starts_with("gam"), starts_with("rho"), starts_with("omega"))
@@ -3578,4 +3583,98 @@ bin_plot <- function(household_mr_output, grouping_var, i, trait_info){
     ggplot2::guides(colour = ggplot2::guide_legend(ncol = 1))
   return(plot)
 }
+
+bin_plot_sex_specific <- function(harmonised_data, MR_binned, exposure_sex, group){
+
+  if(exposure_sex=="male"){outcome_sex="female"}
+  if(exposure_sex=="female"){outcome_sex="male"}
+
+  harmonised_data.sex_spec <- harmonised_data[[paste0("exp_", exposure_sex, "_harmonised_data")]]
+  bin_summary <- MR_binned %>% dplyr::filter(grouping_var==!!group) %>% dplyr::filter(exposure_sex==!!exposure_sex) %>% dplyr::filter(bin != "all") %>% mutate_at('bin', as.factor)
+
+  harmonise_dat_plot <- harmonised_data.sex_spec %>% dplyr::filter(grouping_var == !!group) %>% dplyr::filter(bin != "all") %>% mutate_at('bin', as.factor)
+
+  trait_description <- as.character(harmonise_dat_plot[1, "exposure_description"])
+
+  outcome_levels <- levels(harmonise_dat_plot$bin)
+  outcome_levels_num <- str_first_number(outcome_levels)
+
+  harmonise_dat_plot$bin <- factor(harmonise_dat_plot$bin, levels = outcome_levels[order(outcome_levels_num)])
+
+  bin_summary$bin <- factor(bin_summary$bin, levels = outcome_levels[order(outcome_levels_num)])
+
+
+
+  legend_title <- ifelse(group=="age_even_bins", "Median age \n of couples", "Time together \n in same household")
+
+  index <- harmonise_dat_plot$beta.exposure < 0
+  harmonise_dat_plot$beta.exposure[index] <- harmonise_dat_plot$beta.exposure[index] *-1
+  harmonise_dat_plot$beta.outcome[index] <- harmonise_dat_plot$beta.outcome[index] *-1
+
+
+  plot <- ggplot2::ggplot(data = harmonise_dat_plot, ggplot2::aes(x = beta.exposure,
+                                                                  y = beta.outcome)) +
+    ggplot2::geom_errorbar(ggplot2::aes(ymin = beta.outcome - se.outcome, ymax = beta.outcome + se.outcome),
+                           colour = "grey", width = 0) +
+    ggplot2::geom_errorbarh(ggplot2::aes(xmin = beta.exposure - se.exposure, xmax = beta.exposure + se.exposure), colour = "grey", height = 0) +
+    ggplot2::geom_point(ggplot2::aes(colour = factor(bin))) +
+    ggplot2::geom_abline(data = bin_summary, ggplot2::aes(intercept = 0,
+                                                          slope = IVW_beta, colour = factor(bin)), show.legend = TRUE) +
+    ggplot2::scale_colour_manual(values = brewer.pal(n = 9, name = "Blues")[-c(1:2)]) +
+    theme_minimal() +
+    ggplot2::labs(colour = legend_title, x = paste0("SNP effect on ", tolower(trait_description), "\n(estimated in ", exposure_sex, "s)"),
+                  y = paste("SNP effect on ", outcome_sex, " partner")) +
+    ggplot2::theme(legend.position = "right", legend.direction = "vertical") +
+    ggplot2::guides(colour = ggplot2::guide_legend(ncol = 1))
+
+
+  return(plot)
+
+}
+
+create_MR_binned_AM_figures <- function(household_harmonised_data, household_MR_binned){
+
+  names_data <- names(household_harmonised_data)
+
+  for(j in 1:length(names_data)){
+    outcome_ID <- unlist(str_split(names_data[j], "_vs_"))[1]
+    exposure_ID <- unlist(str_split(unlist(str_split(names_data[j], "_vs_"))[2], "_harmonised_data"))[1]
+    if(outcome_ID==exposure_ID){
+      index_same_trait <- j
+    }
+  }
+
+  household_harmonised_data.AM  <- household_harmonised_data[[index_same_trait]]
+  household_MR_binned.AM  <- household_MR_binned[[index_same_trait]]
+
+
+  for(group in c("age_even_bins", "time_together_even_bins")){
+
+    p_male <- bin_plot_sex_specific(household_harmonised_data.AM, household_MR_binned.AM, "male", group)
+    p_female <- bin_plot_sex_specific(household_harmonised_data.AM, household_MR_binned.AM, "female", group)
+
+    p_male
+    p_female
+
+    prow <- plot_grid(
+      p_male + theme(legend.position="none"),
+      p_female + theme(legend.position="none"),
+      hjust = -1,
+      nrow = 1
+    )
+
+    legend <- get_legend(
+      # create some space to the left of the legend
+      p_male + theme(legend.box.margin = margin(0, 0, 0, 12), legend.title=element_text(size=10))
+    )
+
+    p_combined <- plot_grid(prow, legend, rel_widths = c(2, .2))
+
+  }
+
+
+
+
+}
+
 
