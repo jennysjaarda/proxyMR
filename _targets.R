@@ -463,10 +463,16 @@ list(
   ),
 
   tar_target(
-    household_MR_binned_AM_figures,
-    create_MR_binned_AM_figures(household_harmonised_data, household_MR_binned),
+    household_MR_binned_AM_figs,
+    create_MR_binned_AM_figs(household_harmonised_data, household_MR_binned_meta, custom_col),
     pattern = map(household_harmonised_data, household_MR_binned)
   ),
+
+  tar_target(
+    household_MR_AM_FvsM_fig,
+    create_household_MR_AM_FvsM_fig(household_MR_binned_het, custom_col),
+  ),
+
 
   tar_target(
     path_household_MR_binned,
@@ -489,6 +495,11 @@ list(
     household_MR_summary,
     summarize_household_MR_comprehensive(household_MR),
     pattern = map(household_MR)
+  ),
+
+  tar_target(
+    household_MR_summary_BF_sig,
+    find_sig_standard_MR_summary(household_MR_summary)
   ),
 
   tar_target(
@@ -553,18 +564,18 @@ list(
   ),
 
   tar_target(
-    proxyMR_figure_data,
-    prep_proxyMR_figure_data(proxyMR_comparison, traits_corr2_filled)
+    proxyMR_comparison_summary, ## used to be `proxyMR_figure_data`
+    summarize_proxyMR_comparison(proxyMR_comparison, traits_corr2_filled)
   ),
 
 
   tar_target(
-    proxyMR_prod_comparison_figure,
+    proxyMR_prod_comparison_fig,
     create_proxy_prod_comparison_fig(proxyMR_figure_data)
   ),
 
   tar_target(
-    proxyMR_sex_comparison_figure,
+    proxyMR_sex_comparison_fig,
     create_proxy_sex_comparison_fig(proxyMR_figure_data)
   ),
 

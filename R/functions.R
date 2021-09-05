@@ -2620,11 +2620,18 @@ pull_z_summ_stats <- function(){
 
 find_sig_standard_MR_summary <- function(standard_MR_summary){
 
-
   denom <- dim(standard_MR_summary)[1]/2 #divide by 2 because each meta result is there twice (one row/sex)
   sig_only <- standard_MR_summary %>% filter(IVW_meta_pval < 0.05/denom)
   return(sig_only)
 }
+
+find_sig_household_MR_summary <- function(household_MR_summary){
+
+  denom <- dim(household_MR_summary)[1]/2 #divide by 2 because each meta result is there twice (one row/sex)
+  sig_only <- household_MR_summary %>% filter(IVW_meta_pval < 0.05/denom)
+  return(sig_only)
+}
+
 
 AM_filter_household_MR_summary <- function(household_MR_summary){
 
@@ -2757,7 +2764,7 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
       dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, exposure_sex, outcome_sex, starts_with("gam"), starts_with("rho"), starts_with("omega"))
 
 
-    summarized_result_sub <- summarized_result %>% dplyr::select(-starts_with("gam")) %>% dplyr::select(-starts_with("omega")) %>% dplyr::select(-starts_with("rho"))
+    summarized_result_sub <- summarized_result %>% dplyr::select(-starts_with("gam")) %>% dplyr::select(-starts_with("omega")) %>% dplyr::select(-starts_with("rho")) %>% dplyr::select(-starts_with("xiyi_yiyp")) %>% dplyr::select(-starts_with("xixp_xpyp"))
     output <- list(MR_results = summarized_result_sub, proxy_MR_comparison = prod_diff_result)
 
   } else output <- NULL
@@ -2766,7 +2773,7 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
 
 }
 
-prep_proxyMR_figure_data <- function(proxyMR_comparison, traits_corr2_filled){
+summarize_proxyMR_comparison <- function(proxyMR_comparison, traits_corr2_filled){
 
   comparison_result <- bind_rows(lapply(proxyMR_comparison, function(x) {x[[2]]}))
 
@@ -2780,16 +2787,20 @@ prep_proxyMR_figure_data <- function(proxyMR_comparison, traits_corr2_filled){
                                                         TRUE ~ TRUE)) %>%
     mutate(gam_vs_rho_BF_sig_sex_specific = case_when(TRUE ~ gam_vs_rho_p < 0.05/num_result,
                                                       TRUE ~ TRUE)) %>%
+    mutate(omega_vs_gam_rho_BF_sig_meta = case_when(TRUE ~ omega_vs_gam_rho_p < 0.05/num_result,
+                                              TRUE ~ TRUE)) %>%
     mutate(omega_vs_gam_BF_sig_meta = case_when(TRUE ~ omega_vs_gam_meta_p < 0.05/num_result,
                                                 TRUE ~ TRUE)) %>%
     mutate(omega_vs_rho_BF_sig_meta = case_when(TRUE ~ omega_vs_rho_meta_p < 0.05/num_result,
                                                 TRUE ~ TRUE)) %>%
     mutate(gam_vs_rho_BF_sig_meta = case_when(TRUE ~ gam_vs_rho_meta_p < 0.05/num_result,
+                                              TRUE ~ TRUE)) %>%
+    mutate(gam_vs_gam_rho_BF_sig_meta = case_when(TRUE ~ omega_vs_gam_rho_meta_p < 0.05/num_result,
                                               TRUE ~ TRUE))
+
 
   comparison_result_plus_cat <- left_join(comparison_result, traits_corr2_filled %>% dplyr::select(Neale_pheno_ID, category) %>% rename(exposure_category = category) %>% unique(), by = c("exposure_ID" = "Neale_pheno_ID")) %>%
     left_join(traits_corr2_filled %>% dplyr::select(Neale_pheno_ID, category) %>% rename(outcome_category = category) %>% unique(), by = c("outcome_ID" = "Neale_pheno_ID"))
-
 
   return(comparison_result_plus_cat)
 
@@ -3542,48 +3553,6 @@ mr_scatter_plot_custom <-  function (mr_results, dat, mr_title, exposure_sex, ou
 }
 
 
-bin_plot <- function(household_mr_output, grouping_var, i, trait_info){
-
-  harmonise_dat_full <- household_mr_output$harmonise_dat_full %>% dplyr::filter(outcome != "all") %>% mutate_at('outcome', as.factor)
-
-  outcome_levels <- levels(harmonise_dat_full$outcome)
-  outcome_levels_num <- str_first_number(outcome_levels)
-
-  harmonise_dat_full$outcome <- factor(harmonise_dat_full$outcome, levels = outcome_levels[order(outcome_levels_num)])
-
-  bin_summary <- household_mr_output$bin_summary %>% as_tibble %>% dplyr::filter(bin != "all") %>% mutate_at('bin', as.factor)
-  bin_summary$bin <- factor(bin_summary$bin, levels = outcome_levels[order(outcome_levels_num)])
-
-
-  trait_info <-  shiny_data[[i]][["trait_info"]]
-  trait_description <- as.character(trait_info["description",1])
-
-  legend_title <- ifelse(grouping_var=="age_even_bins", "Median age \n of couples", "Time together \n in same household")
-  bin_summary <- as.data.frame(bin_summary) %>% mutate_if(is.factor,as.character) %>%
-    mutate_at(vars(IVW_beta, IVW_se, IVW_pval), as.numeric)
-
-  index <- harmonise_dat_full$beta.exposure < 0
-  harmonise_dat_full$beta.exposure[index] <- d$beta.exposure[index] *-1
-  harmonise_dat_full$beta.outcome[index] <- d$beta.outcome[index] *-1
-
-
-  plot <- ggplot2::ggplot(data = harmonise_dat_full, ggplot2::aes(x = beta.exposure,
-                                                                  y = beta.outcome)) +
-    ggplot2::geom_errorbar(ggplot2::aes(ymin = beta.outcome - se.outcome, ymax = beta.outcome + se.outcome),
-                           colour = "grey", width = 0) +
-    ggplot2::geom_errorbarh(ggplot2::aes(xmin = beta.exposure - se.exposure, xmax = beta.exposure + se.exposure), colour = "grey", height = 0) +
-    ggplot2::geom_point(ggplot2::aes(colour = factor(outcome))) +
-    ggplot2::geom_abline(data = bin_summary, ggplot2::aes(intercept = 0,
-                                                          slope = IVW_beta, colour = factor(bin)), show.legend = TRUE) +
-    ggplot2::scale_colour_manual(values = brewer.pal(n = 9, name = "Blues")[-c(1:2)]) +
-    theme_minimal() +
-    ggplot2::labs(colour = legend_title, x = paste("SNP effect on", trait_description),
-                  y = paste("SNP effect on", "partner")) +
-    ggplot2::theme(legend.position = "right", legend.direction = "vertical") +
-    ggplot2::guides(colour = ggplot2::guide_legend(ncol = 1))
-  return(plot)
-}
-
 bin_plot_sex_specific <- function(harmonised_data, MR_binned, exposure_sex, group){
 
   if(exposure_sex=="male"){outcome_sex="female"}
@@ -3623,7 +3592,7 @@ bin_plot_sex_specific <- function(harmonised_data, MR_binned, exposure_sex, grou
     ggplot2::scale_colour_manual(values = brewer.pal(n = 9, name = "Blues")[-c(1:2)]) +
     theme_minimal() +
     ggplot2::labs(colour = legend_title, x = paste0("SNP effect on ", tolower(trait_description), "\n(estimated in ", exposure_sex, "s)"),
-                  y = paste("SNP effect on ", outcome_sex, " partner")) +
+                  y = paste0("SNP effect on ", outcome_sex, " partner")) +
     ggplot2::theme(legend.position = "right", legend.direction = "vertical") +
     ggplot2::guides(colour = ggplot2::guide_legend(ncol = 1))
 
@@ -3632,7 +3601,267 @@ bin_plot_sex_specific <- function(harmonised_data, MR_binned, exposure_sex, grou
 
 }
 
-create_MR_binned_AM_figures <- function(household_harmonised_data, household_MR_binned){
+mr_plot_sex_specific <- function(harmonised_data, MR_binned, custom_col){
+
+  harmonised_data.sex_male <- harmonised_data[[paste0("exp_", "male", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
+  harmonised_data.sex_female <- harmonised_data[[paste0("exp_", "female", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
+
+  harmonise_dat_plot <- rbind(harmonised_data.sex_male, harmonised_data.sex_female) %>% mutate_at('exposure_sex', as.factor)
+  trait_description <- as.character(harmonise_dat_plot[1, "exposure_description"])
+
+
+  ## which grouping_var we choose doesn't matter
+  bin_summary <- MR_binned %>% dplyr::filter(grouping_var=="age_even_bins") %>% dplyr::filter(bin == "all") %>% mutate_at('exposure_sex', as.factor)
+
+
+  outcome_levels <- levels(bin_summary$exposure_sex)
+
+
+  #legend_title <- ifelse(group=="age_even_bins", "Median age \n of couples", "Time together \n in same household")
+
+  legend_title <- "Exposure sex"
+
+  index <- harmonise_dat_plot$beta.exposure < 0
+  harmonise_dat_plot$beta.exposure[index] <- harmonise_dat_plot$beta.exposure[index] *-1
+  harmonise_dat_plot$beta.outcome[index] <- harmonise_dat_plot$beta.outcome[index] *-1
+
+
+
+  plot <- ggplot2::ggplot(data = harmonise_dat_plot, ggplot2::aes(x = beta.exposure,
+                                                                  y = beta.outcome)) +
+    ggplot2::geom_errorbar(ggplot2::aes(ymin = beta.outcome - se.outcome, ymax = beta.outcome + se.outcome),
+                           colour = "grey", width = 0) +
+    ggplot2::geom_errorbarh(ggplot2::aes(xmin = beta.exposure - se.exposure, xmax = beta.exposure + se.exposure), colour = "grey", height = 0) +
+    ggplot2::geom_point(ggplot2::aes(colour = factor(exposure_sex))) +
+    ggplot2::geom_abline(data = bin_summary, ggplot2::aes(intercept = 0,
+                                                          slope = IVW_beta, colour = factor(exposure_sex)), show.legend = TRUE) +
+    ggplot2::scale_colour_manual(values = custom_col[c(2,4)]) +
+
+    theme_minimal() +
+    ggplot2::labs(colour = legend_title, x = paste0("SNP effect on ", tolower(trait_description), "\n(sex-specific)"),
+                  y = paste0("SNP effect on ", "partner\n(sex-specific)")) +
+    ggplot2::theme(legend.position = "right", legend.direction = "vertical") +
+    ggplot2::guides(colour = ggplot2::guide_legend(ncol = 1)) +
+    ggplot2::geom_abline(intercept = 0, slope = bin_summary$IVW_meta_beta, color="black", size=1)
+
+
+  return(plot)
+}
+
+forest_plot_sex_specific <- function(harmonised_data, MR_binned, group, custom_col){
+
+  harmonised_data.sex_male <- harmonised_data[[paste0("exp_", "male", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
+  harmonised_data.sex_female <- harmonised_data[[paste0("exp_", "female", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
+
+  harmonise_dat_plot <- rbind(harmonised_data.sex_male, harmonised_data.sex_female) %>% mutate_at('exposure_sex', as.factor)
+  trait_description <- as.character(harmonise_dat_plot[1, "exposure_description"])
+
+
+  bin_summary <- MR_binned %>% dplyr::filter(grouping_var==!!group) %>% dplyr::filter(bin != "all")
+
+  outcome_levels <- levels(bin_summary$exposure_sex)
+
+  xlab <- paste0("AM MR estimate for ", tolower(trait_description), " (sex-specific)")
+
+  xmin <- min(bin_summary$IVW_beta - bin_summary$IVW_se)
+  xmax <- max(bin_summary$IVW_beta + bin_summary$IVW_se)
+
+  xmin_lab <- floor(xmin*10)/10
+  xmax_lab <- ceiling(xmax*10)/10
+
+
+  fp_data <-  bin_summary %>% mutate(upper = IVW_beta + IVW_se) %>% mutate(lower = IVW_beta - IVW_se)
+
+  bins <- c(bin_summary %>% filter(outcome_sex == "male") %>% pull(bin))
+  first_label <- ifelse(group=="age_even_bins", "Median age (years)", "Time together (years)")
+  bin_labels <- c(first_label, "")
+
+  for(i in 1:length(bins)){
+    bin <- bins[i]
+    bin_labels <- c(bin_labels, bin, "   Female", "   Male")
+
+  }
+
+
+  mean <- c(NA, NA)
+  upper <- c(NA, NA)
+  lower <- c(NA, NA)
+
+  for(bin in bins){
+
+    mean <- unlist(c(mean, NA, fp_data[which(fp_data$bin==bin),"IVW_beta"]))
+    upper <- unlist(c(upper, NA, fp_data[which(fp_data$bin==bin),"IVW_beta"] + fp_data[which(fp_data$bin==bin),"IVW_se"]))
+    lower <- unlist(c(lower, NA, fp_data[which(fp_data$bin==bin),"IVW_beta"] - fp_data[which(fp_data$bin==bin),"IVW_se"]))
+
+  }
+
+  MR_text <- c("MR estimate (95% CI)", "")
+  for(bin in bins){
+
+    means <- unlist(fp_data[which(fp_data$bin==bin),"IVW_beta"])
+    ses <- unlist(fp_data[which(fp_data$bin==bin),"IVW_se"])
+
+    MR_text <- c(MR_text, "")
+    for(i in 1:length(means)){
+      MR_text <- c(MR_text, make_beta_95ci(means[i], ses[i]))
+
+    }
+
+    MR_text <- c(MR_text)
+
+  }
+
+  upper <- unlist(c(upper, fp_data[which(fp_data$bin==bin),"IVW_beta"] + fp_data[which(fp_data$bin==bin),"IVW_se"], NA))
+  lower <- unlist(c(lower, fp_data[which(fp_data$bin==bin),"IVW_beta"] - fp_data[which(fp_data$bin==bin),"IVW_se"], NA))
+
+
+  summary_rows <- rep(FALSE, length(bin_labels))
+  index <- which(bin_labels!="")
+  summary_rows[index] <- TRUE
+
+
+
+  fn <- local({
+    i = 0
+    no_lines <- sum(!is.na(mean))
+    b_clrs=rep(c(custom_col[2], custom_col[4]), length(which(!is.na(mean)))/2)
+    l_clrs = rep("grey", length(which(!is.na(mean))))
+    function(..., clr.line, clr.marker){
+      i <<- i + 1
+      fpDrawNormalCI(..., clr.line = l_clrs[i], clr.marker = b_clrs[i])
+    }
+  })
+
+  fp_plot <- forestplot(
+    labeltext = cbind(bin_labels, MR_text), fn.ci_norm = fn,
+    mean = mean,
+    upper = upper,
+    lower = lower,
+    is.summary = summary_rows,
+    boxsize = .3, # We set the box size to better visualize the type
+
+    col = fpColors(box = custom_col[c(2,4)],  lines=c("gray50", "gray50")), ci.vertices=TRUE,
+    hrzl_lines=list("3" = gpar(lwd=1, col="#99999922"),
+                    "6"  = gpar(lwd=1, col="#99999922"),
+                    "9"  = gpar(lwd=1, col="#99999922"),
+                    "12"  = gpar(lwd=1, col="#99999922"),
+                    "15"  = gpar(lwd=1, col="#99999922")),
+
+    #col=fpColors(box="black", lines="black", zero = "gray50"),
+    xlab = paste0("\n",xlab),
+
+
+    txt_gp = fpTxtGp(xlab = gpar(cex = 0.9),
+                     ticks = gpar(cex = 0.8),
+                     label = gpar(cex = 0.9)),
+
+    legend_args = fpLegend(pos = "right"), xticks = seq(xmin_lab, xmax_lab, by=0.1))
+
+  return(fp_plot)
+
+}
+
+forest_plot_meta <- function(harmonised_data, MR_binned, group, custom_col){
+
+  harmonised_data.sex_male <- harmonised_data[[paste0("exp_", "male", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
+  harmonised_data.sex_female <- harmonised_data[[paste0("exp_", "female", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
+
+  harmonise_dat_plot <- rbind(harmonised_data.sex_male, harmonised_data.sex_female) %>% mutate_at('exposure_sex', as.factor)
+  trait_description <- as.character(harmonise_dat_plot[1, "exposure_description"])
+
+
+  ## which exposure_sex we choose doesn't matter
+  bin_summary <- MR_binned %>% dplyr::filter(grouping_var==!!group) %>% dplyr::filter(bin != "all") %>% dplyr::filter(exposure_sex=="male")
+
+  outcome_levels <- levels(bin_summary$exposure_sex)
+
+  xlab <- paste0("AM MR estimate for ", tolower(trait_description))
+
+  xmin <- min(bin_summary$IVW_meta_beta - bin_summary$IVW_meta_se)
+  xmax <- max(bin_summary$IVW_meta_beta + bin_summary$IVW_meta_se)
+
+  xmin_lab <- floor(xmin*10)/10
+  xmax_lab <- ceiling(xmax*10)/10
+
+
+  fp_data <-  bin_summary %>% mutate(upper = IVW_meta_beta + IVW_meta_se) %>% mutate(lower = IVW_meta_beta - IVW_meta_se)
+
+  bins <- c(bin_summary %>% pull(bin))
+  first_label <- ifelse(group=="age_even_bins", "Median age (years)", "Time together (years)")
+  bin_labels <- c(first_label)
+
+  for(i in 1:length(bins)){
+    bin <- bins[i]
+    bin_labels <- c(bin_labels, bin)
+
+  }
+
+
+  mean <- c(NA)
+  upper <- c(NA)
+  lower <- c(NA)
+
+  for(bin in bins){
+
+    mean <- unlist(c(mean, fp_data[which(fp_data$bin==bin),"IVW_meta_beta"]))
+    upper <- unlist(c(upper, fp_data[which(fp_data$bin==bin),"IVW_meta_beta"] + fp_data[which(fp_data$bin==bin),"IVW_meta_se"]))
+    lower <- unlist(c(lower, fp_data[which(fp_data$bin==bin),"IVW_meta_beta"] - fp_data[which(fp_data$bin==bin),"IVW_meta_se"]))
+
+  }
+
+  MR_text <- c("MR estimate (95% CI)")
+  for(bin in bins){
+
+    means <- unlist(fp_data[which(fp_data$bin==bin),"IVW_meta_beta"])
+    ses <- unlist(fp_data[which(fp_data$bin==bin),"IVW_meta_se"])
+
+    MR_text <- c(MR_text)
+    for(i in 1:length(means)){
+      MR_text <- c(MR_text, make_beta_95ci(means[i], ses[i]))
+
+    }
+
+    MR_text <- c(MR_text)
+
+  }
+
+  upper <- unlist(c(upper, fp_data[which(fp_data$bin==bin),"IVW_meta_beta"] + fp_data[which(fp_data$bin==bin),"IVW_meta_se"], NA))
+  lower <- unlist(c(lower, fp_data[which(fp_data$bin==bin),"IVW_meta_beta"] - fp_data[which(fp_data$bin==bin),"IVW_meta_se"], NA))
+
+
+  summary_rows <- rep(FALSE, length(bin_labels))
+  index <- 1
+  summary_rows[index] <- TRUE
+
+
+
+  fp_plot <- forestplot(
+    labeltext = cbind(bin_labels, MR_text), fn.ci_norm = fpDrawNormalCI,
+    mean = mean,
+    upper = upper,
+    lower = lower,
+    is.summary = summary_rows,
+    boxsize = .1, # We set the box size to better visualize the type
+
+    col = fpColors(box = custom_col[c(2,4)],  lines=c("gray50", "gray50")), ci.vertices=TRUE,
+
+    #col=fpColors(box="black", lines="black", zero = "gray50"),
+    xlab = paste0("\n",xlab),
+
+
+    txt_gp = fpTxtGp(xlab = gpar(cex = 0.9),
+                     ticks = gpar(cex = 0.8),
+                     label = gpar(cex = 0.9)),
+
+    legend_args = fpLegend(pos = "right"), xticks = seq(xmin_lab, xmax_lab, by=0.1))
+
+  return(fp_plot)
+
+
+
+}
+
+create_MR_binned_AM_figs <- function(household_harmonised_data, household_MR_binned_meta, custom_col){
 
   names_data <- names(household_harmonised_data)
 
@@ -3645,16 +3874,12 @@ create_MR_binned_AM_figures <- function(household_harmonised_data, household_MR_
   }
 
   household_harmonised_data.AM  <- household_harmonised_data[[index_same_trait]]
-  household_MR_binned.AM  <- household_MR_binned[[index_same_trait]]
-
+  household_MR_binned_meta.AM <- household_MR_binned_meta[[index_same_trait]]
 
   for(group in c("age_even_bins", "time_together_even_bins")){
 
-    p_male <- bin_plot_sex_specific(household_harmonised_data.AM, household_MR_binned.AM, "male", group)
-    p_female <- bin_plot_sex_specific(household_harmonised_data.AM, household_MR_binned.AM, "female", group)
-
-    p_male
-    p_female
+    p_male <- bin_plot_sex_specific(household_harmonised_data.AM, household_MR_binned_meta.AM, "male", group)
+    p_female <- bin_plot_sex_specific(household_harmonised_data.AM, household_MR_binned_meta.AM, "female", group)
 
     prow <- plot_grid(
       p_male + theme(legend.position="none"),
@@ -3663,18 +3888,64 @@ create_MR_binned_AM_figures <- function(household_harmonised_data, household_MR_
       nrow = 1
     )
 
-    legend <- get_legend(
-      # create some space to the left of the legend
-      p_male + theme(legend.box.margin = margin(0, 0, 0, 12), legend.title=element_text(size=10))
+    legend_b <- get_legend(
+      p_male +
+        guides(color = guide_legend(nrow = 1, title.position = "left")) +
+
+        theme(legend.position = "bottom", legend.title=element_text(size=10))
     )
 
-    p_combined <- plot_grid(prow, legend, rel_widths = c(2, .2))
+    # add the legend underneath the row we made earlier. Give it 10%
+    # of the height of one plot (via rel_heights).
+
+
+    p_combined <- plot_grid(prow, legend_b, ncol = 1, rel_heights = c(1, .1))
+    assign(paste0("MR_sex_specific_", group, "_fig"), p_combined)
+  }
+
+  ## TO DO
+  for(group in c("age_even_bins", "time_together_even_bins")){
+
+    fp_sex_spec <- forest_plot_sex_specific(household_harmonised_data.AM, household_MR_binned_meta.AM, group, custom_col)
+    fp_meta <- forest_plot_meta(household_harmonised_data.AM, household_MR_binned_meta.AM, group, custom_col)
+
+    assign(paste0("FP_sex_specific_", group, "_fig"), fp_sex_spec)
+    assign(paste0("FP_", group, "_fig"), fp_meta)
 
   }
 
 
+  overall_MR_fig <- mr_plot_sex_specific(household_harmonised_data.AM, household_MR_binned_meta.AM, custom_col)
+
+  return(list(overall_MR_fig = overall_MR_fig,
+              MR_sex_specific_age_bins_fig = MR_sex_specific_age_even_bins_fig,
+              MR_sex_specific_time_together_bins_fig = MR_sex_specific_time_together_even_bins_fig,
+              FP_sex_specific_age_bins_fig = FP_sex_specific_age_even_bins_fig,
+              FP_sex_specific_time_together_bins_fig = FP_sex_specific_time_together_even_bins_fig,
+              FP_age_bins_fig = FP_age_even_bins_fig,
+              FP_time_together_bins_fig = FP_time_together_bins_fig))
 
 
 }
 
+create_household_MR_AM_FvsM_fig <- function(household_MR_binned_het, custom_col){
 
+  AM_result <- household_MR_binned_het %>% filter(same_trait)
+
+  plot_data <- AM_result %>% dplyr::select(exposure_ID, exposure_sex, IVW_beta, IVW_se, IVW_pval, sex_het_pval) %>% unique() %>%
+    pivot_wider(names_from = "exposure_sex", values_from = c("IVW_beta", "IVW_se", "IVW_pval")) %>%
+    mutate(sex_het_sig = case_when(sex_het_pval < 0.05 ~ TRUE, TRUE ~ FALSE))
+
+
+  legend_title <- "Sex heterogeneity"
+  plot <- ggplot2::ggplot(data = plot_data, ggplot2::aes(x = IVW_beta_male,
+                                                         y = IVW_beta_female, color = factor(sex_het_sig), label = exposure_ID)) +
+    geom_point(alpha = 3/4) +
+
+    geom_smooth(mapping = aes(x = IVW_beta_male, y = IVW_beta_female), method = "lm", se=FALSE, formula = y~x+0, fullrange=TRUE, color = custom_col[4]) +
+    geom_abline(slope=1, intercept=0, color = "black") +
+    scale_color_manual(values = custom_col[c(1,2)], labels=c("p >= 0.01","p < 0.01")) +
+    theme_minimal() +
+    ggplot2::labs(colour = legend_title, x = paste0("AM MR estimate (males)"),
+                  y = paste("AM MR estimate (females)"))
+}
