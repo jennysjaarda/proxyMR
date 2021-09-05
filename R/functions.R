@@ -3923,7 +3923,7 @@ create_MR_binned_AM_figs <- function(household_harmonised_data, household_MR_bin
               FP_sex_specific_age_bins_fig = FP_sex_specific_age_even_bins_fig,
               FP_sex_specific_time_together_bins_fig = FP_sex_specific_time_together_even_bins_fig,
               FP_age_bins_fig = FP_age_even_bins_fig,
-              FP_time_together_bins_fig = FP_time_together_bins_fig))
+              FP_time_together_bins_fig = FP_time_together_even_bins_fig))
 
 
 }
