@@ -2591,8 +2591,8 @@ find_MV_z <- function(standard_MR_summary_BF_sig, standard_MR_summary_meta){
 
       num_tests <- (dim(z_vs_x)[1] + dim(y_vs_z)[1])/2
 
-      z_vs_x_BF <- z_vs_x %>% filter(MR_meta_pval < 0.05/num_tests) %>% pull(outcome_ID)
-      y_vs_z_BF <- y_vs_z %>% filter(MR_meta_pval < 0.05/num_tests) %>% pull(exposure_ID)
+      z_vs_x_BF <- z_vs_x %>% filter(IVW_meta_pval < 0.05/num_tests) %>% pull(outcome_ID)
+      y_vs_z_BF <- y_vs_z %>% filter(IVW_meta_pval < 0.05/num_tests) %>% pull(exposure_ID)
 
       union_z <- union(z_vs_x_BF, y_vs_z_BF)
 
@@ -2622,7 +2622,7 @@ find_sig_standard_MR_summary <- function(standard_MR_summary){
 
 
   denom <- dim(standard_MR_summary)[1]/2 #divide by 2 because each meta result is there twice (one row/sex)
-  sig_only <- standard_MR_summary %>% filter(MR_meta_pval < 0.05/denom)
+  sig_only <- standard_MR_summary %>% filter(IVW_meta_pval < 0.05/denom)
   return(sig_only)
 }
 
