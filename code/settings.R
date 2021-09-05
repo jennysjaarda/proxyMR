@@ -102,3 +102,8 @@ files <- c(paste0(UKBB_dir,"/pheno/ukb6881.csv"), paste0(UKBB_processed_dir,"/PH
           Neale_variant_file, paste0(UKBB_dir, "/imp/ukb1638_imp_chr1_v2_s487398.sample"))
 
 files_ref <- tibble(custom_names = files_custom_names, files = files)
+
+custom_col <- c("#a6cee3",
+                "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99",
+                "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6",
+                "#6a3d9a", "#ffff99", "#b15928")
