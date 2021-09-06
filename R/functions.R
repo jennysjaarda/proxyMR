@@ -3954,6 +3954,9 @@ xy_plot_binned_meta <- function(harmonised_data, MR_binned, group, custom_col){
 
 xy_plot_binned_single_sex <- function(harmonised_data, MR_binned, exposure_sex, group, custom_col){
 
+  harmonised_data.sex_male <- harmonised_data[[paste0("exp_", "male", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
+  harmonised_data.sex_female <- harmonised_data[[paste0("exp_", "female", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
+
   fig_data <- MR_binned %>% filter(bin!="all") %>% separate(bin, c("bin_start_temp", "bin_stop_temp"), ",", remove = F) %>% filter(grouping_var==!!group) %>% mutate(bin_start = substring(bin_start_temp, 2)) %>%
     mutate(bin_stop = str_sub(bin_stop_temp,1,nchar(bin_stop_temp)-1)) %>% rowwise() %>%
     mutate(bin_median = median(c(as.numeric(bin_start), as.numeric(bin_stop)))) %>%
