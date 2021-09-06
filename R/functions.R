@@ -3966,6 +3966,12 @@ xy_plot_binned_single_sex <- function(harmonised_data, MR_binned, exposure_sex, 
   harmonise_dat_plot <- rbind(harmonised_data.sex_male, harmonised_data.sex_female) %>% mutate_at('exposure_sex', as.factor)
   trait_description <- as.character(harmonise_dat_plot[1, "exposure_description"])
 
+  x_ticks <- unique(fig_data %>% pull(bin_median))
+  x_labels <- unique(fig_data %>% pull(bin))
+
+  xlab <- ifelse(group == "time_together_even_bins", "Time together in same household (years)", "Median age of couples (years)")
+
+  legend_title <- "Exposure sex"
 
   if(exposure_sex=="male"){outcome_sex="female"}
   if(exposure_sex=="female"){outcome_sex="male"}
