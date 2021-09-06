@@ -11,7 +11,7 @@ options(clustermq.scheduler = "slurm", clustermq.template = "slurm_clustermq.tmp
 tar_option_set(
   resources = tar_resources(
     clustermq = tar_resources_clustermq(template = list(num_cores = 1, account = "sgg",
-                                                        ntasks = 4, partition = "sgg",
+                                                        ntasks = 8, partition = "sgg",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
   packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR",
@@ -465,7 +465,7 @@ list(
   tar_target(
     household_MR_binned_AM_figs,
     create_MR_binned_AM_figs(household_harmonised_data, household_MR_binned_meta, custom_col),
-    pattern = map(household_harmonised_data, household_MR_binned_meta)
+    pattern = map(household_harmonised_data, household_MR_binned_meta), iteration = "list"
   ),
 
   tar_target(

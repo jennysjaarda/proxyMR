@@ -3553,7 +3553,7 @@ mr_scatter_plot_custom <-  function (mr_results, dat, mr_title, exposure_sex, ou
 }
 
 
-bin_plot_sex_specific <- function(harmonised_data, MR_binned, exposure_sex, group){
+mr_plot_binned_sex_specific <- function(harmonised_data, MR_binned, exposure_sex, group){
 
   if(exposure_sex=="male"){outcome_sex="female"}
   if(exposure_sex=="female"){outcome_sex="male"}
@@ -3574,7 +3574,7 @@ bin_plot_sex_specific <- function(harmonised_data, MR_binned, exposure_sex, grou
 
 
 
-  legend_title <- ifelse(group=="age_even_bins", "Median age \n of couples", "Time together \n in same household")
+  legend_title <- ifelse(group=="age_even_bins", "Median age \n of couples (years)", "Time together \n in same household (years)")
 
   index <- harmonise_dat_plot$beta.exposure < 0
   harmonise_dat_plot$beta.exposure[index] <- harmonise_dat_plot$beta.exposure[index] *-1
@@ -3616,9 +3616,6 @@ mr_plot_sex_specific <- function(harmonised_data, MR_binned, custom_col){
 
   outcome_levels <- levels(bin_summary$exposure_sex)
 
-
-  #legend_title <- ifelse(group=="age_even_bins", "Median age \n of couples", "Time together \n in same household")
-
   legend_title <- "Exposure sex"
 
   index <- harmonise_dat_plot$beta.exposure < 0
@@ -3648,7 +3645,7 @@ mr_plot_sex_specific <- function(harmonised_data, MR_binned, custom_col){
   return(plot)
 }
 
-forest_plot_sex_specific <- function(harmonised_data, MR_binned, group, custom_col){
+forest_plot_binned_sex_specific <- function(harmonised_data, MR_binned, group, custom_col){
 
   harmonised_data.sex_male <- harmonised_data[[paste0("exp_", "male", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
   harmonised_data.sex_female <- harmonised_data[[paste0("exp_", "female", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
@@ -3673,7 +3670,7 @@ forest_plot_sex_specific <- function(harmonised_data, MR_binned, group, custom_c
   fp_data <-  bin_summary %>% mutate(upper = IVW_beta + IVW_se) %>% mutate(lower = IVW_beta - IVW_se)
 
   bins <- c(bin_summary %>% filter(outcome_sex == "male") %>% pull(bin))
-  first_label <- ifelse(group=="age_even_bins", "Median age (years)", "Time together (years)")
+  first_label <- ifelse(group=="age_even_bins", "Median age \nof couples (years)", "Time together \nin same household (years)")
   bin_labels <- c(first_label, "")
 
   for(i in 1:length(bins)){
@@ -3761,7 +3758,7 @@ forest_plot_sex_specific <- function(harmonised_data, MR_binned, group, custom_c
 
 }
 
-forest_plot_meta <- function(harmonised_data, MR_binned, group, custom_col){
+forest_plot_binned_meta <- function(harmonised_data, MR_binned, group, custom_col){
 
   harmonised_data.sex_male <- harmonised_data[[paste0("exp_", "male", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
   harmonised_data.sex_female <- harmonised_data[[paste0("exp_", "female", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
@@ -3787,7 +3784,7 @@ forest_plot_meta <- function(harmonised_data, MR_binned, group, custom_col){
   fp_data <-  bin_summary %>% mutate(upper = IVW_meta_beta + IVW_meta_se) %>% mutate(lower = IVW_meta_beta - IVW_meta_se)
 
   bins <- c(bin_summary %>% pull(bin))
-  first_label <- ifelse(group=="age_even_bins", "Median age (years)", "Time together (years)")
+  first_label <- ifelse(group=="age_even_bins", "Median age \n of couples (years)", "Time together \nin same household (years)")
   bin_labels <- c(first_label)
 
   for(i in 1:length(bins)){
@@ -3861,6 +3858,98 @@ forest_plot_meta <- function(harmonised_data, MR_binned, group, custom_col){
 
 }
 
+xy_plot_binned_sex_specifc <- function(harmonised_data, MR_binned, group, custom_col){
+
+  harmonised_data.sex_male <- harmonised_data[[paste0("exp_", "male", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
+  harmonised_data.sex_female <- harmonised_data[[paste0("exp_", "female", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
+
+  harmonise_dat_plot <- rbind(harmonised_data.sex_male, harmonised_data.sex_female) %>% mutate_at('exposure_sex', as.factor)
+  trait_description <- as.character(harmonise_dat_plot[1, "exposure_description"])
+
+  fig_data <- MR_binned %>% filter(bin!="all") %>% separate(bin, c("bin_start_temp", "bin_stop_temp"), ",", remove = F) %>% filter(grouping_var==!!group) %>% mutate(bin_start = substring(bin_start_temp, 2)) %>%
+    mutate(bin_stop = str_sub(bin_stop_temp,1,nchar(bin_stop_temp)-1)) %>% rowwise() %>%
+    mutate(bin_median = median(c(as.numeric(bin_start), as.numeric(bin_stop)))) %>%
+    mutate(bin_median_plot = case_when(exposure_sex=="female" ~ bin_median + 0.4,
+                                       exposure_sex=="male" ~ bin_median - 0.4))
+
+  x_ticks <- unique(fig_data %>% pull(bin_median))
+  x_labels <- unique(fig_data %>% pull(bin))
+
+  xlab <- ifelse(group == "time_together_even_bins", "Time together in same household (years)", "Median age of couples (years)")
+
+  legend_title <- "Exposure sex"
+
+  plot <- ggplot2::ggplot(data = fig_data, ggplot2::aes(x = bin_median_plot,
+                                                        y = IVW_beta, colour = factor(exposure_sex))) +
+    geom_smooth(method="lm",formula=y~x, se = F, fullrange = T) +
+    ggplot2::geom_errorbar(ggplot2::aes(ymin = IVW_beta - IVW_se, ymax = IVW_beta + IVW_se),
+                           colour = "grey", width = 0) +
+    ggplot2::geom_point(ggplot2::aes(colour = factor(exposure_sex))) +
+
+    ggplot2::scale_colour_manual(values = custom_col[c(2,4)]) +
+
+    scale_x_continuous(breaks=x_ticks, limits = c(min(x_ticks)-2, max(x_ticks)+2),
+                       labels = x_labels) +
+
+    theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(),
+                       panel.grid.minor = element_blank(), axis.line=element_blank(),
+                       axis.title.x = element_text(margin = unit(c(3, 0, 0, 0), "mm")),
+                       axis.title.y = element_text(margin = unit(c(0, 3, 0, 0), "mm"))) +
+
+    ggplot2::labs(colour = legend_title, x =xlab,
+                  y = paste0("AM MR estimate for ", tolower(trait_description) ," (sex specific)")) +
+    ggplot2::theme(legend.position = "right", legend.direction = "vertical") +
+    ggplot2::guides(colour = ggplot2::guide_legend(ncol = 1))
+
+  return(plot)
+
+}
+
+xy_plot_binned_meta <- function(){
+
+  harmonised_data.sex_male <- harmonised_data[[paste0("exp_", "male", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
+  harmonised_data.sex_female <- harmonised_data[[paste0("exp_", "female", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
+
+  harmonise_dat_plot <- rbind(harmonised_data.sex_male, harmonised_data.sex_female) %>% mutate_at('exposure_sex', as.factor)
+  trait_description <- as.character(harmonise_dat_plot[1, "exposure_description"])
+
+  fig_data <- MR_binned %>% filter(bin!="all") %>% separate(bin, c("bin_start_temp", "bin_stop_temp"), ",", remove = F) %>% filter(grouping_var==!!group) %>% mutate(bin_start = substring(bin_start_temp, 2)) %>%
+    mutate(bin_stop = str_sub(bin_stop_temp,1,nchar(bin_stop_temp)-1)) %>% rowwise() %>%
+    mutate(bin_median = median(c(as.numeric(bin_start), as.numeric(bin_stop)))) %>%
+    mutate(bin_median_plot = case_when(exposure_sex=="female" ~ bin_median + 0.4,
+                                       exposure_sex=="male" ~ bin_median - 0.4))
+
+  x_ticks <- unique(fig_data %>% pull(bin_median))
+  x_labels <- unique(fig_data %>% pull(bin))
+
+  xlab <- ifelse(group == "time_together_even_bins", "Time together in same household (years)", "Median age of couples (years)")
+
+  legend_title <- "Exposure sex"
+
+  ## doesn't matter what sex we choose for meta
+
+  fig_data_meta <- fig_data %>% filter(exposure_sex=="male")
+
+  plot <- ggplot2::ggplot(data = fig_data_meta, ggplot2::aes(x = bin_median,
+                                                              y = IVW_meta_beta)) +
+    geom_smooth(method="lm",formula=y~x, se = F, fullrange = T, color = custom_col[2]) +
+    ggplot2::geom_errorbar(ggplot2::aes(ymin = IVW_meta_beta - IVW_meta_se, ymax = IVW_meta_beta + IVW_meta_se),
+                           colour = "grey", width = 0) +
+    ggplot2::geom_point(color = custom_col[2]) +
+    scale_x_continuous(breaks=x_ticks, limits = c(min(x_ticks)-2, max(x_ticks)+2),
+                       labels = x_labels) +
+
+    theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(),
+                       panel.grid.minor = element_blank(), axis.line=element_blank(),
+                       axis.title.x = element_text(margin = unit(c(3, 0, 0, 0), "mm")),
+                       axis.title.y = element_text(margin = unit(c(0, 3, 0, 0), "mm"))) +
+
+    ggplot2::labs(colour = legend_title, x =xlab,
+                  y = paste0("AM MR estimate for ", tolower(trait_description) ," (meta-analyzed across sexes)"))
+
+  return(plot)
+
+}
 create_MR_binned_AM_figs <- function(household_harmonised_data, household_MR_binned_meta, custom_col){
 
   names_data <- names(household_harmonised_data)
@@ -3878,8 +3967,8 @@ create_MR_binned_AM_figs <- function(household_harmonised_data, household_MR_bin
 
   for(group in c("age_even_bins", "time_together_even_bins")){
 
-    p_male <- bin_plot_sex_specific(household_harmonised_data.AM, household_MR_binned_meta.AM, "male", group)
-    p_female <- bin_plot_sex_specific(household_harmonised_data.AM, household_MR_binned_meta.AM, "female", group)
+    p_male <- mr_plot_binned_sex_specific(household_harmonised_data.AM, household_MR_binned_meta.AM, "male", group)
+    p_female <- mr_plot_binned_sex_specific(household_harmonised_data.AM, household_MR_binned_meta.AM, "female", group)
 
     prow <- plot_grid(
       p_male + theme(legend.position="none"),
@@ -3903,14 +3992,20 @@ create_MR_binned_AM_figs <- function(household_harmonised_data, household_MR_bin
     assign(paste0("MR_sex_specific_", group, "_fig"), p_combined)
   }
 
-  ## TO DO
   for(group in c("age_even_bins", "time_together_even_bins")){
 
-    fp_sex_spec <- forest_plot_sex_specific(household_harmonised_data.AM, household_MR_binned_meta.AM, group, custom_col)
-    fp_meta <- forest_plot_meta(household_harmonised_data.AM, household_MR_binned_meta.AM, group, custom_col)
+    fp_sex_spec <- forest_plot_binned_sex_specific(household_harmonised_data.AM, household_MR_binned_meta.AM, group, custom_col)
+    fp_meta <- forest_plot_binned_meta(household_harmonised_data.AM, household_MR_binned_meta.AM, group, custom_col)
+
+    xy_sex_spec <- xy_plot_binned_sex_specifc(household_harmonised_data.AM, household_MR_binned_meta.AM, group, custom_col)
+    xy_meta <- xy_plot_binned_meta(household_harmonised_data.AM, household_MR_binned_meta.AM, group, custom_col)
+
 
     assign(paste0("FP_sex_specific_", group, "_fig"), fp_sex_spec)
     assign(paste0("FP_", group, "_fig"), fp_meta)
+    assign(paste0("XY_sex_specific_", group, "_fig"), xy_sex_spec)
+
+    assign(paste0("XY_", group, "_fig"), xy_meta)
 
   }
 
@@ -3920,6 +4015,10 @@ create_MR_binned_AM_figs <- function(household_harmonised_data, household_MR_bin
   return(list(overall_MR_fig = overall_MR_fig,
               MR_sex_specific_age_bins_fig = MR_sex_specific_age_even_bins_fig,
               MR_sex_specific_time_together_bins_fig = MR_sex_specific_time_together_even_bins_fig,
+              XY_sex_specific_age_bins_fig = XY_sex_specific_age_even_bins_fig,
+              XY_sex_specific_time_together_bins_fig = XY_sex_specific_time_together_even_bins_fig,
+              XY_age_bins_fig = XY_age_even_bins_fig,
+              XY_time_together_bins_fig = XY_time_together_even_bins_fig,
               FP_sex_specific_age_bins_fig = FP_sex_specific_age_even_bins_fig,
               FP_sex_specific_time_together_bins_fig = FP_sex_specific_time_together_even_bins_fig,
               FP_age_bins_fig = FP_age_even_bins_fig,
