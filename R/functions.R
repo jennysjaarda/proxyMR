@@ -2695,6 +2695,15 @@ z.test_p <- Vectorize(function(x, sigma.x, y, sigma.y) {z.test(x, sigma.x, y, si
 z.test_z <- Vectorize(function(x, sigma.x, y, sigma.y) {z.test(x, sigma.x, y, sigma.y)$statistic},
                       vectorize.args = c("x", "sigma.x", "y", "sigma.y"))
 
+variance_of_product <- function(x, x_se, y, y_se){
+
+  x^2*y_se^2 + y^2*x_se^2 + x_se^2*y_se^2
+}
+
+variance_of_sum <- function(x_se, y_se){
+  x_se^2 + y_se^2
+}
+
 
 run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, household_MR_summary, household_MR_summary_AM){
 
@@ -2760,19 +2769,16 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
 
     summarized_result <- summarized_result %>% #dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, exposure_sex, outcome_sex, contains(var), contains("N_outcome_GWAS"), contains("N_snps")) %>% rename_all(~stringr::str_replace(., paste0("_", var, "_"),"_")) %>%
       mutate(xixp_xpyp_beta = xixp_IVW_beta*xpyp_IVW_beta) %>%
-      mutate(xixp_xpyp_se = xixp_IVW_beta^2*xpyp_IVW_se^2 +
-               xpyp_IVW_beta^2*xixp_IVW_se^2 +
-               xpyp_IVW_se^2*xixp_IVW_se^2) %>%
+      mutate(xixp_xpyp_var = sqrt(variance_of_product(xixp_IVW_beta, xixp_IVW_se, xpyp_IVW_beta, xpyp_IVW_se))) %>%
 
       mutate(xiyi_yiyp_beta = xiyi_IVW_beta*yiyp_IVW_beta) %>%
-      mutate(xiyi_yiyp_se = xiyi_IVW_beta^2*yiyp_IVW_se^2 +
-               yiyp_IVW_beta^2*xiyi_IVW_se^2 +
-               yiyp_IVW_se^2*yiyp_IVW_se^2) %>%
+      mutate(xiyi_yiyp_se = sqrt(variance_of_products(xiyi_IVW_beta, xiyi_IVW_se, yiyp_IVW_beta, yiyp_IVW_se))) %>%
 
       mutate(gam_beta = xixp_xpyp_beta) %>% mutate(gam_se = xixp_xpyp_se) %>%
       mutate(rho_beta = xiyi_yiyp_beta) %>% mutate(rho_se = xiyi_yiyp_se) %>%
       mutate(omega_beta = xiyp_IVW_beta) %>% mutate(omega_se = xiyp_IVW_se) %>%
-      mutate(gam_rho_beta = gam_beta + rho_beta) %>% mutate(gam_rho_se = gam_se + rho_se)
+      mutate(gam_rho_beta = gam_beta + rho_beta) %>%
+      mutate(gam_rho_se = sqrt(variance_of_sum(gam_se, rho_se)))
 
     # Meta analyzed MRs estimates and gam, rho and omega across sexes and calculate heterogeneity between them
 
