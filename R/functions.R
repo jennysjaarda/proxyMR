@@ -3951,6 +3951,51 @@ xy_plot_binned_meta <- function(harmonised_data, MR_binned, group, custom_col){
 
 }
 
+
+xy_plot_binned_single_sex <- function(harmonised_data, MR_binned, exposure_sex, group, custom_col){
+
+  fig_data <- MR_binned %>% filter(bin!="all") %>% separate(bin, c("bin_start_temp", "bin_stop_temp"), ",", remove = F) %>% filter(grouping_var==!!group) %>% mutate(bin_start = substring(bin_start_temp, 2)) %>%
+    mutate(bin_stop = str_sub(bin_stop_temp,1,nchar(bin_stop_temp)-1)) %>% rowwise() %>%
+    mutate(bin_median = median(c(as.numeric(bin_start), as.numeric(bin_stop)))) %>%
+    mutate(bin_median_plot = case_when(exposure_sex=="female" ~ bin_median + 0.4,
+                                       exposure_sex=="male" ~ bin_median - 0.4))
+
+  harmonise_dat_plot <- rbind(harmonised_data.sex_male, harmonised_data.sex_female) %>% mutate_at('exposure_sex', as.factor)
+  trait_description <- as.character(harmonise_dat_plot[1, "exposure_description"])
+
+
+  if(exposure_sex=="male"){outcome_sex="female"}
+  if(exposure_sex=="female"){outcome_sex="male"}
+
+  fig_data_sex_spec <- fig_data_sex_spec <- fig_data %>% dplyr::filter(exposure_sex==!!exposure_sex)
+
+  plot <- ggplot2::ggplot(data = fig_data_sex_spec, ggplot2::aes(x = bin_median,
+                                                                 y = IVW_beta, colour = factor(exposure_sex))) +
+    geom_smooth(method="lm",formula=y~x, se = F, fullrange = T, linetype = "dashed", color = custom_col[2]) +
+    ggplot2::geom_errorbar(ggplot2::aes(ymin = IVW_beta - IVW_se, ymax = IVW_beta + IVW_se),
+                           colour = "grey", width = 0) +
+    ggplot2::geom_point(color = custom_col[2]) +
+
+
+    scale_x_continuous(breaks=x_ticks, limits = c(min(x_ticks)-2, max(x_ticks)+2),
+                       labels = x_labels) +
+
+    theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(),
+                       panel.grid.minor = element_blank(), axis.line=element_blank(),
+                       axis.title.x = element_text(margin = unit(c(3, 0, 0, 0), "mm")),
+                       axis.title.y = element_text(margin = unit(c(0, 3, 0, 0), "mm"))) +
+
+    ggplot2::labs(colour = legend_title, x =xlab,
+                  y = paste0("AM MR estimate for ", tolower(trait_description) ," (", exposure_sex, "s to ", outcome_sex, "s)")) +
+    ggplot2::theme(legend.position = "right", legend.direction = "vertical") +
+    ggplot2::guides(colour = ggplot2::guide_legend(ncol = 1))
+
+
+  return(plot)
+
+
+}
+
 create_MR_binned_AM_figs <- function(household_harmonised_data, household_MR_binned_meta, custom_col){
 
   names_data <- names(household_harmonised_data)
@@ -4010,21 +4055,36 @@ create_MR_binned_AM_figs <- function(household_harmonised_data, household_MR_bin
 
   }
 
+  for(group in c("age_even_bins", "time_together_even_bins")){
+
+    xy_binM <- xy_plot_binned_single_sex(harmonised_data, MR_binned, "male", group, custom_col)
+    xy_binF <- xy_plot_binned_single_sex(harmonised_data, MR_binned, "female", group, custom_col)
+
+    xy_bin_side_by_side <- plot_grid(xy_binM, xy_binF)
+    assign(paste0("XY_sex_sidebyside_", group, "_fig"), p_combined)
+  }
+
+
+
 
   overall_MR_fig <- mr_plot_sex_specific(household_harmonised_data.AM, household_MR_binned_meta.AM, custom_col)
 
   return(list(overall_MR_fig = overall_MR_fig,
               MR_sex_specific_age_bins_fig = MR_sex_specific_age_even_bins_fig,
               MR_sex_specific_time_together_bins_fig = MR_sex_specific_time_together_even_bins_fig,
+
               XY_sex_specific_age_bins_fig = XY_sex_specific_age_even_bins_fig,
               XY_sex_specific_time_together_bins_fig = XY_sex_specific_time_together_even_bins_fig,
+              XY_sex_sidebyside_age_bins_fig = XY_sex_sidebyside_age_even_bins_fig,
+              XY_sex_sidebyside_time_together_bins_fig = XY_sex_sidebyside_time_together_even_bins_fig,
+
               XY_age_bins_fig = XY_age_even_bins_fig,
               XY_time_together_bins_fig = XY_time_together_even_bins_fig,
+
               FP_sex_specific_age_bins_fig = FP_sex_specific_age_even_bins_fig,
               FP_sex_specific_time_together_bins_fig = FP_sex_specific_time_together_even_bins_fig,
               FP_age_bins_fig = FP_age_even_bins_fig,
               FP_time_together_bins_fig = FP_time_together_even_bins_fig))
-
 
 }
 
@@ -4046,6 +4106,6 @@ create_household_MR_AM_FvsM_fig <- function(household_MR_binned_het, custom_col)
     geom_abline(slope=1, intercept=0, color = "black") +
     scale_color_manual(values = custom_col[c(1,2)], labels=c("p >= 0.01","p < 0.01")) +
     theme_minimal() +
-    ggplot2::labs(colour = legend_title, x = paste0("AM MR estimate (males)"),
-                  y = paste("AM MR estimate (females)"))
+    ggplot2::labs(colour = legend_title, x = paste0("AM MR estimate (male to female)"),
+                  y = paste("AM MR estimate (female to male)"))
 }
