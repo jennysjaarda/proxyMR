@@ -3881,7 +3881,7 @@ xy_plot_binned_sex_specifc <- function(harmonised_data, MR_binned, group, custom
 
   plot <- ggplot2::ggplot(data = fig_data, ggplot2::aes(x = bin_median_plot,
                                                         y = IVW_beta, colour = factor(exposure_sex))) +
-    geom_smooth(method="lm",formula=y~x, se = F, fullrange = T) +
+    geom_smooth(method="lm",formula=y~x, se = F, fullrange = T, linetype = "dashed") +
     ggplot2::geom_errorbar(ggplot2::aes(ymin = IVW_beta - IVW_se, ymax = IVW_beta + IVW_se),
                            colour = "grey", width = 0) +
     ggplot2::geom_point(ggplot2::aes(colour = factor(exposure_sex))) +
@@ -3932,7 +3932,7 @@ xy_plot_binned_meta <- function(harmonised_data, MR_binned, group, custom_col){
 
   plot <- ggplot2::ggplot(data = fig_data_meta, ggplot2::aes(x = bin_median,
                                                               y = IVW_meta_beta)) +
-    geom_smooth(method="lm",formula=y~x, se = F, fullrange = T, color = custom_col[2]) +
+    geom_smooth(method="lm",formula=y~x, se = F, fullrange = T, color = custom_col[2], linetype = "dashed") +
     ggplot2::geom_errorbar(ggplot2::aes(ymin = IVW_meta_beta - IVW_meta_se, ymax = IVW_meta_beta + IVW_meta_se),
                            colour = "grey", width = 0) +
     ggplot2::geom_point(color = custom_col[2]) +
