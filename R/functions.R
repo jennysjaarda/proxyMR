@@ -1157,7 +1157,7 @@ extract_trait_info <- function(pheno_data){
 }
 
 
-calc_PC_traits <- function(exposure_info_list, sqc, relatives){
+calc_PC_traits <- function(exposure_info_list, sqc, fam, relatives){
 
   full_df <- numeric()
 
@@ -1176,17 +1176,34 @@ calc_PC_traits <- function(exposure_info_list, sqc, relatives){
 
   IDs <- as.integer(full_df$userId)
 
-  related_IDs <- ukb_gen_samples_to_remove(relatives, ukb_with_data = IDs)
-  unrelated_data <- full_df[-which(full_df$userId %in% related_IDs ),]
 
-  sqc_head <- ukb_gen_sqc_names(sqc, col_names_only = FALSE)
+  # This option takes too long
+  # related_IDs <- ukb_gen_samples_to_remove(relatives, ukb_with_data = IDs)
+  # unrelated_data <- full_df[-which(full_df$userId %in% related_IDs ),]
+
+  ##fam file in same order as sample QC (sqc) file
+  sqc <- ukb_gen_sqc_names(sqc, col_names_only = FALSE)
+
+  sqc$ID <- fam[,1]
+  unrelated_IDs <- sqc[which(sqc$used_in_pca_calculation==1), "ID"]
+  unrelated_data <- full_df[which(full_df$userId %in% unrelated_IDs ),]
 
   calc_PC_data <- unrelated_data[,-c(1:3)]
-  res.pca <- prcomp(calc_PC_data, scale = TRUE)
-  fviz_eig(res.pca)
 
+  cor_matrix <- cor(calc_PC_data, use = "pairwise.complete.obs")
 
+  res.pca <- prcomp((cor_matrix), scale = TRUE)
+  # to visualize the PC results
+  # fviz_eig(res.pca)
 
+  return(res.pca)
+
+}
+
+calc_num_tests_by_PC <- function(prcomp_result, threshold){
+
+  num_tests <- which(summary(prcomp_result)$importance[3,] > threshold)[1]
+  return(num_tests)
 }
 
 write_data_prep <- function(traits, traits_to_run, out1, out2){
@@ -2827,7 +2844,7 @@ summarize_proxyMR_comparison <- function(proxyMR_comparison, traits_corr2_filled
                                                 TRUE ~ TRUE)) %>%
     mutate(gam_vs_rho_BF_sig_meta = case_when(TRUE ~ gam_vs_rho_meta_p < 0.05/num_result,
                                               TRUE ~ TRUE)) %>%
-    mutate(gam_vs_gam_rho_BF_sig_meta = case_when(TRUE ~ omega_vs_gam_rho_meta_p < 0.05/num_result,
+    mutate(omega_vs_gam_rho_BF_sig_meta = case_when(TRUE ~ omega_vs_gam_rho_meta_p < 0.05/num_result,
                                               TRUE ~ TRUE))
 
 

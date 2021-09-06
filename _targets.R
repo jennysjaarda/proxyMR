@@ -15,7 +15,8 @@ tar_option_set(
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
   packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR",
-               "ggplot2", "purrr", "rmeta", "PASWR2", "cowplot", "meta", "strex", "RColorBrewer", "forestplot"),
+               "ggplot2", "purrr", "rmeta", "PASWR2", "cowplot", "meta", "strex", "RColorBrewer",
+               "forestplot"),
   error = "workspace",
   memory = "transient",
   garbage_collection = TRUE
@@ -380,7 +381,12 @@ list(
 
   tar_target(
     PC_traits,
-    calc_PC_traits(exposure_info, data_sqc, data_relatives)
+    calc_PC_traits(exposure_info, data_sqc, data_fam, data_relatives)
+  ),
+
+  tar_target(
+    num_tests_by_PCs,
+    calc_num_tests_by_PCs(PC_traits, 0.995)
   ),
 
   tar_target(
