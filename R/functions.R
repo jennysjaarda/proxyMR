@@ -1200,7 +1200,7 @@ calc_PC_traits <- function(exposure_info_list, sqc, fam, relatives){
 
 }
 
-calc_num_tests_by_PC <- function(prcomp_result, threshold){
+calc_num_tests_by_PCs <- function(prcomp_result, threshold){
 
   num_tests <- which(summary(prcomp_result)$importance[3,] > threshold)[1]
   return(num_tests)
