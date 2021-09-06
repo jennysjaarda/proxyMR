@@ -378,6 +378,10 @@ list(
     pattern = map(exposures_to_run), iteration = "list"
   ),
 
+  tar_target(
+    PC_traits,
+    calc_PC_traits(exposure_info, data_sqc, data_relatives)
+  ),
 
   tar_target(
     IV_data_summary_run,

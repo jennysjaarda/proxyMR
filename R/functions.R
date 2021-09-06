@@ -1157,6 +1157,38 @@ extract_trait_info <- function(pheno_data){
 }
 
 
+calc_PC_traits <- function(exposure_info_list, sqc, relatives){
+
+  full_df <- numeric()
+
+  for(i in 1:length(exposure_info_list)){
+
+    exposure_info_i <- exposure_info_list[[i]]
+    phes_ID <- exposure_info_i %>% filter(Value=="phes_ID") %>% pull(Info)
+    phesant_file <- exposure_info_i %>% filter(Value=="phesant_file") %>% pull(Info)
+    tsv_data <- fread(phesant_file, header=TRUE, sep='\t',select=c("userId","sex","age", phes_ID))
+
+    if(i==1){
+      full_df <- tsv_data
+    } else full_df <- merge(full_df, tsv_data[,c(1, 4)])
+
+  }
+
+  IDs <- as.integer(full_df$userId)
+
+  related_IDs <- ukb_gen_samples_to_remove(relatives, ukb_with_data = IDs)
+  unrelated_data <- full_df[-which(full_df$userId %in% related_IDs ),]
+
+  sqc_head <- ukb_gen_sqc_names(sqc, col_names_only = FALSE)
+
+  calc_PC_data <- unrelated_data[,-c(1:3)]
+  res.pca <- prcomp(calc_PC_data, scale = TRUE)
+  fviz_eig(res.pca)
+
+
+
+}
+
 write_data_prep <- function(traits, traits_to_run, out1, out2){
 
   for(i in 1:dim(traits_to_run)[1]){
@@ -4070,7 +4102,7 @@ create_MR_binned_AM_figs <- function(household_harmonised_data, household_MR_bin
     xy_binF <- xy_plot_binned_single_sex(household_harmonised_data.AM, household_MR_binned_meta.AM, "female", group, custom_col)
 
     xy_bin_side_by_side <- plot_grid(xy_binM, xy_binF)
-    assign(paste0("XY_sex_sidebyside_", group, "_fig"), p_combined)
+    assign(paste0("XY_sex_sidebyside_", group, "_fig"), xy_bin_side_by_side)
   }
 
 
