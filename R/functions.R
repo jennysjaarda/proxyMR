@@ -2769,7 +2769,7 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
 
     summarized_result <- summarized_result %>% #dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, exposure_sex, outcome_sex, contains(var), contains("N_outcome_GWAS"), contains("N_snps")) %>% rename_all(~stringr::str_replace(., paste0("_", var, "_"),"_")) %>%
       mutate(xixp_xpyp_beta = xixp_IVW_beta*xpyp_IVW_beta) %>%
-      mutate(xixp_xpyp_var = sqrt(variance_of_product(xixp_IVW_beta, xixp_IVW_se, xpyp_IVW_beta, xpyp_IVW_se))) %>%
+      mutate(xixp_xpyp_se = sqrt(variance_of_product(xixp_IVW_beta, xixp_IVW_se, xpyp_IVW_beta, xpyp_IVW_se))) %>%
 
       mutate(xiyi_yiyp_beta = xiyi_IVW_beta*yiyp_IVW_beta) %>%
       mutate(xiyi_yiyp_se = sqrt(variance_of_product(xiyi_IVW_beta, xiyi_IVW_se, yiyp_IVW_beta, yiyp_IVW_se))) %>%
