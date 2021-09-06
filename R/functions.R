@@ -4057,8 +4057,8 @@ create_MR_binned_AM_figs <- function(household_harmonised_data, household_MR_bin
 
   for(group in c("age_even_bins", "time_together_even_bins")){
 
-    xy_binM <- xy_plot_binned_single_sex(harmonised_data, MR_binned, "male", group, custom_col)
-    xy_binF <- xy_plot_binned_single_sex(harmonised_data, MR_binned, "female", group, custom_col)
+    xy_binM <- xy_plot_binned_single_sex(household_harmonised_data.AM, household_MR_binned_meta.AM, "male", group, custom_col)
+    xy_binF <- xy_plot_binned_single_sex(household_harmonised_data.AM, household_MR_binned_meta.AM, "female", group, custom_col)
 
     xy_bin_side_by_side <- plot_grid(xy_binM, xy_binF)
     assign(paste0("XY_sex_sidebyside_", group, "_fig"), p_combined)
