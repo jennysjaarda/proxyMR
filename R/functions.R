@@ -3905,7 +3905,7 @@ xy_plot_binned_sex_specifc <- function(harmonised_data, MR_binned, group, custom
 
 }
 
-xy_plot_binned_meta <- function(){
+xy_plot_binned_meta <- function(harmonised_data, MR_binned, group, custom_col){
 
   harmonised_data.sex_male <- harmonised_data[[paste0("exp_", "male", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
   harmonised_data.sex_female <- harmonised_data[[paste0("exp_", "female", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
@@ -3950,6 +3950,7 @@ xy_plot_binned_meta <- function(){
   return(plot)
 
 }
+
 create_MR_binned_AM_figs <- function(household_harmonised_data, household_MR_binned_meta, custom_col){
 
   names_data <- names(household_harmonised_data)
