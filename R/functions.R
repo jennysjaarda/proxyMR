@@ -2772,7 +2772,7 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
       mutate(xixp_xpyp_var = sqrt(variance_of_product(xixp_IVW_beta, xixp_IVW_se, xpyp_IVW_beta, xpyp_IVW_se))) %>%
 
       mutate(xiyi_yiyp_beta = xiyi_IVW_beta*yiyp_IVW_beta) %>%
-      mutate(xiyi_yiyp_se = sqrt(variance_of_products(xiyi_IVW_beta, xiyi_IVW_se, yiyp_IVW_beta, yiyp_IVW_se))) %>%
+      mutate(xiyi_yiyp_se = sqrt(variance_of_product(xiyi_IVW_beta, xiyi_IVW_se, yiyp_IVW_beta, yiyp_IVW_se))) %>%
 
       mutate(gam_beta = xixp_xpyp_beta) %>% mutate(gam_se = xixp_xpyp_se) %>%
       mutate(rho_beta = xiyi_yiyp_beta) %>% mutate(rho_se = xiyi_yiyp_se) %>%
