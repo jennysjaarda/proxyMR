@@ -1203,7 +1203,7 @@ calc_PC_traits <- function(exposure_info_list, sqc, fam, relatives){
 calc_num_tests_by_PCs <- function(prcomp_result, threshold){
 
   num_tests <- which(summary(prcomp_result)$importance[3,] > threshold)[1]
-  return(num_tests)
+  return(num_tests[[1]])
 }
 
 write_data_prep <- function(traits, traits_to_run, out1, out2){
