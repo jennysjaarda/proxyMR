@@ -2569,25 +2569,35 @@ summarize_sex_specific_results  <- function(d,se){
     se <- se[-to_rm]
   }
 
-  meta.result <- meta.summaries(d, se, method=c("fixed"), conf.level=0.95)
+  if(length(d)!=0){
+    meta.result <- meta.summaries(d, se, method=c("fixed"), conf.level=0.95)
 
-  b_meta=round(meta.result[3]$summary,digits=10)
-  b_meta_se=round(meta.result[4]$se.summary,digits=10)
-  lowerbound=b_meta-b_meta_se*1.96
-  upperbound=b_meta+b_meta_se*1.96
+    b_meta=round(meta.result[3]$summary,digits=10)
+    b_meta_se=round(meta.result[4]$se.summary,digits=10)
+    lowerbound=b_meta-b_meta_se*1.96
+    upperbound=b_meta+b_meta_se*1.96
 
-  # n_total <- sum(n)
-  ## meta_p=round(2*(pt(abs(b_meta/b_meta_se),((n_total)-meta.result$het[2]),lower.tail=FALSE)),digits=10)
-  # The p-value above is based on t-distribution and the one below is based on z. Since we are working with such large samples it shouldn't make any difference.
+    # n_total <- sum(n)
+    ## meta_p=round(2*(pt(abs(b_meta/b_meta_se),((n_total)-meta.result$het[2]),lower.tail=FALSE)),digits=10)
+    # The p-value above is based on t-distribution and the one below is based on z. Since we are working with such large samples it shouldn't make any difference.
 
-  meta_p <- 2*pnorm(-abs(b_meta/b_meta_se))
+    meta_p <- 2*pnorm(-abs(b_meta/b_meta_se))
 
-  se <- sqrt( (se[1]^2) + (se[2]^2) )
-  t <- (d[1]-d[2])/se
-  p_het <- 2*pnorm(-abs(t))
+    se <- sqrt( (se[1]^2) + (se[2]^2) )
+    t <- (d[1]-d[2])/se
+    p_het <- 2*pnorm(-abs(t))
 
-  # same as above
-  # p_het2 <- z.test_p(d[1], d[2], se[1], se[2])
+    # same as above
+    # p_het2 <- z.test_p(d[1], d[2], se[1], se[2])
+  } else {
+
+    b_meta <- NA
+    b_meta_se <- NA
+    lowerbound <- NA
+    upperbound <- NA
+    meta_pval <- NA
+    sex_het_pval <- NA
+  }
 
   tibble(meta_beta = b_meta,
          meta_se = b_meta_se,
@@ -2598,6 +2608,7 @@ summarize_sex_specific_results  <- function(d,se){
   )
 
 }
+
 
 
 summarize_household_MR_comprehensive <- function(household_MR){
