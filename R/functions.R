@@ -2080,11 +2080,13 @@ meta_harmonised_household_data <- function(exposure_info, outcomes_to_run, house
 
       temp <- household_harmonised_data_join %>% rename_all(~stringr::str_replace(., paste0(".", data_type),".data_type"))
       meta_temp <- temp %>% group_by(SNP, bin, grouping_var, effect_allele.data_type, other_allele.data_type, outcome) %>% group_modify(~ summarize_sex_specific_results(.x$beta.data_type, .x$se.data_type))
-      meta_tempp_n <- temp %>% group_by(SNP, bin, grouping_var) %>% summarise(samplesize.data_type_meta = sum(samplesize.data_type))
+      meta_temp_n <- temp %>% mutate(samplesize.data_type_adj = case_when(is.na(beta.data_type) | is.na(se.data_type) ~ 0L,
+                                                                           TRUE ~ samplesize.data_type)) %>% group_by(SNP, bin, grouping_var) %>%
+        summarise(samplesize.data_type_meta = sum(samplesize.data_type_adj))
 
       meta_temp_eaf <- temp %>% group_by(SNP, bin, grouping_var) %>% mutate(samplesize.data_type_meta = sum(samplesize.data_type)) %>% ungroup() %>%
         mutate(eaf.data_type_weighted = eaf.data_type*(samplesize.data_type/samplesize.data_type_meta)) %>% group_by(SNP, bin, grouping_var) %>% summarise(eaf.data_type_meta = sum(eaf.data_type_weighted))
-      meta_temp_join <- list(meta_temp, meta_tempp_n, meta_temp_eaf) %>% reduce(left_join)
+      meta_temp_join <- list(meta_temp, meta_temp_n, meta_temp_eaf) %>% reduce(left_join)
 
       if(data_type=="exposure"){
         meta_temp_join <- meta_temp_join %>% ungroup() %>% dplyr::select(-outcome, -bin, -grouping_var) %>% unique()
@@ -2559,6 +2561,14 @@ run_household_MR_comprehensive <- function(exposure_info, outcomes_to_run, house
 }
 
 summarize_sex_specific_results  <- function(d,se){
+
+  if(any(is.na(d)) | any(is.na(se))){
+
+    to_rm <- union(which(is.na(d)), which(is.na(se)))
+    d <- d[-to_rm]
+    se <- se[-to_rm]
+  }
+
   meta.result <- meta.summaries(d, se, method=c("fixed"), conf.level=0.95)
 
   b_meta=round(meta.result[3]$summary,digits=10)
