@@ -11,7 +11,7 @@ options(clustermq.scheduler = "slurm", clustermq.template = "slurm_clustermq.tmp
 tar_option_set(
   resources = tar_resources(
     clustermq = tar_resources_clustermq(template = list(num_cores = 1, account = "sgg",
-                                                        ntasks = 8, partition = "sgg",
+                                                        ntasks = 4, partition = "sgg",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
   packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR",
@@ -445,7 +445,7 @@ list(
   tar_target(
     household_harmonised_data_meta, # explore meta-analyzing the SNP/trait associations before the MR
     meta_harmonised_household_data(exposure_info, outcomes_to_run, household_harmonised_data),
-    pattern = map(household_harmonised_data), iteration = "list"
+    pattern = map(exposure_info, household_harmonised_data), iteration = "list"
   ),
 
   ## MR
