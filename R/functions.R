@@ -2596,7 +2596,7 @@ summarize_sex_specific_results  <- function(d,se){
     lowerbound <- NA
     upperbound <- NA
     meta_p <- NA
-    sex_het_pval <- NA
+    p_het <- NA
   }
 
   tibble(meta_beta = b_meta,
