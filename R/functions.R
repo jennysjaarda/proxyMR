@@ -2054,6 +2054,81 @@ harmonise_household_data <- function(exposure_info, summ_stats, outcomes_to_run,
 
 }
 
+meta_harmonised_household_data <- function(exposure_info, outcomes_to_run, household_harmonised_data){
+
+  output_list <- list()
+  output_files <- numeric()
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+
+  pheno_dir <- paste0("analysis/traitMR")
+  cat(paste0("\nMeta-analyzing harmonised household data across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    household_harmonised_data_i <- household_harmonised_data[[i]]
+    household_harmonised_data_M <- household_harmonised_data_i[[paste0("exp_", "male", "_harmonised_data")]]
+    household_harmonised_data_F <- household_harmonised_data_i[[paste0("exp_", "female", "_harmonised_data")]]
+    household_harmonised_data_join <- rbind(household_harmonised_data_M, household_harmonised_data_F)
+
+    exposure_ID <- household_harmonised_data_join$exposure_ID[1]
+    outcome_ID <- household_harmonised_data_join$outcome_ID[1]
+    exposure_description <- household_harmonised_data_join$exposure_description[1]
+    outcome_description <- household_harmonised_data_join$outcome_description[1]
+
+
+    for(data_type in c("exposure", "outcome")){
+
+      temp <- household_harmonised_data_join %>% rename_all(~stringr::str_replace(., paste0(".", data_type),".data_type"))
+      meta_temp <- temp %>% group_by(SNP, bin, grouping_var, effect_allele.data_type, other_allele.data_type, outcome) %>% group_modify(~ summarize_sex_specific_results(.x$beta.data_type, .x$se.data_type))
+      meta_tempp_n <- temp %>% group_by(SNP, bin, grouping_var) %>% summarise(samplesize.data_type_meta = sum(samplesize.data_type))
+
+      meta_temp_eaf <- temp %>% group_by(SNP, bin, grouping_var) %>% mutate(samplesize.data_type_meta = sum(samplesize.data_type)) %>% ungroup() %>%
+        mutate(eaf.data_type_weighted = eaf.data_type*(samplesize.data_type/samplesize.data_type_meta)) %>% group_by(SNP, bin, grouping_var) %>% summarise(eaf.data_type_meta = sum(eaf.data_type_weighted))
+      meta_temp_join <- list(meta_temp, meta_tempp_n, meta_temp_eaf) %>% reduce(left_join)
+
+      if(data_type=="exposure"){
+        meta_temp_join <- meta_temp_join %>% ungroup() %>% dplyr::select(-outcome, -bin, -grouping_var) %>% unique()
+      }
+      format_dat <- format_data(meta_temp_join, type=data_type,
+                                 snp_col = "SNP",
+                                 beta_col = paste0("meta_beta"),
+                                 se_col = paste0("meta_se"),
+                                 effect_allele_col = "effect_allele.data_type",
+                                 other_allele_col = "other_allele.data_type",
+                                 pval_col = paste0("meta_pval"),
+                                 eaf_col = "eaf.data_type_meta",
+                                 phenotype_col = "outcome",
+                                 samplesize_col = "samplesize.data_type_meta"
+      )
+
+      assign(paste0(data_type, "_dat"), format_dat)
+
+    }
+
+    harmonise_dat <- harmonise_data(
+      exposure_dat = exposure_dat,
+      outcome_dat = outcome_dat, action=1
+    )
+
+
+    harmonise_dat$exposure_ID <- exposure_ID
+    harmonise_dat$outcome_ID <- outcome_ID
+
+    harmonise_dat$exposure_description <- exposure_description
+    harmonise_dat$outcome_description <- outcome_description
+
+    grouping_var_bin <- harmonise_dat %>% separate(outcome, c("grouping_var", "bin"), "[.]", extra = "merge") %>% dplyr::select("grouping_var", "bin")
+    harmonise_dat$grouping_var <- grouping_var_bin$grouping_var
+    harmonise_dat$bin <- grouping_var_bin$bin
+
+    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data_meta")]] <- harmonise_dat
+    cat(paste0("Finished meta-analyzing harmonised household data for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+
+  }
+
+  return(output_list)
+}
+
 harmonise_standard_data_ind <- function(exposure_info, summ_stats, traits_corr2_filled, outcome_ID, standard_GWAS_result) {
 
   output_list <- list()
@@ -2319,8 +2394,9 @@ calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, househo
         bin_result_temp <- household_MR_binned_meta_i %>% filter(grouping_var==group) %>% filter(exposure_sex==!!exposure_sex)
 
         all_row <- which(bin_result_temp$bin=="all")
-        all_sum <- c(bin_result_temp[all_row,"IVW_beta"][[1]],bin_result_temp[all_row,"IVW_se"][[1]], bin_result_temp[all_row,"IVW_pval"][[1]])
-        names(all_sum) <- c("IVW_beta", "IVW_se", "IVW_pval")
+        all_sum <- c(bin_result_temp[all_row,"IVW_beta"][[1]],bin_result_temp[all_row,"IVW_se"][[1]], bin_result_temp[all_row,"IVW_pval"][[1]],
+                     bin_result_temp[all_row,"IVW_meta_beta"][[1]],bin_result_temp[all_row,"IVW_meta_se"][[1]], bin_result_temp[all_row,"IVW_meta_pval"][[1]])
+        names(all_sum) <- c("IVW_beta", "IVW_se", "IVW_pval", "IVW_meta_beta", "IVW_meta_se", "IVW_meta_pval")
 
         result_to_analyze <- bin_result_temp %>% filter(bin != "all")
 

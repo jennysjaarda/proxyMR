@@ -442,6 +442,11 @@ list(
     pattern = map(exposure_info, summ_stats, household_GWAS), iteration = "list"
   ),
 
+  tar_target(
+    household_harmonised_data_meta, # explore meta-analyzing the SNP/trait associations before the MR
+    meta_harmonised_household_data(exposure_info, outcomes_to_run, household_harmonised_data),
+    pattern = map(household_harmonised_data), iteration = "list"
+  ),
 
   ## MR
 
