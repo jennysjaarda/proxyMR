@@ -2802,10 +2802,11 @@ variance_of_sum <- function(x_se, y_se){
 }
 
 
-run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, household_MR_summary, household_MR_summary_AM){
+run_proxyMR_comparison <- function(exposure_info, household_MR_summary_BF_sig, household_MR_summary, standard_MR_summary, household_MR_summary_AM){
 
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
-  MR_sub <- standard_MR_summary_BF_sig %>% filter(exposure_ID==!!exposure_ID)
+  ## only run this for those where omega is significant
+  MR_sub <- household_MR_summary_BF_sig %>% filter(exposure_ID==!!exposure_ID) %>% filter(exposure_ID!=outcome_ID)
 
   summarized_result <- as_tibble(numeric())
 
@@ -2827,6 +2828,7 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
 
       cols_interst <- c("IVW_beta", "IVW_se", "IVW_pval", "N_outcome_GWAS", "N_snps")
 
+
       ## Sex-specific proxy MR
       xiyp_summary <- hh_MR_sub %>% dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xiyp_', names(.)))
 
@@ -2840,10 +2842,11 @@ run_proxyMR_comparison <- function(exposure_info, standard_MR_summary_BF_sig, ho
       ## (y is the outcome, x is the exposure)
       ## exposure and outcome sex are the same, i.e. exposure/outcome sex are irrelevant
 
-      xiyi_summary <- MR_sub %>% filter(exposure_sex==!!exposure_sex) %>% filter(outcome_ID==!!outcome_ID) %>%
+      xiyi_summary <- standard_MR_summary %>% filter(exposure_sex==!!exposure_sex) %>% filter(outcome_ID==!!outcome_ID) %>%
         dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xiyi_', names(.)))
-      xpyp_summary <- MR_sub %>% filter(outcome_sex==!!outcome_sex) %>% filter(outcome_ID==!!outcome_ID) %>%
+      xpyp_summary <- standard_MR_summary %>% filter(outcome_sex==!!outcome_sex) %>% filter(outcome_ID==!!outcome_ID) %>%
         dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xpyp_', names(.)))
+
 
 
       summary_cols <- MR_sub %>% slice(i) %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, exposure_sex, outcome_sex)
