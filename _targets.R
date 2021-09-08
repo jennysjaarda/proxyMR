@@ -514,7 +514,7 @@ list(
 
   tar_target(
     household_MR_summary_BF_sig,
-    find_sig_standard_MR_summary(household_MR_summary)
+    find_sig_household_MR_summary(household_MR_summary)
   ),
 
   tar_target(
@@ -586,12 +586,12 @@ list(
 
   tar_target(
     proxyMR_prod_comparison_fig,
-    create_proxy_prod_comparison_fig(proxyMR_figure_data)
+    create_proxy_prod_comparison_fig(proxyMR_comparison_summary)
   ),
 
   tar_target(
     proxyMR_sex_comparison_fig,
-    create_proxy_sex_comparison_fig(proxyMR_figure_data)
+    create_proxy_sex_comparison_fig(proxyMR_comparison_summary)
   ),
 
   tar_target(

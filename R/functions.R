@@ -3939,7 +3939,7 @@ forest_plot_binned_meta <- function(harmonised_data, MR_binned, group, custom_co
   fp_data <-  bin_summary %>% mutate(upper = IVW_meta_beta + IVW_meta_se) %>% mutate(lower = IVW_meta_beta - IVW_meta_se)
 
   bins <- c(bin_summary %>% pull(bin))
-  first_label <- ifelse(group=="age_even_bins", "Median age \n of couples (years)", "Time together \nin same household (years)")
+  first_label <- ifelse(group=="age_even_bins", "Median age\n of couples (years)", "Time together\nin same household (years)")
   bin_labels <- c(first_label)
 
   for(i in 1:length(bins)){
@@ -4052,7 +4052,7 @@ xy_plot_binned_sex_specifc <- function(harmonised_data, MR_binned, group, custom
                        axis.title.y = element_text(margin = unit(c(0, 3, 0, 0), "mm"))) +
 
     ggplot2::labs(colour = legend_title, x =xlab,
-                  y = paste0("AM MR estimate for ", tolower(trait_description) ," (sex specific)")) +
+                  y = paste0("AM MR estimate for\n", tolower(trait_description) ," (sex specific)")) +
     ggplot2::theme(legend.position = "right", legend.direction = "vertical") +
     ggplot2::guides(colour = ggplot2::guide_legend(ncol = 1))
 
@@ -4100,12 +4100,11 @@ xy_plot_binned_meta <- function(harmonised_data, MR_binned, group, custom_col){
                        axis.title.y = element_text(margin = unit(c(0, 3, 0, 0), "mm"))) +
 
     ggplot2::labs(colour = legend_title, x =xlab,
-                  y = paste0("AM MR estimate for ", tolower(trait_description) ," (meta-analyzed across sexes)"))
+                  y = paste0("AM MR estimate for\n", tolower(trait_description) ,"\n(meta-analyzed across sexes)"))
 
   return(plot)
 
 }
-
 
 xy_plot_binned_single_sex <- function(harmonised_data, MR_binned, exposure_sex, group, custom_col){
 
@@ -4150,7 +4149,7 @@ xy_plot_binned_single_sex <- function(harmonised_data, MR_binned, exposure_sex, 
                        axis.title.y = element_text(margin = unit(c(0, 3, 0, 0), "mm"))) +
 
     ggplot2::labs(colour = legend_title, x =xlab,
-                  y = paste0("AM MR estimate for ", tolower(trait_description) ," (", exposure_sex, "s to ", outcome_sex, "s)")) +
+                  y = paste0("AM MR estimate for\n", tolower(trait_description) ," (", exposure_sex, "s to ", outcome_sex, "s)")) +
     ggplot2::theme(legend.position = "right", legend.direction = "vertical") +
     ggplot2::guides(colour = ggplot2::guide_legend(ncol = 1))
 
