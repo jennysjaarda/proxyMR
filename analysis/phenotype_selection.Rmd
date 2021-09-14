@@ -1,0 +1,128 @@
+---
+title: "Phenotype selection"
+author: "Jenny Sjaarda"
+date: "2021-09-02"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+
+options(scipen=999)
+source("code/settings.R")
+library(targets)
+library(dplyr)
+library(DT)
+library(knitr)
+
+```
+
+```{r load_targets, include = FALSE}
+
+tar_load(data_phesant_directory)
+tar_load(Neale_SGG_dir_filt)
+tar_load(traits_corr)
+tar_load(traits_corr2)
+tar_load(traits_corr3)
+tar_load(traits_corr4)
+tar_load(traits_corr5)
+
+```
+
+**Phenotypes were selected according to the following scheme**
+
+*Note that as none of the filtering criteria apply any BF correction for the number of phenotypes, the order of the steps does not matter.*
+
+# UKBB Phenotypes in internal database processed by PHESANT.
+
+All SGG phenotypes went internal processing according the PHESANT pipeline. Some traits were excluded for various reasons (genetic trait, insufficient sample size, etc.).
+
+Number of traits initially = **`r length(unique(data_phesant_directory[,2]))`**.
+
+Traits included and their correlations amongst couples can be seen below. 
+
+```{r initial_corr, echo=FALSE}
+
+traits_corr.DT <- traits_corr %>% as_tibble() %>% mutate_all(parse_guess) %>% mutate(r = sqrt(r2))
+DT::datatable(traits_corr.DT, width = "100%") %>% formatRound(columns=c('r2', 'r'), digits = 3)
+```
+
+
+# Merge with Neale summary stats. 
+
+Limited to only traits that were processed by Neale and had both sex-specific and joint summary statistics available (most traits that were excluded did not have all 3 subgroups were not available, some other traits were excluded by the Neale group).
+
+Number remaining after filter = **`r length(unique(Neale_SGG_dir_filt$phenotype))`**.
+
+The traits that *are* in the SGG database but were **not** included due to Neale filtering can be seen below. Can compare with the [Neale Manifest](https://docs.google.com/spreadsheets/d/1kvPoupSzsSFBNSztMzl04xMoSC3Kcx3CrjVf4yBmESU/edit?ts=5b5f17db#gid=178908679) (search by ID) to get a sense of why traits were excluded (likely there is not a GWAS file for `both_sexes`, `male` and `female`).
+
+```{r SGG_Neale_non_link, echo=FALSE}
+
+## traits corr is the same dimension as (1) above
+Neale_SGG_dir_filt_unique <- Neale_SGG_dir_filt[,c("phenotype", "phenotype_sub", "sgg_phesant_name", "description", "SGG_available", "variable_type")] %>% unique()
+non_merged <- anti_join(traits_corr, Neale_SGG_dir_filt_unique, by = c("ID"="sgg_phesant_name")) %>% as_tibble() %>% mutate_all(parse_guess) %>% mutate(r = sqrt(r2))
+DT::datatable(non_merged, width = "100%") %>% formatRound(columns=c('r2', 'r'), digits = 3)
+
+```
+
+# Evidence of correlation among couples.
+
+Traits were excluded if the correlation among couples was < `r household_correlation_threshold` (i.e. $\sqrt{(r^2)}$). 
+
+Number remaining after filter = **`r dim(traits_corr2)[1]/3`**.
+
+The traits remaining after this filter can be seen below. 
+
+```{r corr_filter, echo=FALSE}
+
+traits_corr2.DT <- traits_corr2 %>% as_tibble() %>% mutate(r = sqrt(r2)) %>% dplyr::select(Neale_pheno_ID, description, variable_type, category, N_pairs, r2, r) %>% unique()
+DT::datatable(traits_corr2.DT, width = "100%") %>% formatRound(columns=c('r2', 'r'), digits = 3)
+```
+
+# Sufficient power for MR based on number of IVs.
+
+Phenotypes were excluded if the number of valid IV was < `r num_IVs_threshold`. IVs were defined based on a p-value of p < `r IV_threshold` in `both_sexes` after clumping (performed in PLINK with the options `--clump-kb 10000` and `--clump-r2 0.001` using the 1000 Genomes European samples as a reference).
+
+Number remaining after filter = **`r dim(traits_corr3$to_run)[1]`**.
+
+The traits remaining after IV filtering can be seen below. 
+
+```{r IV_filter, echo=FALSE}
+
+traits_corr3_filt <- traits_corr3$to_run 
+traits_corr3_filt.DT <- traits_corr3_filt %>% as_tibble() %>% mutate(r = sqrt(as.numeric(r2))) %>% dplyr::select(Neale_pheno_ID, description, variable_type, category, N_pairs, r2, r, num_IVs)
+DT::datatable(traits_corr3_filt.DT, width = "100%") %>% formatRound(columns=c('r2', 'r'), digits = 3)
+```
+
+# No evidence of sex-heterogeneity among valid IVs.
+
+Using the sex-specific summary statistics, heterogeneity between sexes was calculated. IVs that showed significant evidence of heterogeneity between sexes were included (p < 0.05/[number of IVs]). After filtering IVs with significant heterogeneity, phenotypes were filtered to again have IVs < `r num_IVs_threshold`.
+
+Number remaining after filter = **`r dim(traits_corr4$to_run)[1]`**.
+
+The traits remaining after sex-heterogeneity filtering can be seen below. 
+
+```{r sex_het_filter, echo=FALSE}
+
+traits_corr4_filt <- traits_corr4$to_run 
+traits_corr4_filt.DT <- traits_corr4_filt %>% as_tibble() %>% mutate(r = sqrt(as.numeric(r2))) %>% dplyr::select(Neale_pheno_ID, description, variable_type, category, N_pairs, r2, r, num_IVs, num_IVs_pass_het)
+DT::datatable(traits_corr4_filt.DT, width = "100%") %>% formatRound(columns=c('r2', 'r'), digits = 3)
+```
+
+# Non-binary. 
+
+Phenotypes were limited to `continuous_irnt` or `ordinal` (i.e. `binary` traits were removed).
+
+Number remaining after filter = **`r dim(traits_corr5)[1]`**.
+
+The traits remaining after sex-heterogeneity filtering can be seen below. 
+
+```{r continuous_filter, echo=FALSE}
+
+traits_corr5.DT <- traits_corr5 %>% as_tibble() %>% mutate(r = sqrt(as.numeric(r2))) %>% dplyr::select(Neale_pheno_ID, description, variable_type, category, N_pairs, r2, r, num_IVs, num_IVs_pass_het)
+DT::datatable(traits_corr5.DT, width = "100%") %>% formatRound(columns=c('r2', 'r'), digits = 3)
+
+```
+
+

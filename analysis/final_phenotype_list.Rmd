@@ -1,0 +1,62 @@
+---
+title: "Final phenotype list"
+author: "Jenny Sjaarda"
+date: "2021-09-02"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+
+options(scipen=999)
+source("code/settings.R")
+library(targets)
+library(dplyr)
+library(DT)
+library(knitr)
+library(plotly)
+library(ggplot2)
+
+```
+
+```{r load_targets, include = FALSE}
+
+tar_load(traits_final)
+
+```
+
+After [phenotype selection](phenotype_selection.html), `r dim(traits_final)[1]` traits remained for downstream analyses. 
+
+The final set of traits and some basic properties of interest can be seen in the table below. 
+
+```{r final_phenotypes, echo=FALSE}
+
+traits_final.DT <- traits_final %>% as_tibble() %>% mutate(r = sqrt(as.numeric(r2))) %>% dplyr::select(Neale_pheno_ID, description, variable_type, category, N_pairs, r2, r, num_IVs, num_IVs_pass_het)
+DT::datatable(traits_final.DT, width = "100%") %>% formatRound(columns=c('r2', 'r'), digits = 3)
+
+```
+
+------------------------------------------------------------------------
+
+A few summaries of various properties are show below.
+
+```{r final_phenotypes_summaries, echo = FALSE}
+variable_type_tab <- traits_final.DT %>% count(variable_type)
+category_tab <- traits_final.DT %>% count(category)
+
+knitr::kable(variable_type_tab, format = "pandoc")
+knitr::kable(category_tab, format = "pandoc")
+
+```
+
+------------------------------------------------------------------------
+
+```{r IV_freq, echo = FALSE}
+
+ggplot(traits_final.DT, aes(as.numeric(num_IVs_pass_het))) + geom_histogram(binwidth = 10, alpha=0.5) + theme_classic()  + xlab("Number of IVs") + ylab("Frequency")
+
+ggplot(traits_final.DT, aes(as.numeric(r))) + geom_histogram(binwidth = 0.01, alpha=0.5) + theme_classic()  + xlab("Correlation (r)") + ylab("Frequency")
+
+```
+
