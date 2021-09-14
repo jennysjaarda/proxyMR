@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="jennysjaarda" />
+
+<meta name="date" content="2021-09-08" />
+
+<title>To do</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">proxyMR</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="setup.html">Setup</a>
+</li>
+<li>
+  <a href="meetings.html">Update meetings</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jennysjaarda/proxyMR">
+    <span class="fa fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">To do</h1>
+<h4 class="author">jennysjaarda</h4>
+<h4 class="date">2021-09-08</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report"
+  data-toggle="collapse" data-target="#workflowr-report">
+  
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</button>
+</p>
+
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+  <li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+  <li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
+</li>
+  <li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+  <p>
+<strong>Last updated:</strong> 2021-09-14
+</p>
+  <p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 2 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
+</p>
+  <p>
+<strong>Knit directory:</strong> <code>proxyMR/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+  <p>
+  
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.2). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+  <div class="panel-group" id="workflowr-checks">
+  <div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div class="panel-body">
+  
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtreee3f688e4bbb5dbc260d535cdebebb7d9ced6ebf1targetblanke3f688ea"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/jennysjaarda/proxyMR/tree/e3f688e4bbb5dbc260d535cdebebb7d9ced6ebf1" target="_blank">e3f688e</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtreee3f688e4bbb5dbc260d535cdebebb7d9ced6ebf1targetblanke3f688ea" class="panel-collapse collapse">
+<div class="panel-body">
+  
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
+</p>
+
+<p>
+The results in this page were generated with repository version <a href="https://github.com/jennysjaarda/proxyMR/tree/e3f688e4bbb5dbc260d535cdebebb7d9ced6ebf1" target="_blank">e3f688e</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+</p>
+
+<p>
+Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    FP_data.RData
+    Ignored:    _targets/
+    Ignored:    analysis/bgenie_GWAS/
+    Ignored:    analysis/data_setup/
+    Ignored:    analysis/process_Neale.out
+    Ignored:    analysis/traitMR/
+    Ignored:    data/Neale_SGG_directory_12_07_2021.csv
+    Ignored:    data/Neale_SGG_directory_15_07_2021.csv
+    Ignored:    data/processed/
+    Ignored:    data/raw/
+    Ignored:    household_MR_exhaustive_summary.rds
+    Ignored:    output/figures/
+    Ignored:    output/tables/traitMR/
+    Ignored:    proxyMR_comparison.RData
+    Ignored:    proxyMR_figure_data.RData
+    Ignored:    proxymr_100_clustermq.out
+    Ignored:    proxymr_101_clustermq.out
+    Ignored:    proxymr_102_clustermq.out
+    Ignored:    proxymr_103_clustermq.out
+    Ignored:    proxymr_104_clustermq.out
+    Ignored:    proxymr_105_clustermq.out
+    Ignored:    proxymr_106_clustermq.out
+    Ignored:    proxymr_107_clustermq.out
+    Ignored:    proxymr_108_clustermq.out
+    Ignored:    proxymr_109_clustermq.out
+    Ignored:    proxymr_10_clustermq.out
+    Ignored:    proxymr_110_clustermq.out
+    Ignored:    proxymr_111_clustermq.out
+    Ignored:    proxymr_112_clustermq.out
+    Ignored:    proxymr_113_clustermq.out
+    Ignored:    proxymr_114_clustermq.out
+    Ignored:    proxymr_115_clustermq.out
+    Ignored:    proxymr_116_clustermq.out
+    Ignored:    proxymr_117_clustermq.out
+    Ignored:    proxymr_118_clustermq.out
+    Ignored:    proxymr_119_clustermq.out
+    Ignored:    proxymr_11_clustermq.out
+    Ignored:    proxymr_120_clustermq.out
+    Ignored:    proxymr_121_clustermq.out
+    Ignored:    proxymr_122_clustermq.out
+    Ignored:    proxymr_123_clustermq.out
+    Ignored:    proxymr_124_clustermq.out
+    Ignored:    proxymr_125_clustermq.out
+    Ignored:    proxymr_126_clustermq.out
+    Ignored:    proxymr_127_clustermq.out
+    Ignored:    proxymr_128_clustermq.out
+    Ignored:    proxymr_129_clustermq.out
+    Ignored:    proxymr_12_clustermq.out
+    Ignored:    proxymr_130_clustermq.out
+    Ignored:    proxymr_131_clustermq.out
+    Ignored:    proxymr_132_clustermq.out
+    Ignored:    proxymr_133_clustermq.out
+    Ignored:    proxymr_134_clustermq.out
+    Ignored:    proxymr_135_clustermq.out
+    Ignored:    proxymr_136_clustermq.out
+    Ignored:    proxymr_137_clustermq.out
+    Ignored:    proxymr_138_clustermq.out
+    Ignored:    proxymr_139_clustermq.out
+    Ignored:    proxymr_13_clustermq.out
+    Ignored:    proxymr_140_clustermq.out
+    Ignored:    proxymr_14_clustermq.out
+    Ignored:    proxymr_15_clustermq.out
+    Ignored:    proxymr_16_clustermq.out
+    Ignored:    proxymr_17_clustermq.out
+    Ignored:    proxymr_18_clustermq.out
+    Ignored:    proxymr_19_clustermq.out
+    Ignored:    proxymr_1_clustermq.out
+    Ignored:    proxymr_20_clustermq.out
+    Ignored:    proxymr_21_clustermq.out
+    Ignored:    proxymr_22_clustermq.out
+    Ignored:    proxymr_23_clustermq.out
+    Ignored:    proxymr_24_clustermq.out
+    Ignored:    proxymr_25_clustermq.out
+    Ignored:    proxymr_26_clustermq.out
+    Ignored:    proxymr_27_clustermq.out
+    Ignored:    proxymr_28_clustermq.out
+    Ignored:    proxymr_29_clustermq.out
+    Ignored:    proxymr_2_clustermq.out
+    Ignored:    proxymr_30_clustermq.out
+    Ignored:    proxymr_31_clustermq.out
+    Ignored:    proxymr_32_clustermq.out
+    Ignored:    proxymr_33_clustermq.out
+    Ignored:    proxymr_34_clustermq.out
+    Ignored:    proxymr_35_clustermq.out
+    Ignored:    proxymr_36_clustermq.out
+    Ignored:    proxymr_37_clustermq.out
+    Ignored:    proxymr_38_clustermq.out
+    Ignored:    proxymr_39_clustermq.out
+    Ignored:    proxymr_3_clustermq.out
+    Ignored:    proxymr_40_clustermq.out
+    Ignored:    proxymr_41_clustermq.out
+    Ignored:    proxymr_42_clustermq.out
+    Ignored:    proxymr_43_clustermq.out
+    Ignored:    proxymr_44_clustermq.out
+    Ignored:    proxymr_45_clustermq.out
+    Ignored:    proxymr_46_clustermq.out
+    Ignored:    proxymr_47_clustermq.out
+    Ignored:    proxymr_48_clustermq.out
+    Ignored:    proxymr_49_clustermq.out
+    Ignored:    proxymr_4_clustermq.out
+    Ignored:    proxymr_50_clustermq.out
+    Ignored:    proxymr_51_clustermq.out
+    Ignored:    proxymr_52_clustermq.out
+    Ignored:    proxymr_53_clustermq.out
+    Ignored:    proxymr_54_clustermq.out
+    Ignored:    proxymr_55_clustermq.out
+    Ignored:    proxymr_56_clustermq.out
+    Ignored:    proxymr_57_clustermq.out
+    Ignored:    proxymr_58_clustermq.out
+    Ignored:    proxymr_59_clustermq.out
+    Ignored:    proxymr_5_clustermq.out
+    Ignored:    proxymr_60_clustermq.out
+    Ignored:    proxymr_61_clustermq.out
+    Ignored:    proxymr_62_clustermq.out
+    Ignored:    proxymr_63_clustermq.out
+    Ignored:    proxymr_64_clustermq.out
+    Ignored:    proxymr_65_clustermq.out
+    Ignored:    proxymr_66_clustermq.out
+    Ignored:    proxymr_67_clustermq.out
+    Ignored:    proxymr_68_clustermq.out
+    Ignored:    proxymr_69_clustermq.out
+    Ignored:    proxymr_6_clustermq.out
+    Ignored:    proxymr_70_clustermq.out
+    Ignored:    proxymr_71_clustermq.out
+    Ignored:    proxymr_72_clustermq.out
+    Ignored:    proxymr_73_clustermq.out
+    Ignored:    proxymr_74_clustermq.out
+    Ignored:    proxymr_75_clustermq.out
+    Ignored:    proxymr_76_clustermq.out
+    Ignored:    proxymr_77_clustermq.out
+    Ignored:    proxymr_78_clustermq.out
+    Ignored:    proxymr_79_clustermq.out
+    Ignored:    proxymr_7_clustermq.out
+    Ignored:    proxymr_80_clustermq.out
+    Ignored:    proxymr_81_clustermq.out
+    Ignored:    proxymr_82_clustermq.out
+    Ignored:    proxymr_83_clustermq.out
+    Ignored:    proxymr_84_clustermq.out
+    Ignored:    proxymr_85_clustermq.out
+    Ignored:    proxymr_86_clustermq.out
+    Ignored:    proxymr_87_clustermq.out
+    Ignored:    proxymr_88_clustermq.out
+    Ignored:    proxymr_89_clustermq.out
+    Ignored:    proxymr_8_clustermq.out
+    Ignored:    proxymr_90_clustermq.out
+    Ignored:    proxymr_91_clustermq.out
+    Ignored:    proxymr_92_clustermq.out
+    Ignored:    proxymr_93_clustermq.out
+    Ignored:    proxymr_94_clustermq.out
+    Ignored:    proxymr_95_clustermq.out
+    Ignored:    proxymr_96_clustermq.out
+    Ignored:    proxymr_97_clustermq.out
+    Ignored:    proxymr_98_clustermq.out
+    Ignored:    proxymr_99_clustermq.out
+    Ignored:    proxymr_9_clustermq.out
+    Ignored:    renv/library/
+    Ignored:    renv/staging/
+    Ignored:    traits_corr2_update.rds
+
+Untracked files:
+    Untracked:  Rplots.pdf
+    Untracked:  analysis/figures_scratch.Rmd
+    Untracked:  analysis/final_phenotype_list.Rmd
+    Untracked:  analysis/group_meeting_pres_figures_080921.Rmd
+    Untracked:  analysis/latex_test2.Rmd
+    Untracked:  analysis/phenotype_selection.Rmd
+    Untracked:  output/tables/household_correlations.final_filter.csv
+
+Unstaged changes:
+    Modified:   analysis/update_meeting_06_09_2021.Rmd
+    Modified:   analysis/update_meeting_25_08_2021.Rmd
+    Modified:   output/tables/define_Neale_categories.csv
+    Modified:   output/tables/define_Neale_categories_filled.csv
+
+</code></pre>
+
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+  
+<p>
+These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/todo_list.Rmd</code>) and HTML (<code>docs/todo_list.html</code>) files. If you've configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/jennysjaarda/proxyMR/blob/f8ee7b487f55fa210eadc95d245f887f4b95ff22/analysis/todo_list.Rmd" target="_blank">f8ee7b4</a>
+</td>
+<td>
+jennysjaarda
+</td>
+<td>
+2021-09-14
+</td>
+<td>
+add a few Rmd notebooks
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<hr>
+</div>
+</div>
+</div>
+
+
+
+
+<div id="section" class="section level1">
+<h1><span class="header-section-number">1</span> 06/09/2021</h1>
+<ul>
+<li><del>Sum <span class="math">\(\rho\)</span> and <span class="math">\(\gamma\)</span>.</del></li>
+<li><del>Meta-analyzed binned results across sexes.</del></li>
+<li><del>Fix variance calculation mistake in calculating <span class="math">\(\rho\)</span> and <span class="math">\(\gamma\)</span>.</del></li>
+<li><del>Write script/function which replaces <code>Neale_ID</code> with trait description.</del></li>
+<li>Clean up <code>index.Rmd</code></li>
+<li>Clean up <code>about.Rmd</code></li>
+<li>Add Rmd building to <code>targets</code> pipeline.</li>
+<li>MVMR.</li>
+<li>AM MR summary Rmd.</li>
+<li>PC correlation among couples summary Rmd.</li>
+<li>Clean up update meeting Rmd.</li>
+</ul>
+</div>
+<div id="section-1" class="section level1">
+<h1><span class="header-section-number">2</span> 08/09/2021</h1>
+<ul>
+<li><del>Weight trend line by inverse variance.</del></li>
+<li>Update AF in Neale summary stats.</li>
+<li>Create couple selection Rmd.</li>
+<li>Number of tests for filtering by <span class="math">\(\omega\)</span> should exclude those with only one trait. (i.e. number of tests would be <span class="math">\(j^2 - j\)</span>).</li>
+<li><del>Filter by <span class="math">\(\omega\)</span> instead of same-person MR.</del></li>
+<li>Force intercept through 0 in omega vs gamma/rho plot.</li>
+<li>Explore impact of meta-anlaysis at SNP/trait level vs. MR-level.</li>
+<li>Meta-analyze standard MR SNP/trait estimates across sexes.</li>
+<li>Hierarchy figure (add labels).</li>
+<li>Make visio figures in LucidChart.</li>
+<li>Explore IV overlap between X and Y:
+<ul>
+<li>Determine percentage of IV overlap between X IVs and Y IVs.</li>
+<li>MV MR, add SNPs/trait effect from <span class="math">\(X_{i} \rightarrow Y_{p}\)</span> to <span class="math">\(Y_{i} \rightarrow Y_{p}\)</span> MR (i.e. run a MV MR of the form: <span class="math">\(Y_{p} \sim Y_{i} + X_{i}\)</span>).</li>
+</ul></li>
+<li>Add script/function which replaces <code>Neale_ID</code> with trait description to main functions.</li>
+</ul>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
