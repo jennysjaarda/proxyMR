@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Jenny Sjaarda" />
+
+<meta name="date" content="2021-09-02" />
+
+<title>Final phenotype list</title>
+
+<script src="site_libs/jquery-3.5.1/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.5.3/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.18.1/datatables.js"></script>
+<link href="site_libs/dt-core-1.10.20/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.10.20/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.10.20/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.1.1/css/crosstalk.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.1.1/js/crosstalk.min.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">proxyMR</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="setup.html">Setup</a>
+</li>
+<li>
+  <a href="meetings.html">Update meetings</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jennysjaarda/proxyMR">
+    <span class="fa fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Final phenotype list</h1>
+<h4 class="author">Jenny Sjaarda</h4>
+<h4 class="date">2021-09-02</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report"
+  data-toggle="collapse" data-target="#workflowr-report">
+  
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</button>
+</p>
+
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+  <li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+  <li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
+</li>
+  <li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+  <p>
+<strong>Last updated:</strong> 2021-09-14
+</p>
+  <p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
+</p>
+  <p>
+<strong>Knit directory:</strong> <code>proxyMR/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+  <p>
+  
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.2). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+  <div class="panel-group" id="workflowr-checks">
+  <div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div class="panel-body">
+  
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+  
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it's best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20210602code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20210602)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20210602code" class="panel-collapse collapse">
+<div class="panel-body">
+  
+<p>The command <code>set.seed(20210602)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+  
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+  
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+  
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtree5afdbdc048a5ca1c87d7d67d85fd9978055ba868targetblank5afdbdca"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/jennysjaarda/proxyMR/tree/5afdbdc048a5ca1c87d7d67d85fd9978055ba868" target="_blank">5afdbdc</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtree5afdbdc048a5ca1c87d7d67d85fd9978055ba868targetblank5afdbdca" class="panel-collapse collapse">
+<div class="panel-body">
+  
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
+</p>
+
+<p>
+The results in this page were generated with repository version <a href="https://github.com/jennysjaarda/proxyMR/tree/5afdbdc048a5ca1c87d7d67d85fd9978055ba868" target="_blank">5afdbdc</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+</p>
+
+<p>
+Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    FP_data.RData
+    Ignored:    _targets/
+    Ignored:    analysis/bgenie_GWAS/
+    Ignored:    analysis/data_setup/
+    Ignored:    analysis/process_Neale.out
+    Ignored:    analysis/traitMR/
+    Ignored:    data/Neale_SGG_directory_12_07_2021.csv
+    Ignored:    data/Neale_SGG_directory_15_07_2021.csv
+    Ignored:    data/processed/
+    Ignored:    data/raw/
+    Ignored:    household_MR_exhaustive_summary.rds
+    Ignored:    output/figures/
+    Ignored:    output/tables/traitMR/
+    Ignored:    proxyMR_comparison.RData
+    Ignored:    proxyMR_figure_data.RData
+    Ignored:    proxymr_100_clustermq.out
+    Ignored:    proxymr_101_clustermq.out
+    Ignored:    proxymr_102_clustermq.out
+    Ignored:    proxymr_103_clustermq.out
+    Ignored:    proxymr_104_clustermq.out
+    Ignored:    proxymr_105_clustermq.out
+    Ignored:    proxymr_106_clustermq.out
+    Ignored:    proxymr_107_clustermq.out
+    Ignored:    proxymr_108_clustermq.out
+    Ignored:    proxymr_109_clustermq.out
+    Ignored:    proxymr_10_clustermq.out
+    Ignored:    proxymr_110_clustermq.out
+    Ignored:    proxymr_111_clustermq.out
+    Ignored:    proxymr_112_clustermq.out
+    Ignored:    proxymr_113_clustermq.out
+    Ignored:    proxymr_114_clustermq.out
+    Ignored:    proxymr_115_clustermq.out
+    Ignored:    proxymr_116_clustermq.out
+    Ignored:    proxymr_117_clustermq.out
+    Ignored:    proxymr_118_clustermq.out
+    Ignored:    proxymr_119_clustermq.out
+    Ignored:    proxymr_11_clustermq.out
+    Ignored:    proxymr_120_clustermq.out
+    Ignored:    proxymr_121_clustermq.out
+    Ignored:    proxymr_122_clustermq.out
+    Ignored:    proxymr_123_clustermq.out
+    Ignored:    proxymr_124_clustermq.out
+    Ignored:    proxymr_125_clustermq.out
+    Ignored:    proxymr_126_clustermq.out
+    Ignored:    proxymr_127_clustermq.out
+    Ignored:    proxymr_128_clustermq.out
+    Ignored:    proxymr_129_clustermq.out
+    Ignored:    proxymr_12_clustermq.out
+    Ignored:    proxymr_130_clustermq.out
+    Ignored:    proxymr_131_clustermq.out
+    Ignored:    proxymr_132_clustermq.out
+    Ignored:    proxymr_133_clustermq.out
+    Ignored:    proxymr_134_clustermq.out
+    Ignored:    proxymr_135_clustermq.out
+    Ignored:    proxymr_136_clustermq.out
+    Ignored:    proxymr_137_clustermq.out
+    Ignored:    proxymr_138_clustermq.out
+    Ignored:    proxymr_139_clustermq.out
+    Ignored:    proxymr_13_clustermq.out
+    Ignored:    proxymr_140_clustermq.out
+    Ignored:    proxymr_14_clustermq.out
+    Ignored:    proxymr_15_clustermq.out
+    Ignored:    proxymr_16_clustermq.out
+    Ignored:    proxymr_17_clustermq.out
+    Ignored:    proxymr_18_clustermq.out
+    Ignored:    proxymr_19_clustermq.out
+    Ignored:    proxymr_1_clustermq.out
+    Ignored:    proxymr_20_clustermq.out
+    Ignored:    proxymr_21_clustermq.out
+    Ignored:    proxymr_22_clustermq.out
+    Ignored:    proxymr_23_clustermq.out
+    Ignored:    proxymr_24_clustermq.out
+    Ignored:    proxymr_25_clustermq.out
+    Ignored:    proxymr_26_clustermq.out
+    Ignored:    proxymr_27_clustermq.out
+    Ignored:    proxymr_28_clustermq.out
+    Ignored:    proxymr_29_clustermq.out
+    Ignored:    proxymr_2_clustermq.out
+    Ignored:    proxymr_30_clustermq.out
+    Ignored:    proxymr_31_clustermq.out
+    Ignored:    proxymr_32_clustermq.out
+    Ignored:    proxymr_33_clustermq.out
+    Ignored:    proxymr_34_clustermq.out
+    Ignored:    proxymr_35_clustermq.out
+    Ignored:    proxymr_36_clustermq.out
+    Ignored:    proxymr_37_clustermq.out
+    Ignored:    proxymr_38_clustermq.out
+    Ignored:    proxymr_39_clustermq.out
+    Ignored:    proxymr_3_clustermq.out
+    Ignored:    proxymr_40_clustermq.out
+    Ignored:    proxymr_41_clustermq.out
+    Ignored:    proxymr_42_clustermq.out
+    Ignored:    proxymr_43_clustermq.out
+    Ignored:    proxymr_44_clustermq.out
+    Ignored:    proxymr_45_clustermq.out
+    Ignored:    proxymr_46_clustermq.out
+    Ignored:    proxymr_47_clustermq.out
+    Ignored:    proxymr_48_clustermq.out
+    Ignored:    proxymr_49_clustermq.out
+    Ignored:    proxymr_4_clustermq.out
+    Ignored:    proxymr_50_clustermq.out
+    Ignored:    proxymr_51_clustermq.out
+    Ignored:    proxymr_52_clustermq.out
+    Ignored:    proxymr_53_clustermq.out
+    Ignored:    proxymr_54_clustermq.out
+    Ignored:    proxymr_55_clustermq.out
+    Ignored:    proxymr_56_clustermq.out
+    Ignored:    proxymr_57_clustermq.out
+    Ignored:    proxymr_58_clustermq.out
+    Ignored:    proxymr_59_clustermq.out
+    Ignored:    proxymr_5_clustermq.out
+    Ignored:    proxymr_60_clustermq.out
+    Ignored:    proxymr_61_clustermq.out
+    Ignored:    proxymr_62_clustermq.out
+    Ignored:    proxymr_63_clustermq.out
+    Ignored:    proxymr_64_clustermq.out
+    Ignored:    proxymr_65_clustermq.out
+    Ignored:    proxymr_66_clustermq.out
+    Ignored:    proxymr_67_clustermq.out
+    Ignored:    proxymr_68_clustermq.out
+    Ignored:    proxymr_69_clustermq.out
+    Ignored:    proxymr_6_clustermq.out
+    Ignored:    proxymr_70_clustermq.out
+    Ignored:    proxymr_71_clustermq.out
+    Ignored:    proxymr_72_clustermq.out
+    Ignored:    proxymr_73_clustermq.out
+    Ignored:    proxymr_74_clustermq.out
+    Ignored:    proxymr_75_clustermq.out
+    Ignored:    proxymr_76_clustermq.out
+    Ignored:    proxymr_77_clustermq.out
+    Ignored:    proxymr_78_clustermq.out
+    Ignored:    proxymr_79_clustermq.out
+    Ignored:    proxymr_7_clustermq.out
+    Ignored:    proxymr_80_clustermq.out
+    Ignored:    proxymr_81_clustermq.out
+    Ignored:    proxymr_82_clustermq.out
+    Ignored:    proxymr_83_clustermq.out
+    Ignored:    proxymr_84_clustermq.out
+    Ignored:    proxymr_85_clustermq.out
+    Ignored:    proxymr_86_clustermq.out
+    Ignored:    proxymr_87_clustermq.out
+    Ignored:    proxymr_88_clustermq.out
+    Ignored:    proxymr_89_clustermq.out
+    Ignored:    proxymr_8_clustermq.out
+    Ignored:    proxymr_90_clustermq.out
+    Ignored:    proxymr_91_clustermq.out
+    Ignored:    proxymr_92_clustermq.out
+    Ignored:    proxymr_93_clustermq.out
+    Ignored:    proxymr_94_clustermq.out
+    Ignored:    proxymr_95_clustermq.out
+    Ignored:    proxymr_96_clustermq.out
+    Ignored:    proxymr_97_clustermq.out
+    Ignored:    proxymr_98_clustermq.out
+    Ignored:    proxymr_99_clustermq.out
+    Ignored:    proxymr_9_clustermq.out
+    Ignored:    renv/library/
+    Ignored:    renv/staging/
+    Ignored:    traits_corr2_update.rds
+
+Untracked files:
+    Untracked:  Rplots.pdf
+    Untracked:  analysis/figures_scratch.Rmd
+    Untracked:  analysis/group_meeting_pres_figures_080921.Rmd
+    Untracked:  analysis/latex_test2.Rmd
+    Untracked:  output/tables/household_correlations.final_filter.csv
+
+Unstaged changes:
+    Modified:   analysis/update_meeting_06_09_2021.Rmd
+    Modified:   analysis/update_meeting_25_08_2021.Rmd
+    Modified:   output/tables/define_Neale_categories.csv
+    Modified:   output/tables/define_Neale_categories_filled.csv
+
+</code></pre>
+
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+  
+<p>
+These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/final_phenotype_list.Rmd</code>) and HTML (<code>docs/final_phenotype_list.html</code>) files. If you've configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/jennysjaarda/proxyMR/blob/5afdbdc048a5ca1c87d7d67d85fd9978055ba868/analysis/final_phenotype_list.Rmd" target="_blank">5afdbdc</a>
+</td>
+<td>
+Jenny Sjaarda
+</td>
+<td>
+2021-09-14
+</td>
+<td>
+update some docs
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<hr>
+</div>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+<p>After <a href="phenotype_selection.html">phenotype selection</a>, 131 traits remained for downstream analyses.</p>
+<p>The final set of traits and some basic properties of interest can be seen in the table below.</p>
+<div id="htmlwidget-3b7a1c78308eb781be0a" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3b7a1c78308eb781be0a">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100","101","102","103","104","105","106","107","108","109","110","111","112","113","114","115","116","117","118","119","120","121","122","123","124","125","126","127","128","129","130","131"],["100630","100720","102280","102290","102440","102830","102840","1050","1060","1070","1080","1100","1110","1160","1180","1190","12340_irnt","1239","1249","1289","129_irnt","1299","130_irnt","1309","1319","1329","1339","1349","1369","137","1379","1389","1408","1438_irnt","1458","1478","1488_irnt","1498","1528","1548","1558","1568","1588","1628","1697","20015_irnt","20016_irnt","20023_irnt","20150_irnt","20151_irnt","20153_irnt","20154_irnt","2050","2080","21001_irnt","2149","2178","22146_irnt","2237","22702_irnt","22704_irnt","23099_irnt","23100_irnt","23101_irnt","23102_irnt","23104_irnt","23105_irnt","23106_irnt","23107_irnt","23109_irnt","23110_irnt","23111_irnt","23112_irnt","23113_irnt","23114_irnt","23115_irnt","23116_irnt","23117_irnt","23118_irnt","23119_irnt","23120_irnt","23121_irnt","23122_irnt","23123_irnt","23124_irnt","23125_irnt","23126_irnt","23128_irnt","23129_irnt","23130_irnt","2966_irnt","2976_irnt","30000_irnt","30010_irnt","30020_irnt","30030_irnt","30040_irnt","30050_irnt","30060_irnt","30070_irnt","30120_irnt","30140_irnt","30160","30220_irnt","30240_irnt","30250_irnt","30260_irnt","30270_irnt","30280_irnt","30290_irnt","30300_irnt","3062_irnt","3063_irnt","400_irnt","404_irnt","4080_irnt","4290_irnt","46_irnt","47_irnt","49_irnt","50_irnt","738","806","816","845","864","874_irnt","884","904","924","943"],["Rose wine intake","Fortified wine intake","Milk chocolate intake","Dark chocolate intake","Unsalted nuts intake","Soft cheese intake","Blue cheese intake","Time spend outdoors in summer","Time spent outdoors in winter","Time spent watching television (TV)","Time spent using computer","Drive faster than motorway speed limit","Length of mobile phone use","Sleep duration","Morning/evening person (chronotype)","Nap during day","QRS duration","Current tobacco smoking","Past tobacco smoking","Cooked vegetable intake","Place of birth in UK - north co-ordinate","Salad / raw vegetable intake","Place of birth in UK - east co-ordinate","Fresh fruit intake","Dried fruit intake","Oily fish intake","Non-oily fish intake","Processed meat intake","Beef intake","Number of treatments/medications taken","Lamb/mutton intake","Pork intake","Cheese intake","Bread intake","Cereal intake","Salt added to food","Tea intake","Coffee intake","Water intake","Variation in diet","Alcohol intake frequency.","Average weekly red wine intake","Average weekly beer plus cider intake","Alcohol intake versus 10 years previously","Comparative height size at age 10","Sitting height","Fluid intelligence score","Mean time to correctly identify matches","Forced expiratory volume in 1-second (FEV1), Best measure","Forced vital capacity (FVC), Best measure","Forced expiratory volume in 1-second (FEV1), predicted","Forced expiratory volume in 1-second (FEV1), predicted percentage","Frequency of depressed mood in last 2 weeks","Frequency of tiredness / lethargy in last 2 weeks","Body mass index (BMI)","Lifetime number of sexual partners","Overall health rating","Age hayfever or allergic rhinitis diagnosed by doctor","Plays computer games","Home location - east co-ordinate (rounded)","Home location - north co-ordinate (rounded)","Body fat percentage","Whole body fat mass","Whole body fat-free mass","Whole body water mass","Body mass index (BMI)","Basal metabolic rate","Impedance of whole body","Impedance of leg (right)","Impedance of arm (right)","Impedance of arm (left)","Leg fat percentage (right)","Leg fat mass (right)","Leg fat-free mass (right)","Leg predicted mass (right)","Leg fat percentage (left)","Leg fat mass (left)","Leg fat-free mass (left)","Leg predicted mass (left)","Arm fat percentage (right)","Arm fat mass (right)","Arm fat-free mass (right)","Arm predicted mass (right)","Arm fat percentage (left)","Arm fat mass (left)","Arm fat-free mass (left)","Arm predicted mass (left)","Trunk fat mass","Trunk fat-free mass","Trunk predicted mass","Age high blood pressure diagnosed","Age diabetes diagnosed","White blood cell (leukocyte) count","Red blood cell (erythrocyte) count","Haemoglobin concentration","Haematocrit percentage","Mean corpuscular volume","Mean corpuscular haemoglobin","Mean corpuscular haemoglobin concentration","Red blood cell (erythrocyte) distribution width","Lymphocyte count","Neutrophill count","Basophill count","Basophill percentage","Reticulocyte percentage","Reticulocyte count","Mean reticulocyte volume","Mean sphered cell volume","Immature reticulocyte fraction","High light scatter reticulocyte percentage","High light scatter reticulocyte count","Forced vital capacity (FVC)","Forced expiratory volume in 1-second (FEV1)","Time to complete round","Duration to first press of snap-button in each round","Systolic blood pressure, automated reading","Duration screen displayed","Hand grip strength (left)","Hand grip strength (right)","Hip circumference","Standing height","Average total household income before tax","Job involves mainly walking or standing","Job involves heavy manual or physical work","Age completed full time education","Number of days/week walked 10+ minutes","Duration of walks","Number of days/week of moderate physical activity 10+ minutes","Number of days/week of vigorous physical activity 10+ minutes","Usual walking pace","Frequency of stair climbing in last 4 weeks"],["ordinal","ordinal","ordinal","ordinal","ordinal","ordinal","ordinal","ordinal","ordinal","ordinal","ordinal","ordinal","ordinal","ordinal","ordinal","ordinal","continuous_irnt","ordinal","ordinal","ordinal","continuous_irnt","ordinal","continuous_irnt","ordinal","ordinal","ordinal","ordinal","ordinal","ordinal","ordinal","ordinal","ordinal","ordinal","continuous_irnt","ordinal","ordinal","continuous_irnt","ordinal","ordinal","ordinal","ordinal","ordinal","ordinal","ordinal","ordinal","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","ordinal","ordinal","continuous_irnt","ordinal","ordinal","continuous_irnt","ordinal","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","ordinal","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","continuous_irnt","ordinal","ordinal","ordinal","ordinal","ordinal","continuous_irnt","ordinal","ordinal","ordinal","ordinal"],["diet","diet","diet","diet","diet","diet","diet","lifestyle","lifestyle","lifestyle","lifestyle","lifestyle","lifestyle","lifestyle","lifestyle","lifestyle","disease_proxy","lifestyle","lifestyle","diet","lifestyle","diet","lifestyle","diet","diet","diet","diet","diet","diet","disease_proxy","diet","diet","diet","diet","diet","diet","diet","diet","diet","diet","lifestyle","lifestyle","lifestyle","lifestyle","body","body","lifestyle","lifestyle","disease_proxy","disease_proxy","disease_proxy","disease_proxy","disease_proxy","disease_proxy","body","lifestyle","disease_proxy","disease","lifestyle","lifestyle","lifestyle","body","body","body","body","body","body","body","body","body","body","body","body","body","body","body","body","body","body","body","body","body","body","body","body","body","body","body","body","body","disease_proxy","disease_proxy","disease_proxy","disease_proxy","disease_proxy","diet","disease_proxy","disease_proxy","disease_proxy","disease_proxy","disease_proxy","disease_proxy","disease_proxy","disease_proxy","disease_proxy","disease_proxy","disease_proxy","disease_proxy","disease_proxy","disease_proxy","disease_proxy","disease_proxy","disease_proxy","lifestyle","lifestyle","disease_proxy","lifestyle","body","body","body","body","lifestyle","lifestyle","lifestyle","lifestyle","lifestyle","lifestyle","lifestyle","lifestyle","lifestyle","lifestyle"],["8266","8263","8266","8262","8266","8266","8265","63421","48288","69054","44952","62981","73227","74394","59982","74999","4337","74967","67775","71947","70512","66618","70512","70065","62958","74380","74578","74862","74640","75023","74332","74404","72053","72442","69566","75023","71223","65309","63582","74710","74961","47796","47883","66977","72928","74763","23514","74195","44547","44547","8551","8551","69172","70811","74679","55186","74646","463","74991","75030","75030","72713","72624","72766","72773","72773","72771","72762","72772","72764","72768","72772","72771","72770","72769","72767","72766","72755","72751","72750","72746","72739","72737","72732","72720","72718","72713","72695","72658","72640","5359","259","71229","71230","71230","71230","71229","71229","71229","71229","71093","71093","71093","71094","69894","69894","69894","69894","69894","69894","69894","63050","63050","72750","74212","69456","24470","74516","74519","74836","74795","57142","30873","30878","43220","72429","54753","67886","68049","74257","73883"],["0.0922840196558126","0.117490113415998","0.016448677911766","0.0122090287587049","0.0273976995326816","0.0546145108132133","0.0302172689201366","0.0440683222461897","0.0120051627350722","0.129825001160989","0.0125246024046728","0.0187449993281087","0.0625707302134609","0.0127972727883262","0.01425408442136","0.0104574353443531","0.0134064379178707","0.0636624641341572","0.0383202867752661","0.0748037860421296","0.352473183620446","0.0418105785288404","0.225352581182096","0.0281029415049592","0.0759092214206806","0.123070394530199","0.0852869788808505","0.0378878019518565","0.168419493974539","0.033551042889334","0.191519972984346","0.142826364736203","0.0747211020577854","0.0212530071271025","0.103270437138124","0.0528767417660657","0.0650138361750729","0.0334613827899832","0.0174435467901","0.0103177556218652","0.203123146225791","0.156427242826228","0.0273032385764867","0.0648581910332382","0.0141027357765363","0.0904659619144025","0.0401023930142044","0.0132159343461819","0.0265670457094765","0.0649999449419508","0.159486660443171","0.0146269683049709","0.0110949575262655","0.0138952453280985","0.0532009744433723","0.198035049644089","0.0223562096868708","0.0204638169733123","0.0365904923896149","0.977793232140547","0.981565376386421","0.0862932917570949","0.0327713034522631","0.29526834350323","0.29391301202521","0.0526905979431931","0.245757929388727","0.149838284013783","0.0131211592746428","0.229960581564538","0.226871771736116","0.262013668131244","0.0455950935166192","0.251587603289365","0.258046697196772","0.276074940531636","0.0544875850980536","0.251698761864576","0.258264238755764","0.107622830199054","0.0281970583422085","0.30911824088257","0.311923156630442","0.114298096231511","0.0278932036249803","0.291706457370028","0.294895411774078","0.0579630640038957","0.310296563759527","0.312891210601963","0.0434473980724707","0.0979116988534587","0.0248025544171646","0.033795274610522","0.0934064689546379","0.0563069866077741","0.0211184511959847","0.0161644371907621","0.205196824250338","0.0107097251874439","0.0157318936970288","0.0151287214851749","0.220149529744413","0.0104615919302693","0.0321747064983078","0.023004561391709","0.0399750378840475","0.0853116406106133","0.0387788311200344","0.0264611481188514","0.0215202418421699","0.054510347693815","0.0225419373910677","0.0158938650290012","0.0133566202689238","0.0173848889412798","0.0239575118599313","0.185612968103578","0.179894822761125","0.0349104652048477","0.141196564794588","0.778734939731751","0.0198111014378687","0.0160063292727281","0.104070759384423","0.0343353867950446","0.0283178015919158","0.0121852720425099","0.0230259771453837","0.0106746216537824","0.165005837731399"],[0.303782849509008,0.342768308651774,0.128252399243702,0.110494473883108,0.165522504610949,0.233697477122055,0.1738311506035,0.209924563227341,0.109568073520858,0.360312366095016,0.111913370088979,0.136912378286657,0.250141420427447,0.113125031661106,0.119390470395924,0.102261602492593,0.115786173258601,0.252314217067048,0.195755681335858,0.273502808106479,0.593694520456814,0.204476352003943,0.474713156740042,0.16763931968652,0.275516281589093,0.350813902988748,0.292039344748016,0.194647892235843,0.410389441840965,0.183169437650865,0.437629949825587,0.377923755189063,0.273351608844333,0.145784111367126,0.321357180000889,0.229949433063153,0.254978109207581,0.182924527578953,0.132074020117887,0.101576353655096,0.450691852850471,0.395508840389476,0.16523691650623,0.254672713562404,0.118754940008979,0.300775600596861,0.200255818927202,0.114960577356683,0.162994005133552,0.254950867701898,0.399357810044039,0.120942003890174,0.105332604288822,0.117878095200502,0.23065336425765,0.445011291591673,0.149519930734571,0.143051798217682,0.191286414545348,0.988834279412151,0.99073981265841,0.293757198647276,0.181028460337769,0.543385998626418,0.542137447540022,0.229544326750179,0.495739779913542,0.387089503879636,0.114547628847754,0.479542054010426,0.476310583271164,0.51187270696067,0.21353007637478,0.501585090776595,0.507982969396388,0.525428340053747,0.233425759285589,0.501695885835808,0.508197047173401,0.328059187036507,0.167919797350427,0.555984029341284,0.55850081166498,0.338080014540214,0.167012585229318,0.54009856264392,0.543042734758581,0.240755195175298,0.557042694736702,0.55936679433263,0.208440394531556,0.312908451233677,0.157488267554014,0.183834911294134,0.305624719148563,0.237290932417937,0.145321888220545,0.127139439949852,0.452986560783361,0.103487802119109,0.125426845998091,0.122998867820704,0.469200948149525,0.102281923770866,0.179373093016505,0.151672546598615,0.199937584971029,0.292081564996172,0.196923414351962,0.162668829585915,0.146697790856474,0.233474511871885,0.150139726225499,0.126070873039736,0.115570845237559,0.131851768821202,0.1547821432205,0.430828235035238,0.424140098034983,0.186843424301868,0.375761313594931,0.882459596656839,0.140751914508715,0.1265161225802,0.322599999045913,0.185298102513341,0.168278939834775,0.110386919707499,0.151743128824285,0.103318060636959,0.406209105918859],["11","32","8","12","6","8","21","32","5","76","44","16","19","45","89","60","6","19","62","6","119","11","65","32","27","38","7","9","9","38","15","5","32","16","23","61","26","27","26","9","57","15","13","9","409","521","41","56","228","284","256","61","5","24","343","40","68","11","25","12","19","295","322","458","459","338","449","395","362","349","357","286","306","423","423","285","308","412","410","289","307","404","400","293","303","410","403","326","453","452","9","8","351","387","313","283","404","415","112","337","350","313","43","121","308","329","366","375","257","325","332","293","266","54","66","221","10","119","133","308","684","52","8","16","39","16","7","9","8","46","6"],[9,27,6,11,6,6,15,32,5,76,44,14,19,44,89,60,6,18,61,6,118,11,65,32,27,38,7,9,9,37,15,5,32,16,23,60,25,26,26,9,55,15,9,8,409,521,41,56,228,284,256,60,5,24,343,40,68,11,25,12,19,293,322,458,457,338,449,392,360,346,354,285,306,422,422,284,308,412,410,288,306,404,400,291,302,410,403,325,452,451,9,8,349,386,309,277,404,415,112,334,350,311,43,121,305,326,365,374,254,323,330,293,265,54,66,219,10,119,133,305,684,52,8,16,39,16,7,8,8,46,6]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Neale_pheno_ID<\/th>\n      <th>description<\/th>\n      <th>variable_type<\/th>\n      <th>category<\/th>\n      <th>N_pairs<\/th>\n      <th>r2<\/th>\n      <th>r<\/th>\n      <th>num_IVs<\/th>\n      <th>num_IVs_pass_het<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"targets":6,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 3, 3, \",\", \".\");\n  }"},{"targets":7,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 3, 3, \",\", \".\");\n  }"},{"className":"dt-right","targets":[7,9]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":["options.columnDefs.0.render","options.columnDefs.1.render"],"jsHooks":[]}</script>
+<hr />
+<p>A few summaries of various properties are show below.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">variable_type</th>
+<th align="right">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">continuous_irnt</td>
+<td align="right">76</td>
+</tr>
+<tr class="even">
+<td align="left">ordinal</td>
+<td align="right">55</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th align="left">category</th>
+<th align="right">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">body</td>
+<td align="right">36</td>
+</tr>
+<tr class="even">
+<td align="left">diet</td>
+<td align="right">26</td>
+</tr>
+<tr class="odd">
+<td align="left">disease</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">disease_proxy</td>
+<td align="right">32</td>
+</tr>
+<tr class="odd">
+<td align="left">lifestyle</td>
+<td align="right">36</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><img src="figure/final_phenotype_list.Rmd/IV_freq-1.png" width="672" style="display: block; margin: auto;" /><img src="figure/final_phenotype_list.Rmd/IV_freq-2.png" width="672" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo"
+  data-toggle="collapse" data-target="#workflowr-sessioninfo"
+  style = "display: block;">
+  
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+
+<div id="workflowr-sessioninfo" class="collapse">
+
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.1.0 (2021-05-18)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: CentOS Linux 7 (Core)
+
+Matrix products: default
+BLAS:   /data/sgg2/jenny/bin/R-4.1.0/lib64/R/lib/libRblas.so
+LAPACK: /data/sgg2/jenny/bin/R-4.1.0/lib64/R/lib/libRlapack.so
+
+locale:
+[1] en_CA.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices datasets  utils     methods   base     
+
+other attached packages:
+ [1] plotly_4.9.4.1     knitr_1.33         DT_0.18.1          forcats_0.5.1     
+ [5] stringr_1.4.0      dplyr_1.0.7        purrr_0.3.4        readr_1.4.0       
+ [9] tidyr_1.1.3        tibble_3.1.2       ggplot2_3.3.4      tidyverse_1.3.1   
+[13] targets_0.5.0.9001 workflowr_1.6.2   
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.6        lubridate_1.7.10  ps_1.6.0          assertthat_0.2.1 
+ [5] rprojroot_2.0.2   digest_0.6.27     utf8_1.2.1        R6_2.5.0         
+ [9] cellranger_1.1.0  backports_1.2.1   reprex_2.0.0      evaluate_0.14    
+[13] highr_0.9         httr_1.4.2        pillar_1.6.1      rlang_0.4.11     
+[17] lazyeval_0.2.2    readxl_1.3.1      rstudioapi_0.13   data.table_1.14.0
+[21] whisker_0.4       callr_3.7.0       rmarkdown_2.9     labeling_0.4.2   
+[25] htmlwidgets_1.5.3 igraph_1.2.6      munsell_0.5.0     broom_0.7.7      
+[29] compiler_4.1.0    httpuv_1.6.1      modelr_0.1.8      xfun_0.24        
+[33] pkgconfig_2.0.3   htmltools_0.5.1.1 tidyselect_1.1.1  codetools_0.2-18 
+[37] viridisLite_0.4.0 fansi_0.5.0       crayon_1.4.1      dbplyr_2.1.1     
+[41] withr_2.4.2       later_1.2.0       grid_4.1.0        jsonlite_1.7.2   
+[45] gtable_0.3.0      lifecycle_1.0.0   DBI_1.1.1         git2r_0.28.0     
+[49] magrittr_2.0.1    scales_1.1.1      cli_2.5.0         stringi_1.6.2    
+[53] farver_2.1.0      renv_0.13.2-62    fs_1.5.0          promises_1.2.0.1 
+[57] xml2_1.3.2        ellipsis_0.3.2    generics_0.1.0    vctrs_0.3.8      
+[61] tools_4.1.0       glue_1.4.2        crosstalk_1.1.1   hms_1.1.0        
+[65] processx_3.5.2    yaml_2.2.1        colorspace_2.0-1  rvest_1.0.0      
+[69] haven_2.4.1      </code></pre>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
