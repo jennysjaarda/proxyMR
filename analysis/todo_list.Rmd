@@ -13,8 +13,8 @@ editor_options:
 - ~~Meta-analyzed binned results across sexes.~~ 
 - ~~Fix variance calculation mistake in calculating $\rho$ and $\gamma$.~~
 - ~~Write script/function which replaces `Neale_ID` with trait description.~~
-- Clean up `index.Rmd`
-- Clean up `about.Rmd`
+- ~~Clean up `index.Rmd`~~
+- ~~Clean up `about.Rmd`~~
 - Add Rmd building to `targets` pipeline. 
 - MVMR. 
 - AM MR summary Rmd.

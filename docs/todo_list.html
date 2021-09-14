@@ -15,6 +15,7 @@
 
 <title>To do</title>
 
+<script src="site_libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
@@ -46,6 +47,8 @@ div.section {
   padding-top: 12px;
 }
 </style>
+
+
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -366,264 +369,100 @@ div.tocify {
 
 
 <p>
-<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report"
-  data-toggle="collapse" data-target="#workflowr-report">
-  
-<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
 </button>
 </p>
-
 <div id="workflowr-report" class="collapse">
 <ul class="nav nav-tabs">
-  <li class="active">
+<li class="active">
 <a data-toggle="tab" href="#summary">Summary</a>
 </li>
-  <li>
-<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
 </li>
-  <li>
+<li>
 <a data-toggle="tab" href="#versions">Past versions</a>
 </li>
 </ul>
-
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
-  <p>
+<p>
 <strong>Last updated:</strong> 2021-09-14
 </p>
-  <p>
-<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 2 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 1 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
 </p>
-  <p>
+<p>
 <strong>Knit directory:</strong> <code>proxyMR/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
 </p>
-  <p>
-  
+<p>
 This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
   href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.2). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
 </p>
 <hr>
 </div>
 <div id="checks" class="tab-pane fade">
-  <div class="panel-group" id="workflowr-checks">
-  <div class="panel panel-default">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted changes </a>
 </p>
 </div>
-<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
 <div class="panel-body">
-  
-<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+<p>The R Markdown file has unstaged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
 </div>
 </div>
 </div>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtreee3f688e4bbb5dbc260d535cdebebb7d9ced6ebf1targetblanke3f688ea"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/jennysjaarda/proxyMR/tree/e3f688e4bbb5dbc260d535cdebebb7d9ced6ebf1" target="_blank">e3f688e</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtree7f198c697a566c24d7a008e644fd5ace18c47d18targetblank7f198c6a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/jennysjaarda/proxyMR/tree/7f198c697a566c24d7a008e644fd5ace18c47d18" target="_blank">7f198c6</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtreee3f688e4bbb5dbc260d535cdebebb7d9ced6ebf1targetblanke3f688ea" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtree7f198c697a566c24d7a008e644fd5ace18c47d18targetblank7f198c6a" class="panel-collapse collapse">
 <div class="panel-body">
-  
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
-
 <p>
-The results in this page were generated with repository version <a href="https://github.com/jennysjaarda/proxyMR/tree/e3f688e4bbb5dbc260d535cdebebb7d9ced6ebf1" target="_blank">e3f688e</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://github.com/jennysjaarda/proxyMR/tree/7f198c697a566c24d7a008e644fd5ace18c47d18" target="_blank">7f198c6</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
-
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 </p>
-
 <pre><code>
 Ignored files:
+    Ignored:    .DS_Store
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
-    Ignored:    FP_data.RData
-    Ignored:    _targets/
-    Ignored:    analysis/bgenie_GWAS/
-    Ignored:    analysis/data_setup/
-    Ignored:    analysis/process_Neale.out
-    Ignored:    analysis/traitMR/
-    Ignored:    data/Neale_SGG_directory_12_07_2021.csv
-    Ignored:    data/Neale_SGG_directory_15_07_2021.csv
-    Ignored:    data/processed/
-    Ignored:    data/raw/
+    Ignored:    fig_test.RData
     Ignored:    household_MR_exhaustive_summary.rds
-    Ignored:    output/figures/
-    Ignored:    output/tables/traitMR/
     Ignored:    proxyMR_comparison.RData
     Ignored:    proxyMR_figure_data.RData
-    Ignored:    proxymr_100_clustermq.out
-    Ignored:    proxymr_101_clustermq.out
-    Ignored:    proxymr_102_clustermq.out
-    Ignored:    proxymr_103_clustermq.out
-    Ignored:    proxymr_104_clustermq.out
-    Ignored:    proxymr_105_clustermq.out
-    Ignored:    proxymr_106_clustermq.out
-    Ignored:    proxymr_107_clustermq.out
-    Ignored:    proxymr_108_clustermq.out
-    Ignored:    proxymr_109_clustermq.out
-    Ignored:    proxymr_10_clustermq.out
-    Ignored:    proxymr_110_clustermq.out
-    Ignored:    proxymr_111_clustermq.out
-    Ignored:    proxymr_112_clustermq.out
-    Ignored:    proxymr_113_clustermq.out
-    Ignored:    proxymr_114_clustermq.out
-    Ignored:    proxymr_115_clustermq.out
-    Ignored:    proxymr_116_clustermq.out
-    Ignored:    proxymr_117_clustermq.out
-    Ignored:    proxymr_118_clustermq.out
-    Ignored:    proxymr_119_clustermq.out
-    Ignored:    proxymr_11_clustermq.out
-    Ignored:    proxymr_120_clustermq.out
-    Ignored:    proxymr_121_clustermq.out
-    Ignored:    proxymr_122_clustermq.out
-    Ignored:    proxymr_123_clustermq.out
-    Ignored:    proxymr_124_clustermq.out
-    Ignored:    proxymr_125_clustermq.out
-    Ignored:    proxymr_126_clustermq.out
-    Ignored:    proxymr_127_clustermq.out
-    Ignored:    proxymr_128_clustermq.out
-    Ignored:    proxymr_129_clustermq.out
-    Ignored:    proxymr_12_clustermq.out
-    Ignored:    proxymr_130_clustermq.out
-    Ignored:    proxymr_131_clustermq.out
-    Ignored:    proxymr_132_clustermq.out
-    Ignored:    proxymr_133_clustermq.out
-    Ignored:    proxymr_134_clustermq.out
-    Ignored:    proxymr_135_clustermq.out
-    Ignored:    proxymr_136_clustermq.out
-    Ignored:    proxymr_137_clustermq.out
-    Ignored:    proxymr_138_clustermq.out
-    Ignored:    proxymr_139_clustermq.out
-    Ignored:    proxymr_13_clustermq.out
-    Ignored:    proxymr_140_clustermq.out
-    Ignored:    proxymr_14_clustermq.out
-    Ignored:    proxymr_15_clustermq.out
-    Ignored:    proxymr_16_clustermq.out
-    Ignored:    proxymr_17_clustermq.out
-    Ignored:    proxymr_18_clustermq.out
-    Ignored:    proxymr_19_clustermq.out
-    Ignored:    proxymr_1_clustermq.out
-    Ignored:    proxymr_20_clustermq.out
-    Ignored:    proxymr_21_clustermq.out
-    Ignored:    proxymr_22_clustermq.out
-    Ignored:    proxymr_23_clustermq.out
-    Ignored:    proxymr_24_clustermq.out
-    Ignored:    proxymr_25_clustermq.out
-    Ignored:    proxymr_26_clustermq.out
-    Ignored:    proxymr_27_clustermq.out
-    Ignored:    proxymr_28_clustermq.out
-    Ignored:    proxymr_29_clustermq.out
-    Ignored:    proxymr_2_clustermq.out
-    Ignored:    proxymr_30_clustermq.out
-    Ignored:    proxymr_31_clustermq.out
-    Ignored:    proxymr_32_clustermq.out
-    Ignored:    proxymr_33_clustermq.out
-    Ignored:    proxymr_34_clustermq.out
-    Ignored:    proxymr_35_clustermq.out
-    Ignored:    proxymr_36_clustermq.out
-    Ignored:    proxymr_37_clustermq.out
-    Ignored:    proxymr_38_clustermq.out
-    Ignored:    proxymr_39_clustermq.out
-    Ignored:    proxymr_3_clustermq.out
-    Ignored:    proxymr_40_clustermq.out
-    Ignored:    proxymr_41_clustermq.out
-    Ignored:    proxymr_42_clustermq.out
-    Ignored:    proxymr_43_clustermq.out
-    Ignored:    proxymr_44_clustermq.out
-    Ignored:    proxymr_45_clustermq.out
-    Ignored:    proxymr_46_clustermq.out
-    Ignored:    proxymr_47_clustermq.out
-    Ignored:    proxymr_48_clustermq.out
-    Ignored:    proxymr_49_clustermq.out
-    Ignored:    proxymr_4_clustermq.out
-    Ignored:    proxymr_50_clustermq.out
-    Ignored:    proxymr_51_clustermq.out
-    Ignored:    proxymr_52_clustermq.out
-    Ignored:    proxymr_53_clustermq.out
-    Ignored:    proxymr_54_clustermq.out
-    Ignored:    proxymr_55_clustermq.out
-    Ignored:    proxymr_56_clustermq.out
-    Ignored:    proxymr_57_clustermq.out
-    Ignored:    proxymr_58_clustermq.out
-    Ignored:    proxymr_59_clustermq.out
-    Ignored:    proxymr_5_clustermq.out
-    Ignored:    proxymr_60_clustermq.out
-    Ignored:    proxymr_61_clustermq.out
-    Ignored:    proxymr_62_clustermq.out
-    Ignored:    proxymr_63_clustermq.out
-    Ignored:    proxymr_64_clustermq.out
-    Ignored:    proxymr_65_clustermq.out
-    Ignored:    proxymr_66_clustermq.out
-    Ignored:    proxymr_67_clustermq.out
-    Ignored:    proxymr_68_clustermq.out
-    Ignored:    proxymr_69_clustermq.out
-    Ignored:    proxymr_6_clustermq.out
-    Ignored:    proxymr_70_clustermq.out
-    Ignored:    proxymr_71_clustermq.out
-    Ignored:    proxymr_72_clustermq.out
-    Ignored:    proxymr_73_clustermq.out
-    Ignored:    proxymr_74_clustermq.out
-    Ignored:    proxymr_75_clustermq.out
-    Ignored:    proxymr_76_clustermq.out
-    Ignored:    proxymr_77_clustermq.out
-    Ignored:    proxymr_78_clustermq.out
-    Ignored:    proxymr_79_clustermq.out
-    Ignored:    proxymr_7_clustermq.out
-    Ignored:    proxymr_80_clustermq.out
-    Ignored:    proxymr_81_clustermq.out
-    Ignored:    proxymr_82_clustermq.out
-    Ignored:    proxymr_83_clustermq.out
-    Ignored:    proxymr_84_clustermq.out
-    Ignored:    proxymr_85_clustermq.out
-    Ignored:    proxymr_86_clustermq.out
-    Ignored:    proxymr_87_clustermq.out
-    Ignored:    proxymr_88_clustermq.out
-    Ignored:    proxymr_89_clustermq.out
-    Ignored:    proxymr_8_clustermq.out
-    Ignored:    proxymr_90_clustermq.out
-    Ignored:    proxymr_91_clustermq.out
-    Ignored:    proxymr_92_clustermq.out
-    Ignored:    proxymr_93_clustermq.out
-    Ignored:    proxymr_94_clustermq.out
-    Ignored:    proxymr_95_clustermq.out
-    Ignored:    proxymr_96_clustermq.out
-    Ignored:    proxymr_97_clustermq.out
-    Ignored:    proxymr_98_clustermq.out
-    Ignored:    proxymr_99_clustermq.out
-    Ignored:    proxymr_9_clustermq.out
     Ignored:    renv/library/
+    Ignored:    renv/local/
     Ignored:    renv/staging/
     Ignored:    traits_corr2_update.rds
 
 Untracked files:
-    Untracked:  Rplots.pdf
-    Untracked:  analysis/figures_scratch.Rmd
-    Untracked:  analysis/final_phenotype_list.Rmd
-    Untracked:  analysis/group_meeting_pres_figures_080921.Rmd
-    Untracked:  analysis/latex_test2.Rmd
-    Untracked:  analysis/phenotype_selection.Rmd
-    Untracked:  output/tables/household_correlations.final_filter.csv
+    Untracked:  R/proxyMR_figures.R
+    Untracked:  R/proxyMR_hiercharchy.R
 
 Unstaged changes:
+    Modified:   analysis/about.Rmd
+    Modified:   analysis/index.Rmd
+    Modified:   analysis/todo_list.Rmd
     Modified:   analysis/update_meeting_06_09_2021.Rmd
-    Modified:   analysis/update_meeting_25_08_2021.Rmd
-    Modified:   output/tables/define_Neale_categories.csv
-    Modified:   output/tables/define_Neale_categories_filled.csv
+    Modified:   analysis/update_meeting_14_06_2021.Rmd
+    Modified:   analysis/update_meeting_14_07_2021.Rmd
 
 </code></pre>
-
 <p>
-Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
 </p>
-
 </div>
 </div>
 </div>
@@ -631,9 +470,9 @@ Note that any generated files, e.g. HTML, png, CSS, etc., are not included in th
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
-  
+
 <p>
-These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/todo_list.Rmd</code>) and HTML (<code>docs/todo_list.html</code>) files. If you've configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
+These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/todo_list.Rmd</code>) and HTML (<code>docs/todo_list.html</code>) files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
 </p>
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
@@ -659,6 +498,23 @@ Message
 <tbody>
 <tr>
 <td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/jennysjaarda/proxyMR/7f198c697a566c24d7a008e644fd5ace18c47d18/docs/todo_list.html" target="_blank">7f198c6</a>
+</td>
+<td>
+Jenny Sjaarda
+</td>
+<td>
+2021-09-14
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
 Rmd
 </td>
 <td>
@@ -677,24 +533,19 @@ add a few Rmd notebooks
 </tbody>
 </table>
 </div>
-
 <hr>
 </div>
 </div>
 </div>
-
-
-
-
-<div id="section" class="section level1">
-<h1><span class="header-section-number">1</span> 06/09/2021</h1>
+<div id="section" class="section level1" number="1">
+<h1 number="1"><span class="header-section-number">1</span> 06/09/2021</h1>
 <ul>
-<li><del>Sum <span class="math">\(\rho\)</span> and <span class="math">\(\gamma\)</span>.</del></li>
+<li><del>Sum <span class="math inline">\(\rho\)</span> and <span class="math inline">\(\gamma\)</span>.</del></li>
 <li><del>Meta-analyzed binned results across sexes.</del></li>
-<li><del>Fix variance calculation mistake in calculating <span class="math">\(\rho\)</span> and <span class="math">\(\gamma\)</span>.</del></li>
+<li><del>Fix variance calculation mistake in calculating <span class="math inline">\(\rho\)</span> and <span class="math inline">\(\gamma\)</span>.</del></li>
 <li><del>Write script/function which replaces <code>Neale_ID</code> with trait description.</del></li>
-<li>Clean up <code>index.Rmd</code></li>
-<li>Clean up <code>about.Rmd</code></li>
+<li><del>Clean up <code>index.Rmd</code></del></li>
+<li><del>Clean up <code>about.Rmd</code></del></li>
 <li>Add Rmd building to <code>targets</code> pipeline.</li>
 <li>MVMR.</li>
 <li>AM MR summary Rmd.</li>
@@ -702,23 +553,25 @@ add a few Rmd notebooks
 <li>Clean up update meeting Rmd.</li>
 </ul>
 </div>
-<div id="section-1" class="section level1">
-<h1><span class="header-section-number">2</span> 08/09/2021</h1>
+<div id="section-1" class="section level1" number="2">
+<h1 number="2"><span class="header-section-number">2</span> 08/09/2021</h1>
 <ul>
 <li><del>Weight trend line by inverse variance.</del></li>
 <li>Update AF in Neale summary stats.</li>
 <li>Create couple selection Rmd.</li>
-<li>Number of tests for filtering by <span class="math">\(\omega\)</span> should exclude those with only one trait. (i.e. number of tests would be <span class="math">\(j^2 - j\)</span>).</li>
-<li><del>Filter by <span class="math">\(\omega\)</span> instead of same-person MR.</del></li>
+<li>Number of tests for filtering by <span class="math inline">\(\omega\)</span> should exclude those with only one trait. (i.e. number of tests would be <span class="math inline">\(j^2 - j\)</span>).</li>
+<li><del>Filter by <span class="math inline">\(\omega\)</span> instead of same-person MR.</del></li>
 <li>Force intercept through 0 in omega vs gamma/rho plot.</li>
-<li>Explore impact of meta-anlaysis at SNP/trait level vs. MR-level.</li>
+<li>Explore impact of meta-anlaysis at SNP/trait level vs. MR-level.
+<ul>
 <li>Meta-analyze standard MR SNP/trait estimates across sexes.</li>
+</ul></li>
 <li>Hierarchy figure (add labels).</li>
 <li>Make visio figures in LucidChart.</li>
 <li>Explore IV overlap between X and Y:
 <ul>
 <li>Determine percentage of IV overlap between X IVs and Y IVs.</li>
-<li>MV MR, add SNPs/trait effect from <span class="math">\(X_{i} \rightarrow Y_{p}\)</span> to <span class="math">\(Y_{i} \rightarrow Y_{p}\)</span> MR (i.e. run a MV MR of the form: <span class="math">\(Y_{p} \sim Y_{i} + X_{i}\)</span>).</li>
+<li>MV MR, add SNPs/trait effect from <span class="math inline">\(X_{i} \rightarrow Y_{p}\)</span> to <span class="math inline">\(Y_{i} \rightarrow Y_{p}\)</span> MR (i.e. run a MV MR of the form: <span class="math inline">\(Y_{p} \sim Y_{i} + X_{i}\)</span>).</li>
 </ul></li>
 <li>Add script/function which replaces <code>Neale_ID</code> with trait description to main functions.</li>
 </ul>
@@ -736,6 +589,8 @@ footer is added to webpages before the MathJax javascript. -->
     "HTML-CSS": { availableFonts: ["TeX"] }
   });
 </script>
+
+
 
 
 </div>
