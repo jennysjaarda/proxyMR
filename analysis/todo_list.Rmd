@@ -1,0 +1,42 @@
+---
+title: "To do"
+author: "jennysjaarda"
+date: "2021-09-08"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+# 06/09/2021
+
+- ~~Sum $\rho$ and $\gamma$.~~
+- ~~Meta-analyzed binned results across sexes.~~ 
+- ~~Fix variance calculation mistake in calculating $\rho$ and $\gamma$.~~
+- ~~Write script/function which replaces `Neale_ID` with trait description.~~
+- Clean up `index.Rmd`
+- Clean up `about.Rmd`
+- Add Rmd building to `targets` pipeline. 
+- MVMR. 
+- AM MR summary Rmd.
+- PC correlation among couples summary Rmd. 
+- Clean up update meeting Rmd. 
+
+# 08/09/2021
+
+- ~~Weight trend line by inverse variance.~~ 
+- Update AF in Neale summary stats. 
+- Create couple selection Rmd. 
+- Number of tests for filtering by $\omega$ should exclude those with only one trait. (i.e. number of tests would be $j^2 - j$).
+- ~~Filter by $\omega$ instead of same-person MR.~~ 
+- Force intercept through 0 in omega vs gamma/rho plot. 
+- Explore impact of meta-anlaysis at SNP/trait level vs. MR-level.
+  - Meta-analyze standard MR SNP/trait estimates across sexes. 
+- Hierarchy figure (add labels).
+- Make visio figures in LucidChart.
+- Explore IV overlap between X and Y:
+    - Determine percentage of IV overlap between X IVs and Y IVs. 
+    - MV MR, add SNPs/trait effect from $X_{i} \rightarrow Y_{p}$ to $Y_{i} \rightarrow Y_{p}$ MR (i.e. run a MV MR of the form: $Y_{p} \sim Y_{i} + X_{i}$).
+- Add script/function which replaces `Neale_ID` with trait description to main functions.
+    
+
+

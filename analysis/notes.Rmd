@@ -1,0 +1,28 @@
+---
+title: "Notes"
+author: "jennysjaarda"
+date: "2021-09-08"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+# Meta-analysis across sexes
+
+There are two inputs into MR: 
+
+1. SNP/exposure effects. 
+2. SNP/outcome effects. 
+
+If we want to perform a MR between exposure $X$ and outcome $Y$ comprising both sexes, we have three options: 
+
+1. Use joint GWAS statistics (i.e. $X \sim G$ is run in sexes combined, adjusted for sex).
+2. Use sex-specific GWAS statistics and then meta-analyze **before** running the MR. 
+3. Use sex-specific GWAS statistics and then meta-analyze the **after** running the MR. 
+
+In other words, there are three options for pooling the data:
+
+1. At the selection of subgroup for GWAS analysis level. 
+2. At the SNP/exposure and SNP/outcome level.
+3. At the MR level.
+
