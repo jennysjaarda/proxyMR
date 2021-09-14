@@ -7,4 +7,53 @@ editor_options:
   chunk_output_type: console
 ---
 
-Describe your project.
+# Background 
+
+Sharing environment with others plays an important role on our behaviors and health outcomes. 
+
+```{r AM_vs_convergence, echo = FALSE}
+library(knitr)
+knitr::include_graphics("assets/AM_vs_convergence.png", error = FALSE)
+```
+
+## Assortative mating
+
+- Observation of increased phenotypic similarity between couples compared to random pairs.
+- This is most prominent in anthropometric traits, such as BMI and height, measures of SES and various behavioral and lifestyle measures (diet, interests, hobbies, etc.).
+- This is because people tend to choose partners more similar to themselves (i.e. opposites do not actually attract in reality).
+- There is also genetic evidence of assortative mating, meaning couples are not only more phenotypically similar but also more genetically similar (see [Genetic evidence of assortative mating in humans](https://www.nature.com/articles/s41562-016-0016) [Matt Robinson] and [Genetic determination of height-mediated mate choice](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0833-8) [Albert Tenesa])
+
+## Couple convergence
+
+- Additionally, couples living together can become even more similar over the years.
+- Unknown to what extent couples converge and influence each other over time.
+- Complicated by the fact that people tend to choose partners that are also geographically closer to them, which induces both genetic adn phenotypic similarity. 
+
+## Horizontal indirect genetic effects
+
+- **Indirect genetic effects (IGEs)**: the effect of a genotype of one individual on the phenotype of other individuals.
+- **Vertical IGEs**: IGEs across generation.
+  - For example, maternal genetic effects on their offspring phenotypes (such as birthweight).
+  - Non-transmitted parental genotypes have also been described to influence offspring phenotypes (e.g. educational attainment).
+  - Suggest vertical IGEs can be mediated through both *biological* and *social beahviors*.
+- **Horizontal IGEs**: IGEs within generation. 
+  - Reported for school friends in relation to educational attainment.
+  - Unknown how much these observations are spread across traits, particularly in *partners* and *siblings*.
+- [Tenesa et al.](https://www.nature.com/articles/s41562-020-00991-9) sought to identify evidence of IGEs in UKB couples.
+  - Used linear mixed models to estimate partner indirect heritability and found evidence of partner heritability on ~50% of traits. 
+  - Further analyses suggested that for at least ~25% of these traits, the partner heritability is consistent with the existence of indirect genetic effects. 
+
+# Objectives
+
+1. Identify traits which are directly assorted for. In other words, which traits are responsible for the phenotypic similarity we observe amongst couples. In the case of similarity observed with respect to both diet and BMI, perhaps one phenotype is driving the similarity between couples and the other is either indirect or a confounder (as diet and BMI are themselves correlated).
+2. Do these patterns differ amongst sex (i.e. are females or males more particular with respect to certain traits)?
+3. Is there evidence for these patterns changing with age? 
+4. Can we find evidence for convergence overtime? 
+5. What are the traits that are responsible for the path from an exposure in an index case impacting an outcome in their partner?
+
+```{r convergence_paths, echo = FALSE}
+library(knitr)
+knitr::include_graphics("assets/convergence_schematic.png", error = FALSE)
+```
+
+

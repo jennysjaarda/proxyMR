@@ -27,8 +27,11 @@ This notebook explains the central ideas behind the project.
 ## [Notes](notes.html) {.unnumbered}
 
 This notebook is for keeping notes of any points that may be useful for
-later project or manuscript development and which are not covered in the
-analysis notebooks or at risk of getting lost in the notebooks.
+later project or manuscript development.
+
+## [To do](todo_list.html) {.unnumbered}
+
+Current tasks and completed tasks (roughly organized by dates/weeks).
 
 ## [Workflow management](workflow.html) {.unnumbered}
 
@@ -37,87 +40,64 @@ using `targets` and `workflowr`.
 
 ## [Meetings](meetings.html) {.unnumbered}
 
-## [Project Workflow Status](m_00_status.html) {.unnumbered}
-
-This notebook displays the computational status of the project, that is,
-whether everything is up to date. Ironically, this is currently the only
-notebook that must be run manually, so this notebook only displays the
-status **when the notebook was last executed** and there is no
-indication whether the project status has changed since then.
+Weekly meeting were held roughly once per week or every other week. 
 
 ------------------------------------------------------------------------
 
 # Publications and Presentations {.unnumbered}
 
-Links to rendered manuscripts and presentations will go here.
+- Group Meeting [07-09-2021](presentations/group_meeting_070921/group_meeting_proxyMR_070921.pdf)
 
 ------------------------------------------------------------------------
 
-# Analayses Notebooks {.unnumbered}
+# Analyses Notebooks {.unnumbered}
 
 These notebooks capture the analyses that were carried out to develop
-the code of the core processing pipeline. They are organised as
-side-chains to the core processing pipeline.
+the code of the core [processing pipeline](pipeline_overview.html). 
 
-Typically, a meta notebook will analyse the data available at one stage
-of the core pipeline, to guide the writing of the functions required to
-get to the next stage of the core pipeline. These meta notebooks
-generally conclude with the definition of a function that will be used
-in the core pipeline.
+## 1. Prepare data {.unnumbered}
 
-There may be multiple notebooks all relating to different aspects of the
-same stage of the core pipeline.
+Prepare phenotypes and couples for analysis in MR pipeline.
 
-Sometimes the analyses are more diffuse - characterising the data in a
-way that may be helpful for guiding the development of future core
-stages, but not immediately resulting in the development of functions
-for the core pipeline.
+### [Couple selection](couple_selection.html) {.unnumbered}
 
-## 01 Read, check, and standardise the entity data {.unnumbered}
+Identify couples in the UKBB.
 
-Determine the initial data preparation of the imported entity records.
+### [Phenotype selection](phenotype_selection.html) {.unnumbered}
 
-### [m_01_1\_read_raw_entity_data](m_01_1_read_raw_entity_data.html) {.unnumbered}
+Select phenotypes for analysis in pipeline.
 
-Read the raw entity data.
+### [Final phenotype list](final_phenotype_list.html) {.unnumbered}   
 
-### [m_01_2\_exclusions](m_01_2_exclusions.html) {.unnumbered}
+Final list of phenotypes for analysis in pipeline and some basic characteristics (correlation among couples, number of independent IVs).
 
-Apply the row exclusions (exclude test records and all records with
-status other than ACTIVE & VERIFIED).
+## 2. Run MR pipeline {.unnumbered}
 
-### [m_01_3\_drop_novar](m_01_3_drop_novar.html) {.unnumbered}
+### [MR between partners (partner vs index)]() {.unnumbered}
 
-Drop variables with no variation.
+- Identify SNP-exposure effects (GW-significance) for phenotypes (sex specific) from Neale database [$X_{i} \sim G_{i}$].
+- Test SNP-outcome effects between genetic instruments and partner outcome phenotypes (sex specific) [$Y_{p} \sim G_{i}$].
+- Combine in MR to assess causal relationships between index and partner [$Y_{p} \sim X_{i}$].
 
-### [m_01_4\_parse_dates](m_01_4_parse_dates.html) {.unnumbered}
+### [Assortative mating MR]() {.unnumbered}
 
-Parse the date columns.
+- Restrict to only MRs where exposure is the same as outcome (for downstream analyses) [$X_{p} \sim X_{i}$].
 
-### [m_01_5\_check_admin](m_01_5_check_admin.html) {.unnumbered}
+### [MR within same individual]() {.unnumbered}
 
-Check the administrative variables (data relating to the administration
-of voter registration).
+- Identify SNP-exposure effects (GW-significance) for phenotypes (sex specific) from Neale database [$X_{i} \sim G_{i}$].
+- Pull SNP-outcome effects  between genetic instruments and outcome phenotypes (sex specific) from Neale database [$Y_{i} \sim G_{i}$].
+- Combine in MR to assess causal relationship between all phenotypes [$Y_{i} \sim X_{i}$].
 
-### [m_01_6\_check_resid](m_01_6_check_resid.html) {.unnumbered}
+### [Compare paths towards outcome in partner]() {.unnumbered}
 
-Check the residence variables - residential address and phone number.
+- Compare paths from index exposure phenotype to partner outcome phenotype [$X_{i} \rightarrow Y_{p}$].
 
-### [m_01_7\_check_demog](m_01_7_check_demog.html) {.unnumbered}
-
-Check the demographic variables - sex, age, and birth place.
-
-### [m_01_8\_check_name](m_01_8_check_name.html) {.unnumbered}
-
-Check the name variables.
-
-### [m_01_9\_clean_vars](m_01_9_clean_vars.html) {.unnumbered}
-
-Clean all the variables.
+### [PC correlation among couples]() {.unnumbered}
 
 ------------------------------------------------------------------------
 
-# Acknowledgements
+# Acknowledgements {.unnumbered}
 
 Primary analysis performed by: [Jenny Sjaarda](jennysjaarda@gmail.com).
 

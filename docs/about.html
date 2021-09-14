@@ -13,10 +13,10 @@
 
 <title>About</title>
 
-<script src="site_libs/header-attrs-2.8/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -269,7 +269,7 @@ $(document).ready(function () {
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/jennysjaarda/proxyMR">
-    <span class="fas fa-github"></span>
+    <span class="fa fa-github"></span>
      
     Source code
   </a>
@@ -290,7 +290,7 @@ $(document).ready(function () {
 
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
-<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
 </button>
 </p>
 <div id="workflowr-report" class="collapse">
@@ -299,7 +299,7 @@ $(document).ready(function () {
 <a data-toggle="tab" href="#summary">Summary</a>
 </li>
 <li>
-<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
 </li>
 <li>
 <a data-toggle="tab" href="#versions">Past versions</a>
@@ -308,10 +308,10 @@ $(document).ready(function () {
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2021-07-22
+<strong>Last updated:</strong> 2021-09-14
 </p>
 <p>
-<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 2 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
 </p>
 <p>
 <strong>Knit directory:</strong> <code>proxyMR/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
@@ -327,28 +327,88 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted changes </a>
 </p>
 </div>
-<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
 <div class="panel-body">
-<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+<p>The R Markdown file has unstaged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
 </div>
 </div>
 </div>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtreeb0b81d90e8737ae4b23268917e79b60caa6ee42ftargetblankb0b81d9a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/jennysjaarda/proxyMR/tree/b0b81d90e8737ae4b23268917e79b60caa6ee42f" target="_blank">b0b81d9</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtreeb0b81d90e8737ae4b23268917e79b60caa6ee42ftargetblankb0b81d9a" class="panel-collapse collapse">
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20210602code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20210602)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20210602code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20210602)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtree7f198c697a566c24d7a008e644fd5ace18c47d18targetblank7f198c6a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/jennysjaarda/proxyMR/tree/7f198c697a566c24d7a008e644fd5ace18c47d18" target="_blank">7f198c6</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtree7f198c697a566c24d7a008e644fd5ace18c47d18targetblank7f198c6a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://github.com/jennysjaarda/proxyMR/tree/b0b81d90e8737ae4b23268917e79b60caa6ee42f" target="_blank">b0b81d9</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://github.com/jennysjaarda/proxyMR/tree/7f198c697a566c24d7a008e644fd5ace18c47d18" target="_blank">7f198c6</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -358,18 +418,25 @@ Ignored files:
     Ignored:    .DS_Store
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
+    Ignored:    fig_test.RData
+    Ignored:    household_MR_exhaustive_summary.rds
+    Ignored:    proxyMR_comparison.RData
+    Ignored:    proxyMR_figure_data.RData
     Ignored:    renv/library/
     Ignored:    renv/local/
     Ignored:    renv/staging/
+    Ignored:    traits_corr2_update.rds
 
 Untracked files:
-    Untracked:  household_MR_exhaustive_summary.rds
-    Untracked:  summary.RData
-    Untracked:  traits_corr2_update.rds
+    Untracked:  R/proxyMR_figures.R
+    Untracked:  R/proxyMR_hiercharchy.R
 
 Unstaged changes:
-    Modified:   R/functions.R
-    Modified:   _targets.R
+    Modified:   analysis/about.Rmd
+    Modified:   analysis/index.Rmd
+    Modified:   analysis/update_meeting_06_09_2021.Rmd
+    Modified:   analysis/update_meeting_14_06_2021.Rmd
+    Modified:   analysis/update_meeting_14_07_2021.Rmd
 
 </code></pre>
 <p>
@@ -410,6 +477,23 @@ Message
 <tbody>
 <tr>
 <td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/jennysjaarda/proxyMR/a55da5b2bdba57094ca00ee473a8bde2ce7f7b2f/docs/about.html" target="_blank">a55da5b</a>
+</td>
+<td>
+jennysjaarda
+</td>
+<td>
+2021-07-22
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
 Rmd
 </td>
 <td>
@@ -432,7 +516,97 @@ Start workflowr project.
 </div>
 </div>
 </div>
-<p>Describe your project.</p>
+<div id="background" class="section level1" number="1">
+<h1 number="1"><span class="header-section-number">1</span> Background</h1>
+<p>Sharing environment with others plays an important role on our behaviors and health outcomes.</p>
+<p><img src="assets/AM_vs_convergence.png" style="display: block; margin: auto;" /></p>
+<div id="assortative-mating" class="section level2" number="1.1">
+<h2 number="1.1"><span class="header-section-number">1.1</span> Assortative mating</h2>
+<ul>
+<li>Observation of increased phenotypic similarity between couples compared to random pairs.</li>
+<li>This is most prominent in anthropometric traits, such as BMI and height, measures of SES and various behavioral and lifestyle measures (diet, interests, hobbies, etc.).</li>
+<li>This is because people tend to choose partners more similar to themselves (i.e. opposites do not actually attract in reality).</li>
+<li>There is also genetic evidence of assortative mating, meaning couples are not only more phenotypically similar but also more genetically similar (see <a href="https://www.nature.com/articles/s41562-016-0016">Genetic evidence of assortative mating in humans</a> [Matt Robinson] and <a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0833-8">Genetic determination of height-mediated mate choice</a> [Albert Tenesa])</li>
+</ul>
+</div>
+<div id="couple-convergence" class="section level2" number="1.2">
+<h2 number="1.2"><span class="header-section-number">1.2</span> Couple convergence</h2>
+<ul>
+<li>Additionally, couples living together can become even more similar over the years.</li>
+<li>Unknown to what extent couples converge and influence each other over time.</li>
+<li>Complicated by the fact that people tend to choose partners that are also geographically closer to them, which induces both genetic adn phenotypic similarity.</li>
+</ul>
+</div>
+<div id="horizontal-indirect-genetic-effects" class="section level2" number="1.3">
+<h2 number="1.3"><span class="header-section-number">1.3</span> Horizontal indirect genetic effects</h2>
+<ul>
+<li><strong>Indirect genetic effects (IGEs)</strong>: the effect of a genotype of one individual on the phenotype of other individuals.</li>
+<li><strong>Vertical IGEs</strong>: IGEs across generation.
+<ul>
+<li>For example, maternal genetic effects on their offspring phenotypes (such as birthweight).</li>
+<li>Non-transmitted parental genotypes have also been described to influence offspring phenotypes (e.g. educational attainment).</li>
+<li>Suggest vertical IGEs can be mediated through both <em>biological</em> and <em>social beahviors</em>.</li>
+</ul></li>
+<li><strong>Horizontal IGEs</strong>: IGEs within generation.
+<ul>
+<li>Reported for school friends in relation to educational attainment.</li>
+<li>Unknown how much these observations are spread across traits, particularly in <em>partners</em> and <em>siblings</em>.</li>
+</ul></li>
+<li><a href="https://www.nature.com/articles/s41562-020-00991-9">Tenesa et al.</a> sought to identify evidence of IGEs in UKB couples.
+<ul>
+<li>Used linear mixed models to estimate partner indirect heritability and found evidence of partner heritability on ~50% of traits.</li>
+<li>Further analyses suggested that for at least ~25% of these traits, the partner heritability is consistent with the existence of indirect genetic effects.</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="objectives" class="section level1" number="2">
+<h1 number="2"><span class="header-section-number">2</span> Objectives</h1>
+<ol style="list-style-type: decimal">
+<li>Identify traits which are directly assorted for. In other words, which traits are responsible for the phenotypic similarity we observe amongst couples. In the case of similarity observed with respect to both diet and BMI, perhaps one phenotype is driving the similarity between couples and the other is either indirect or a confounder (as diet and BMI are themselves correlated).</li>
+<li>Do these patterns differ amongst sex (i.e. are females or males more particular with respect to certain traits)?</li>
+<li>Is there evidence for these patterns changing with age?</li>
+<li>Can we find evidence for convergence overtime?</li>
+<li>What are the traits that are responsible for the path from an exposure in an index case impacting an outcome in their partner?</li>
+</ol>
+<p><img src="assets/convergence_schematic.png" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.1.0 (2021-05-18)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Big Sur 11.5.2
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_CA.UTF-8/en_CA.UTF-8/en_CA.UTF-8/C/en_CA.UTF-8/en_CA.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] knitr_1.33
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.7        whisker_0.4       magrittr_2.0.1    workflowr_1.6.2  
+ [5] R6_2.5.0          rlang_0.4.11      fansi_0.5.0       highr_0.9        
+ [9] stringr_1.4.0     tools_4.1.0       xfun_0.23         utf8_1.2.1       
+[13] git2r_0.28.0      htmltools_0.5.1.1 ellipsis_0.3.2    rprojroot_2.0.2  
+[17] yaml_2.2.1        digest_0.6.27     tibble_3.1.2      lifecycle_1.0.0  
+[21] crayon_1.4.1      later_1.2.0       vctrs_0.3.8       promises_1.2.0.1 
+[25] fs_1.5.0          glue_1.4.2        evaluate_0.14     rmarkdown_2.10   
+[29] stringi_1.6.2     compiler_4.1.0    pillar_1.6.1      httpuv_1.6.1     
+[33] pkgconfig_2.0.3  </code></pre>
+</div>
+</div>
 
 
 <!-- Adjust MathJax settings so that all math formulae are shown using

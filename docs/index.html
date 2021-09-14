@@ -366,7 +366,7 @@ div.tocify {
 
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
-<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
 </button>
 </p>
 <div id="workflowr-report" class="collapse">
@@ -375,7 +375,7 @@ div.tocify {
 <a data-toggle="tab" href="#summary">Summary</a>
 </li>
 <li>
-<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
 </li>
 <li>
 <a data-toggle="tab" href="#versions">Past versions</a>
@@ -384,10 +384,10 @@ div.tocify {
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2021-08-31
+<strong>Last updated:</strong> 2021-09-14
 </p>
 <p>
-<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 2 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 1 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
 </p>
 <p>
 <strong>Knit directory:</strong> <code>proxyMR/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
@@ -403,28 +403,28 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted changes </a>
 </p>
 </div>
-<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
 <div class="panel-body">
-<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+<p>The R Markdown file has unstaged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
 </div>
 </div>
 </div>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtreeb849be41cbf2aae369d3cbf1d0d7faa4fdbd42d3targetblankb849be4a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/jennysjaarda/proxyMR/tree/b849be41cbf2aae369d3cbf1d0d7faa4fdbd42d3" target="_blank">b849be4</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtree7f198c697a566c24d7a008e644fd5ace18c47d18targetblank7f198c6a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/jennysjaarda/proxyMR/tree/7f198c697a566c24d7a008e644fd5ace18c47d18" target="_blank">7f198c6</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtreeb849be41cbf2aae369d3cbf1d0d7faa4fdbd42d3targetblankb849be4a" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtree7f198c697a566c24d7a008e644fd5ace18c47d18targetblank7f198c6a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://github.com/jennysjaarda/proxyMR/tree/b849be41cbf2aae369d3cbf1d0d7faa4fdbd42d3" target="_blank">b849be4</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://github.com/jennysjaarda/proxyMR/tree/7f198c697a566c24d7a008e644fd5ace18c47d18" target="_blank">7f198c6</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -432,16 +432,15 @@ Note that you need to be careful to ensure that all relevant files for the analy
 <pre><code>
 Ignored files:
     Ignored:    .DS_Store
+    Ignored:    .Rhistory
     Ignored:    .Rproj.user/
     Ignored:    fig_test.RData
-    Ignored:    figures_grid_plus_legend.RData
     Ignored:    household_MR_exhaustive_summary.rds
     Ignored:    proxyMR_comparison.RData
     Ignored:    proxyMR_figure_data.RData
     Ignored:    renv/library/
     Ignored:    renv/local/
     Ignored:    renv/staging/
-    Ignored:    summary.RData
     Ignored:    traits_corr2_update.rds
 
 Untracked files:
@@ -449,10 +448,11 @@ Untracked files:
     Untracked:  R/proxyMR_hiercharchy.R
 
 Unstaged changes:
-    Modified:   R/functions.R
+    Modified:   analysis/about.Rmd
+    Modified:   analysis/index.Rmd
+    Modified:   analysis/update_meeting_06_09_2021.Rmd
     Modified:   analysis/update_meeting_14_06_2021.Rmd
     Modified:   analysis/update_meeting_14_07_2021.Rmd
-    Modified:   analysis/update_meeting_25_08_2021.Rmd
 
 </code></pre>
 <p>
@@ -491,6 +491,23 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/jennysjaarda/proxyMR/557181f3a8d24b6071db74cb465937c5066239c1/docs/index.html" target="_blank">557181f</a>
+</td>
+<td>
+jennysjaarda
+</td>
+<td>
+2021-08-31
+</td>
+<td>
+clean up more website docs
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -630,7 +647,11 @@ Start workflowr project.
 </div>
 <div id="notes" class="section level2 unnumbered">
 <h2 class="unnumbered"><a href="notes.html">Notes</a></h2>
-<p>This notebook is for keeping notes of any points that may be useful for later project or manuscript development and which are not covered in the analysis notebooks or at risk of getting lost in the notebooks.</p>
+<p>This notebook is for keeping notes of any points that may be useful for later project or manuscript development.</p>
+</div>
+<div id="to-do" class="section level2 unnumbered">
+<h2 class="unnumbered"><a href="todo_list.html">To do</a></h2>
+<p>Current tasks and completed tasks (roughly organized by dates/weeks).</p>
 </div>
 <div id="workflow-management" class="section level2 unnumbered">
 <h2 class="unnumbered"><a href="workflow.html">Workflow management</a></h2>
@@ -638,68 +659,74 @@ Start workflowr project.
 </div>
 <div id="meetings" class="section level2 unnumbered">
 <h2 class="unnumbered"><a href="meetings.html">Meetings</a></h2>
-</div>
-<div id="project-workflow-status" class="section level2 unnumbered">
-<h2 class="unnumbered"><a href="m_00_status.html">Project Workflow Status</a></h2>
-<p>This notebook displays the computational status of the project, that is, whether everything is up to date. Ironically, this is currently the only notebook that must be run manually, so this notebook only displays the status <strong>when the notebook was last executed</strong> and there is no indication whether the project status has changed since then.</p>
+<p>Weekly meeting were held roughly once per week or every other week.</p>
 <hr />
 </div>
 </div>
 <div id="publications-and-presentations" class="section level1 unnumbered">
 <h1 class="unnumbered">Publications and Presentations</h1>
-<p>Links to rendered manuscripts and presentations will go here.</p>
+<ul>
+<li>Group Meeting <a href="presentations/group_meeting_070921/group_meeting_proxyMR_070921.pdf">07-09-2021</a></li>
+</ul>
 <hr />
 </div>
-<div id="analayses-notebooks" class="section level1 unnumbered">
-<h1 class="unnumbered">Analayses Notebooks</h1>
-<p>These notebooks capture the analyses that were carried out to develop the code of the core processing pipeline. They are organised as side-chains to the core processing pipeline.</p>
-<p>Typically, a meta notebook will analyse the data available at one stage of the core pipeline, to guide the writing of the functions required to get to the next stage of the core pipeline. These meta notebooks generally conclude with the definition of a function that will be used in the core pipeline.</p>
-<p>There may be multiple notebooks all relating to different aspects of the same stage of the core pipeline.</p>
-<p>Sometimes the analyses are more diffuse - characterising the data in a way that may be helpful for guiding the development of future core stages, but not immediately resulting in the development of functions for the core pipeline.</p>
-<div id="read-check-and-standardise-the-entity-data" class="section level2 unnumbered">
-<h2 class="unnumbered">01 Read, check, and standardise the entity data</h2>
-<p>Determine the initial data preparation of the imported entity records.</p>
-<div id="m_01_1_read_raw_entity_data" class="section level3 unnumbered">
-<h3 class="unnumbered"><a href="m_01_1_read_raw_entity_data.html">m_01_1_read_raw_entity_data</a></h3>
-<p>Read the raw entity data.</p>
+<div id="analyses-notebooks" class="section level1 unnumbered">
+<h1 class="unnumbered">Analyses Notebooks</h1>
+<p>These notebooks capture the analyses that were carried out to develop the code of the core <a href="pipeline_overview.html">processing pipeline</a>.</p>
+<div id="prepare-data" class="section level2 unnumbered">
+<h2 class="unnumbered">1. Prepare data</h2>
+<p>Prepare phenotypes and couples for analysis in MR pipeline.</p>
+<div id="couple-selection" class="section level3 unnumbered">
+<h3 class="unnumbered"><a href="couple_selection.html">Couple selection</a></h3>
+<p>Identify couples in the UKBB.</p>
 </div>
-<div id="m_01_2_exclusions" class="section level3 unnumbered">
-<h3 class="unnumbered"><a href="m_01_2_exclusions.html">m_01_2_exclusions</a></h3>
-<p>Apply the row exclusions (exclude test records and all records with status other than ACTIVE &amp; VERIFIED).</p>
+<div id="phenotype-selection" class="section level3 unnumbered">
+<h3 class="unnumbered"><a href="phenotype_selection.html">Phenotype selection</a></h3>
+<p>Select phenotypes for analysis in pipeline.</p>
 </div>
-<div id="m_01_3_drop_novar" class="section level3 unnumbered">
-<h3 class="unnumbered"><a href="m_01_3_drop_novar.html">m_01_3_drop_novar</a></h3>
-<p>Drop variables with no variation.</p>
+<div id="final-phenotype-list" class="section level3 unnumbered">
+<h3 class="unnumbered"><a href="final_phenotype_list.html">Final phenotype list</a></h3>
+<p>Final list of phenotypes for analysis in pipeline and some basic characteristics (correlation among couples, number of independent IVs).</p>
 </div>
-<div id="m_01_4_parse_dates" class="section level3 unnumbered">
-<h3 class="unnumbered"><a href="m_01_4_parse_dates.html">m_01_4_parse_dates</a></h3>
-<p>Parse the date columns.</p>
 </div>
-<div id="m_01_5_check_admin" class="section level3 unnumbered">
-<h3 class="unnumbered"><a href="m_01_5_check_admin.html">m_01_5_check_admin</a></h3>
-<p>Check the administrative variables (data relating to the administration of voter registration).</p>
+<div id="run-mr-pipeline" class="section level2 unnumbered">
+<h2 class="unnumbered">2. Run MR pipeline</h2>
+<div id="mr-between-partners-partner-vs-index" class="section level3 unnumbered">
+<h3 class="unnumbered"><a href="">MR between partners (partner vs index)</a></h3>
+<ul>
+<li>Identify SNP-exposure effects (GW-significance) for phenotypes (sex specific) from Neale database [<span class="math inline">\(X_{i} \sim G_{i}\)</span>].</li>
+<li>Test SNP-outcome effects between genetic instruments and partner outcome phenotypes (sex specific) [<span class="math inline">\(Y_{p} \sim G_{i}\)</span>].</li>
+<li>Combine in MR to assess causal relationships between index and partner [<span class="math inline">\(Y_{p} \sim X_{i}\)</span>].</li>
+</ul>
 </div>
-<div id="m_01_6_check_resid" class="section level3 unnumbered">
-<h3 class="unnumbered"><a href="m_01_6_check_resid.html">m_01_6_check_resid</a></h3>
-<p>Check the residence variables - residential address and phone number.</p>
+<div id="assortative-mating-mr" class="section level3 unnumbered">
+<h3 class="unnumbered"><a href="">Assortative mating MR</a></h3>
+<ul>
+<li>Restrict to only MRs where exposure is the same as outcome (for downstream analyses) [<span class="math inline">\(X_{p} \sim X_{i}\)</span>].</li>
+</ul>
 </div>
-<div id="m_01_7_check_demog" class="section level3 unnumbered">
-<h3 class="unnumbered"><a href="m_01_7_check_demog.html">m_01_7_check_demog</a></h3>
-<p>Check the demographic variables - sex, age, and birth place.</p>
+<div id="mr-within-same-individual" class="section level3 unnumbered">
+<h3 class="unnumbered"><a href="">MR within same individual</a></h3>
+<ul>
+<li>Identify SNP-exposure effects (GW-significance) for phenotypes (sex specific) from Neale database [<span class="math inline">\(X_{i} \sim G_{i}\)</span>].</li>
+<li>Pull SNP-outcome effects between genetic instruments and outcome phenotypes (sex specific) from Neale database [<span class="math inline">\(Y_{i} \sim G_{i}\)</span>].</li>
+<li>Combine in MR to assess causal relationship between all phenotypes [<span class="math inline">\(Y_{i} \sim X_{i}\)</span>].</li>
+</ul>
 </div>
-<div id="m_01_8_check_name" class="section level3 unnumbered">
-<h3 class="unnumbered"><a href="m_01_8_check_name.html">m_01_8_check_name</a></h3>
-<p>Check the name variables.</p>
+<div id="compare-paths-towards-outcome-in-partner" class="section level3 unnumbered">
+<h3 class="unnumbered"><a href="">Compare paths towards outcome in partner</a></h3>
+<ul>
+<li>Compare paths from index exposure phenotype to partner outcome phenotype [<span class="math inline">\(X_{i} \rightarrow Y_{p}\)</span>].</li>
+</ul>
 </div>
-<div id="m_01_9_clean_vars" class="section level3 unnumbered">
-<h3 class="unnumbered"><a href="m_01_9_clean_vars.html">m_01_9_clean_vars</a></h3>
-<p>Clean all the variables.</p>
+<div id="pc-correlation-among-couples" class="section level3 unnumbered">
+<h3 class="unnumbered"><a href="">PC correlation among couples</a></h3>
 <hr />
 </div>
 </div>
 </div>
-<div id="acknowledgements" class="section level1" number="1">
-<h1 number="1"><span class="header-section-number">1</span> Acknowledgements</h1>
+<div id="acknowledgements" class="section level1 unnumbered">
+<h1 class="unnumbered">Acknowledgements</h1>
 <p>Primary analysis performed by: <a href="jennysjaarda@gmail.com">Jenny Sjaarda</a>.</p>
 <p>Project supervisor: <a href="https://wp.unil.ch/sgg/people/zoltan/">Professor Zoltan Kutalik</a>.</p>
 <p>This work has been supported by the <a href="http://www.snf.ch/en/funding/Pages/default.aspx">Swiss National Science Foundation</a>.</p>
