@@ -39,22 +39,14 @@ household_correlation_threshold <-0.1
 irnt=TRUE
 
 
-#phesant_directory <- read.table(paste0(UKBB_processed,"/PHESANT/","PHESANT_file_directory.txt"), header=T)
-#phesant_file_list <- unique(phesant_directory$File)
-
 # Data-Field 6141
 # Description:	How are people in household related to participant
 # limit to only individuals who responded YES to husband, wife, or partner
 
 relatedness_field <- "6141_1"
-#relations_file <- as.character(phesant_directory[which(phesant_directory[,2]==relatedness_field),"File"])
 
 # name of first phesant file
-#first_phesant_file <- as.character(phesant_directory[1,"File"])
 
-
-#time_at_address_file <- "/data/sgg2/jenny/data/UKBB_processed/PHESANT/ukb31459/bin1/out_bin1..tsv"
-#time_at_address_raw_file <- "/data/sgg2/jenny/data/UKBB_raw/pheno/ukb31459.csv"
 time_at_address_field <- "699"
 time_at_address_raw_field <- "699-0.0"
 
@@ -88,10 +80,9 @@ time_at_address_field <- "699"
 time_at_address_raw_field <- "699-0.0"
 
 ## Input DATA
-
 files_custom_names <- c("household_info", "phesant_directory", "relatives", "fam", "sqc", "time_at_address",
                  "time_at_address_raw", "UKBB_directory", "Neale_SGG_dir", "Neale_manifest", "code_process_Neale", "Neale_variants",
-                 "UKBB_sample")
+                 "UKBB_sample", "main_UKBB_raw")
 
 files <- c(paste0(UKBB_dir,"/pheno/ukb6881.csv"), paste0(UKBB_processed_dir,"/PHESANT/","PHESANT_file_directory.txt"),
           paste0(UKBB_dir,"/geno/","ukb1638_rel_s488366.dat"),  paste0(UKBB_dir,"/plink/_001_ukb_cal_chr9_v2.fam"),
@@ -99,7 +90,8 @@ files <- c(paste0(UKBB_dir,"/pheno/ukb6881.csv"), paste0(UKBB_processed_dir,"/PH
           paste0(UKBB_processed_dir, "/PHESANT/ukb31459/bin1/out_bin1..tsv"), paste0(UKBB_dir, "/pheno/ukb31459.csv"),
           paste0(UKBB_processed_dir,"/UKBB_pheno_directory.csv"),
           Neale_SGG_dir_file_cp, paste0(Neale_output_dir,"/",Neale_manifest_file), "code/process_Neale.sh",
-          Neale_variant_file, paste0(UKBB_dir, "/imp/ukb1638_imp_chr1_v2_s487398.sample"))
+          Neale_variant_file, paste0(UKBB_dir, "/imp/ukb1638_imp_chr1_v2_s487398.sample"),
+          paste0(UKBB_dir,"/pheno/ukb21067.csv"))
 
 files_ref <- tibble(custom_names = files_custom_names, files = files)
 
@@ -107,3 +99,9 @@ custom_col <- c("#a6cee3",
                 "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99",
                 "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6",
                 "#6a3d9a", "#ffff99", "#b15928")
+
+## UKBB main file for showing how data was filtered (not actually used in pipeline)
+
+main_UKBB_raw_file <- paste0(UKBB_dir,"/pheno/ukb21067.csv")
+
+

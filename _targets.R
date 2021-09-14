@@ -16,7 +16,7 @@ tar_option_set(
   ),
   packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR",
                "ggplot2", "purrr", "rmeta", "PASWR2", "cowplot", "meta", "strex", "RColorBrewer",
-               "forestplot"),
+               "forestplot", "R.utils"),
   error = "workspace",
   memory = "transient",
   garbage_collection = TRUE
@@ -115,6 +115,13 @@ list(
   tar_target(
     data_UKBB_sample,
     fread(path_UKBB_sample, skip=2, header=F,data.table=F)
+  ),
+
+  ## COUNT RAW DATA
+
+  tar_target(
+    data_main_UKBB_raw_count,
+    countLines(path_main_UKBB_raw)[[1]]-1 # subtract 1 to account for header
   ),
 
   ##################################
