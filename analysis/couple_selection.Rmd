@@ -29,6 +29,8 @@ tar_load(data_household_relationships)
 
 **Couples were defined and selected according to the following scheme**
 
+An overview of couple selection and exclusions can be seen [here](assets/couple_selection.png).
+
 # UKBB full sample 
 
 The initial UKBB sample comprised of N = **`r data_main_UKBB_raw_count`** individuals. 

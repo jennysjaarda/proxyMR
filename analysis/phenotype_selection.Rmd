@@ -34,6 +34,8 @@ tar_load(traits_corr5)
 
 *Note that as none of the filtering criteria apply any BF correction for the number of phenotypes, the order of the steps does not matter.*
 
+An overview of phenotype selection and exclusions can be seen [here](assets/phenotype_selection.png).
+
 # UKBB Phenotypes in internal database processed by PHESANT.
 
 All SGG phenotypes went internal processing according the PHESANT pipeline. Some traits were excluded for various reasons (genetic trait, insufficient sample size, etc.).
