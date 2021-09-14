@@ -1,5 +1,1 @@
 "Neale_pheno_ID","Neale_pheno_ID_sub","description","variable_type","Neale_downloaded","category","define_category:T/F"
-"103120",103120,"Fat removed from meat","binary","NO",diet,TRUE
-"1508_4",1508,"Coffee type: Other type of coffee","binary","NO",diet,TRUE
-"20003_1140911736",20003,"Treatment/medication code: ginseng product","binary","NO",disease_proxy,TRUE
-"20117_1",20117,"Alcohol drinker status: Previous","binary","NO",diet,TRUE
