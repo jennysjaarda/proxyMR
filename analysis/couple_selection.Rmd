@@ -35,7 +35,7 @@ The initial UKBB sample comprised of N = **`r data_main_UKBB_raw_count`** indivi
 
 # European, genetic, consenting sample 
 
-Each phenotype in the SGG database was filtered for the following criteria based on the genetic qc file (found here `r files_ref %>% filter(custom_names == "sqc") %>% pull(files)`: 
+Each phenotype in the SGG database was filtered for the following criteria based on the genetic qc file (located here: ``r files_ref %>% filter(custom_names == "sqc") %>% pull(files)``): 
 
 - `excess.relatives=0`
 - `putative.sex.chromosome.aneuploidy=0`
@@ -56,7 +56,7 @@ After filtering, N = **`r dim(data_id_age)[1]`** individuals remained.
 
 # Houshold pairs
 
-Within the European, genetic, consenting sample, we limited to only individuals which came from households with exactly two participants in the UKBB based on the file: `r files_ref %>% filter(custom_names == "household_info") %>% pull(files)`
+Within the European, genetic, consenting sample, we limited to only individuals which came from households with exactly two participants in the UKBB based on the file: ``r files_ref %>% filter(custom_names == "household_info") %>% pull(files)``.
 
 ```{r, hh_pairs_filtering1, include=FALSE}
 ## the `hh_pairs` target includes all UKBB participants so is not a direct subset of the filter above, so we need to first remove people that are not in the PHESANT files to know how many pairs are in this sample (PHESANT files have already been filtered as above)
@@ -79,7 +79,7 @@ After filtering, N = **`r dim(pairs_full_sex)[1]*2`** individuals and N = **`r d
 
 # Unrelated pairs 
 
-Household couples defined above were filtered based on kinship (estimate of the kinship coefficient for pair based on the set of markers used in the kinship inference) from the following file: `r tar_read(path_relatives)`. Couples were excluded if kinship was > `0.05`. 
+Household couples defined above were filtered based on kinship (estimate of the kinship coefficient for pair based on the set of markers used in the kinship inference) from the following file: ``r files_ref %>% filter(custom_names == "relatives") %>% pull(files)``. Couples were excluded if kinship was > `0.05`. 
 
 ```{r, hh_pairs_filtering2, include=FALSE}
 
@@ -112,9 +112,9 @@ After removing homosexual pairs, N = **`r dim(pairs_filter)[1]*2`** individuals 
 
 # Couple pairs
 
-Finally, using the data at data-field `6141`, ["How are people in household related to participant"](https://biobank.ctsu.ox.ac.uk/showcase/field.cgi?id=6141), heterosexual, unrelated, household pairs were filtered to only include couples who both said: `Husband, wife, or partner`. 
+Finally, using the data at data-field `6141`, ["How are people in household related to participant"](https://biobank.ctsu.ox.ac.uk/showcase/field.cgi?id=6141), the heterosexual, unrelated, household pairs were filtered to only include couples who both responded `Husband, wife, or partner`. 
 
-```{r hh_pairs_filtering3,  include = FALSE}
+```{r hh_pairs_filtering4,  include = FALSE}
 
 pairs_filter$house_rel_member1 <- household_relationships[[field]][match(pairs_filter[["HOUSEHOLD_MEMBER1"]], household_relationships$userId)]
 pairs_filter$house_rel_member2 <- household_relationships[[field]][match(pairs_filter[["HOUSEHOLD_MEMBER2"]], household_relationships$userId)]
