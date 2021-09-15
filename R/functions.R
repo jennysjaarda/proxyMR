@@ -2792,6 +2792,19 @@ pull_z_summ_stats <- function(){
 }
 
 
+## data -> data_set with a column that has Neale_ID that we want to replace with description (eg. "exposure_ID")
+## traits_corr2_filled -> reference data set which has both Neale_ID and descrition
+## data_Neale_ID_col -> the column name of the Neale_ID (eg. "exposure_ID")
+## output_column -> the output column name of the description (eg. "description")
+
+replace_Neale_ID <- function(data, traits_corr2_filled, data_Neale_ID_col, output_column){
+
+  descriptions <- traits_corr2_filled[match(data[[data_Neale_ID_col]], traits_corr2_filled$Neale_pheno_ID), "description"]
+  data[[data_Neale_ID_col]] <- descriptions
+  colnames(data)[which(colnames(data)==data_Neale_ID_col)] <- output_column
+  return(data)
+
+}
 
 find_sig_standard_MR_summary <- function(standard_MR_summary){
 
@@ -2803,7 +2816,9 @@ find_sig_standard_MR_summary <- function(standard_MR_summary){
 find_sig_household_MR_summary <- function(household_MR_summary){
 
   denom <- dim(household_MR_summary)[1]/2 #divide by 2 because each meta result is there twice (one row/sex)
-  sig_only <- household_MR_summary %>% filter(IVW_meta_pval < 0.05/denom)
+  num_traits <- sqrt(denom)
+  num_tests <- num_traits^2 - num_traits
+  sig_only <- household_MR_summary %>% filter(IVW_meta_pval < 0.05/num_tests)
   return(sig_only)
 }
 
