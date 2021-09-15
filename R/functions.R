@@ -3876,7 +3876,7 @@ forest_plot_binned_sex_specific <- function(harmonised_data, MR_binned, group, c
 
   outcome_levels <- levels(bin_summary$exposure_sex)
 
-  xlab <- paste0("AM MR estimate for ", tolower(trait_description), " (sex-specific)")
+  xlab <- paste0("AM MR estimate for ", tolower(trait_description), "\n(sex-specific)")
 
   xmin <- min(bin_summary$IVW_beta - bin_summary$IVW_se)
   xmax <- max(bin_summary$IVW_beta + bin_summary$IVW_se)
@@ -4093,7 +4093,7 @@ xy_plot_binned_sex_specifc <- function(harmonised_data, MR_binned, group, custom
   x_ticks <- unique(fig_data %>% pull(bin_median))
   x_labels <- unique(fig_data %>% pull(bin))
 
-  xlab <- ifelse(group == "time_together_even_bins", "Time together in same household (years)", "Median age of couples (years)")
+  xlab <- ifelse(group == "time_together_even_bins", "Time together in\nsame household (years)", "Median age of\ncouples (years)")
 
   legend_title <- "Exposure sex"
 
