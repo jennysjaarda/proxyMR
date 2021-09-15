@@ -1,6 +1,6 @@
 ---
 title: "Update Meeting: 05-07-2021"
-author: "jennysjaarda"
+author: "Jenny Sjaarda"
 date: "2021-07-02"
 output: workflowr::wflow_html
 editor_options:
@@ -20,63 +20,51 @@ library(knitr)
 
 ```
 
-```{r, echo=FALSE,include = FALSE}
-# You need this code to conduct the magic dependences attaching...
-DT::datatable(matrix())
+```{r load_targets, include = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+
+tar_load(household_MR_summary)
+
+
 ```
 
 
-## Last week summary.
+# Last week summary.
 
 - Discussed PolyMR project with Jonathan. 
   - To start by writing introduction. 
   - Going through paper in-depth. 
-  
-## Results. 
+- Next step: run MR between all traits within couples (previously had only looked at single trait at a time).
 
-- Univariate MR. 
+```{r single_trait_MR, echo = FALSE}
+library(knitr)
+knitr::include_graphics("assets/single_trait_MR.png", error = FALSE)
+```
 
-```{r univar_mr, echo = FALSE}
+# Results. 
 
-household_MR_exhaustive_summary <- readRDS("household_MR_exhaustive_summary.rds")
-traits_corr2_update <- readRDS("traits_corr2_update.rds")
-traits_corr2_update <- traits_corr2_update[which(traits_corr2_update[["Neale_file_sex"]]=="both"),]
+Ran MR between all pairs of traits within couples. Number of tests = $j^2 * 2$, where $j$ is the number of traits. MR models were run in each sex sepeartely (male to female and female to male), which is why we multiply by 2. 
 
-description_temp <- left_join(household_MR_exhaustive_summary, traits_corr2_update[, c("Neale_pheno_ID", "description")], by=c("exposure_ID"="Neale_pheno_ID")) %>%
-  rename(exposure_description = description)
+```{r two_trait_MR_fig, echo = FALSE}
+library(knitr)
+knitr::include_graphics("assets/two_trait_model.png", error = FALSE)
+```
 
-description <- left_join(description_temp, traits_corr2_update[, c("Neale_pheno_ID", "description")], by=c("outcome_ID"="Neale_pheno_ID")) %>%
-  rename(outcome_description = description)
+The results significant after multiple hypothesis testing can be seen below. 
 
+```{r two_trait_MR_results, echo = FALSE}
 
-household_MR_exhaustive_summary <- description %>% mutate(same_traits = case_when(exposure_ID == outcome_ID ~ TRUE, 
-                                                                   TRUE ~ FALSE)) %>% dplyr::select(-exposure, -outcome) %>%
-  dplyr::select(-Egger_summary, -Egger_pval, -Egger_int_pval, -Het_IVW_Qpval, -N_snps_sensitivity, -`IVW/Wald_summary_sensitivity`, -`IVW/Wald_pval_sensitivity`, -outcome_sex)
+household_MR_summary.DT <- household_MR_summary %>% dplyr::select(exposure_description, outcome_description, same_trait, exposure_sex, IVW_beta, IVW_pval, IVW_meta_beta, IVW_meta_pval)
 
+num_tests <- dim(household_MR_summary.DT)[1]/2
+household_MR_summary.DT.BF <- household_MR_summary.DT %>% filter(IVW_pval < 0.05/num_tests) 
 
-DT::datatable(household_MR_exhaustive_summary, width = "100%")
+DT::datatable(household_MR_summary.DT.BF, width = "100%") %>% formatRound(columns=c('IVW_beta', 'IVW_pval', 'IVW_meta_beta', 'IVW_meta_pval'), digits = 3)
 
 ```
 
-- Number of BF-significant results: 
-```{r BF_sig, echo = FALSE}
+The total number of tests = `r num_tests`, the number significant after adjusting for BF correction = `r dim(household_MR_summary.DT.BF)[1]`.
 
-BF_sig <- household_MR_exhaustive_summary %>% rename(IVW_Wald_pval= `IVW/Wald_pval`) %>% 
-  mutate_at("IVW_Wald_pval", as.numeric) %>% filter(IVW_Wald_pval < 0.05/dim(.)[1]) 
-
-dim(BF_sig)
-
-```
-
-- Significant results not in the same trait
-
-```{r non_same_traits, echo = FALSE}
-
-diff_traits <- BF_sig %>% filter(same_traits==FALSE)
-DT::datatable(diff_traits, width = "100%")
-
-```
-## Questions. 
+# Questions. 
 
 - Expand list of outcomes? 
   - Initially only performed MR with a single trait (i.e. trait_partner ~ trait_index). 
@@ -87,9 +75,9 @@ DT::datatable(diff_traits, width = "100%")
     3. Evidence of correlation among couples. 
     4. &gt;5 IVs at GW significance. 
     5. No evidence of sex heterogeneity among valid IVs. 
-  - Could add more phenotpyes as outcomes
+  - Could add more phenotpyes as outcomes?
 
+# Next steps. 
 
-## Next steps. 
+- Calculate MR in same person to finish all analyses in diagram above. 
 
-- 

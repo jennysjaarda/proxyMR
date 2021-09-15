@@ -1,6 +1,6 @@
 ---
 title: "Update Meeting: 14-07-2021"
-author: "jennysjaarda"
+author: "Jenny Sjaarda"
 date: "2021-06-14"
 output: workflowr::wflow_html
 editor_options:
@@ -13,18 +13,12 @@ editor_options:
 
 options(scipen=999)
 source("code/settings.R")
-
 library(DT)
 library(knitr)
 library(targets)
 ```
 
-```{r, echo=FALSE,include = FALSE}
-# You need this code to conduct the magic dependences attaching...
-DT::datatable(matrix())
-```
-
-## Last week summary.
+# Last week summary.
 
 - Update phenotypes, make sure blood chemistry values are included (see list of biomarkers included [here](https://biobank.ndph.ox.ac.uk/ukb/label.cgi?id=17518)).
 - Non-urgent analysis: cross partner heritability. 
@@ -32,11 +26,11 @@ DT::datatable(matrix())
 - GWAS of PCs 1-40, adjusted for age and sex, to get IVs (Neale has not run this).
 - Run MR in same individual (i.e. standard MR).
 
-## Update.
+# Update.
 
-### Reprocessed PHESANT 
+## Reprocessed PHESANT phenotypes.
 
-- For all new phenotype files since starting the project and added them to the pipeline. 
+To include all possible phenotypes, reprocessed PHESANT for all new phenotype files that have been added to SGG databased since starting the project and added them to the pipeline. The list of phenotypes included can be seen below.
 
 ```{r new_phenos, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
 
@@ -49,7 +43,8 @@ DT::datatable(data_UKBB_directory_new, width = "100%")
 
 ```
 
-### Identified a problem with the Neale summary stats.
+## Identified a problem with the Neale summary stats.
+
 - Only affecting the `low_confidence_variant` column. 
 - This filter was applied before generating IVs for each summary file that had been downloaded.
 - See a description of the issue on [the Neale github issues page](https://github.com/Nealelab/UK_Biobank_GWAS/issues/20).
@@ -58,20 +53,20 @@ DT::datatable(data_UKBB_directory_new, width = "100%")
   - Also will recreate the IVs for these files (~70 of our files), under the same name. 
 -  As far as I can tell the issue is only in one direction, where some SNPs that were not really low confidence variants (by their definition) were listed as `low_confidence_variant = TRUE`, not the other way around. In other words, the mistake means that we would only be filtering out variants that we should keep.
 
-### Adding PCs to the pipeline. 
+## Adding PCs to the pipeline. 
 
 - Currently running GWAS of first 40 PCs, residualized for `age` and `sex`. Applied inverse normal rank transformation first.  
-- Test between partners. 
+- Test correlation between partners. 
 
 ```{r pc_corr, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
 
 tar_load(PCs_corr)
-
-DT::datatable(PCs_corr, width = "100%")
+PCs_corr.DT <- PCs_corr %>% mutate(r = sqrt(as.numeric(r2))) 
+DT::datatable(PCs_corr.DT, width = "100%")  %>% formatSignif(columns=c('r2', 'r'), digits=3)
 
 ```
 
-## Next steps. 
+# Next steps. 
 
 Define the following: 
 
@@ -88,60 +83,29 @@ Definitions:
 - The causal effect is denoted by ${\alpha}$.
 - Let us assume the following models.
 
-BREAK1
 
 $$
-    \(1) \; X_{i} = G_{i}\cdot {\beta_{x, i\rightarrow i} } + \epsilon \\
-    \(2) \; X_{p} = G_{i}\cdot {\beta_{x, i\rightarrow p} } + \epsilon \\
-    (3) \; Y_{i} = G_{i}\cdot {\beta_{y, i\rightarrow i} } + \epsilon \\
-	  (4) \; Y_{p} = G_{i}\cdot {\beta_{y, i\rightarrow p} } + \epsilon \\
-	  (5) \; Y_{i} = \alpha_j\cdot X_{i} +\epsilon \\
-	  (6) \; X_{p} = \alpha_{x, am}\cdot X_{i{}} +\epsilon \\
-	  (7) \; Y_{p} = \alpha_{y, am}\cdot Y_{i{}} +\epsilon \\
-	  (8) \; Y_{p} = \alpha_{k}\cdot X_{i} +\epsilon
+\begin{align}
+(1) \; X_{i} = G_{i}\cdot {\beta_{x, i\rightarrow i} } + \epsilon \\
+(2) \; X_{p} = G_{p}\cdot {\beta_{x, p\rightarrow p} } + \epsilon \\
+(3) \; X_{p} = G_{i}\cdot {\beta_{x, i\rightarrow p} } + \epsilon \\
+(4) \; Y_{i} = G_{i}\cdot {\beta_{y, i\rightarrow i} } + \epsilon \\
+(5) \; Y_{p} = G_{i}\cdot {\beta_{y, i\rightarrow p} } + \epsilon \\
+(6) \; Y_{i} = \alpha_{x_{i} \rightarrow y_{i}}\cdot X_{i} +\epsilon \\
+(7) \; Y_{p} = \alpha_{x_{p} \rightarrow y_{p}}\cdot X_{p} +\epsilon \\
+(8) \; X_{p} = \alpha_{x_{i} \rightarrow x_{p}}\cdot X_{i{}} +\epsilon \\
+(9) \; Y_{p} = \alpha_{y_{i} \rightarrow y_{p}}\cdot Y_{i{}} +\epsilon \\
+(10) \; Y_{p} = \alpha_{x_{i} \rightarrow y_{p}}\cdot X_{i} +\epsilon
+\end{align}
+$$
+
+- Equation (1), (2), and (4) are simply same-person GWAS result (obtained from Neale).
+- Equation (3) and (5) are household GWAS results (calculated in-house).
+- Equation (6) and (7) (${\alpha_{x_{i} \rightarrow y_{i}}}$ and $\alpha_{x_{p} \rightarrow y_{p}}$), in the causal effect of a trait ${X}$ on ${Y}$ from a standard MR single-person MR, sex specific.
+- Equation (8) and (9), represent assortative mating effects for traits ${X}$ and ${Y}$, respectively ($\alpha_{x_{i} \rightarrow x_{p}}$ and $\alpha_{y_{i} \rightarrow y_{p}}$).
+- Equation (10) $\alpha_{x_{i} \rightarrow y_{p}}$ is the result of phenotype ${X}$ in the index, having a causal effect on a phenotype ${Y}$ in the partner. 
+    - This effect is either due to:
+        (1) The product of $\alpha_{x_{i} \rightarrow x_{p}}$ with $\alpha_{x_{p} \rightarrow y_{p}}$, or 
+        (2) The product of $\alpha_{x_{i} \rightarrow y_{i}}$ with $\alpha_{y_{i} \rightarrow y_{p}}$, or
+        (3) An additional 3rd (or 4th, etc.) variable which amplifies the effect from ${X_{i}}$ to ${Y_{p}}$ that doesn't simply act through a combination of assortative mating and a causal effect of $X$ on $Y$.
     
-$$
-    
-BREAK2
-
-\begin{equation}
-	 \; X_{p} = G_{i}\cdot {\beta_{x, i\rightarrow p} } + \epsilon \\
-	 \; Y_{i} = G_{i}\cdot {\beta_{y, i\rightarrow i} } + \epsilon \\
-	 \; Y_{p} = G_{i}\cdot {\beta_{y, i\rightarrow p} } + \epsilon \\
-	 \; Y_{i} = \alpha_j\cdot X_{i} +\epsilon \\
-	 \; X_{p} = \alpha_{x, am}\cdot X_{i{}} +\epsilon \\
-	 \; Y_{p} = \alpha_{y, am}\cdot Y_{i{}} +\epsilon \\
-	 \; Y_{p} = \alpha_{k}\cdot X_{i} +\epsilon
-\end{equation}
-
-BREAK3
-
-$$
-	 \; X_{p} = G_{i}\cdot {\beta_{x, i\rightarrow p} } + \epsilon \\
-	 \; Y_{i} = G_{i}\cdot {\beta_{y, i\rightarrow i} } + \epsilon \\
-	 \; Y_{p} = G_{i}\cdot {\beta_{y, i\rightarrow p} } + \epsilon \\
-	 \; Y_{i} = \alpha_j\cdot X_{i} +\epsilon \\
-	 \; X_{p} = \alpha_{x, am}\cdot X_{i{}} +\epsilon \\
-	 \; Y_{p} = \alpha_{y, am}\cdot Y_{i{}} +\epsilon \\
-	 \; Y_{p} = \alpha_{k}\cdot X_{i} +\epsilon
-$$
-
-- Equation (1) and (3) are simply same-person GWAS result (obtained from Neale).
-- Equation (2) and (4) are household GWAS results (calculated in-house).
-- Equation (5), and ${\alpha_{j}}$, in the causal effect of a trait ${X}$ on ${Y}$ from a standard MR single-person MR.
-- Equation (6) and (7), represent assortative mating effects for traits ${X}$ and ${Y}$, respectively.
-- Equation (8) ${\alpha_{k}}$ is the result of phenotype ${X}$ in the index, having a causal effect on a phenotype ${Y}$ in the partner. 
-- This effect is either due to the product of one of the two:
-  - ${\alpha_{j}}$ with ${\alpha_{x, am}}$ 
-  - ${\alpha_{j}}$ with ${\alpha_{y, am}}$ 
-
-
-$$
-\sqrt{p}
-$$
-
-$$
-x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
-$$
-
-

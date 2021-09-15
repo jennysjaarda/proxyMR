@@ -1,6 +1,6 @@
 ---
 title: "Update Meeting: 25-08-2021"
-author: "jennysjaarda"
+author: "Jenny Sjaarda"
 date: "2021-08-24"
 output: workflowr::wflow_html
 editor_options:
@@ -12,6 +12,7 @@ editor_options:
 
 options(scipen=999)
 source("code/settings.R")
+source("R/functions.R")
 library(targets)
 library(dplyr)
 library(DT)
@@ -19,52 +20,175 @@ library(knitr)
 
 ```
 
-## Last meeting summary.
+```{r load_targets, include = FALSE}
 
-## Model summary
+tar_load(household_MR_binned_het)
+tar_load(traits_final)
+tar_load(standard_MR_summary_BF_sig)
+tar_load(traits_corr2_filled)
+tar_load(proxyMR_comparison_summary)
+tar_load(proxyMR_prod_comparison_figure)
+tar_load(proxyMR_sex_comparison_figure)
+```
+
+# Last meeting summary.
+
+- Discussed summary of pathways from $X$ in index ($X_i$) to $Y$ in the partner ($Y_p$).
+- Need for running the same individual MR (i.e. simply the standard MR) so we can compare the two pathways (see DAG below).
+- Multiply perpendicular paths together and to calculate the variance between them use the formula [here]( https://stats.stackexchange.com/questions/397839/varxy-if-x-and-y-are-independent-random-variables). 
+
+# Model summary.
 
 ```{r proxyMR_DAG, echo = FALSE}
 library(knitr)
-knitr::include_graphics("assets/proxyMR_DAG.png", error = FALSE)
+knitr::include_graphics("assets/two_trait_model.png", error = FALSE)
 ```
 
-## Results
+# Results.
 
-### Trends amongst bins
+## Heterogeneity amonst different groups. 
 
-```{r MR_binned_het, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
-tar_load(household_MR_binned_het)
-DT::datatable(household_MR_binned_het, width = "100%")
+### Sex heterogeneity
+
+For each proxyMR ($Y_{p} \sim X_i$), analyses were run in each sex separately. The results below display the results that differ among sexes, after BF correction (i.e. `0.05 / (`r dim(traits_final)[1]` * `r dim(traits_final)[1]`)`) 
+
+```{r sig_sex_het, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
+
+household_MR_binned_het_temp <- replace_Neale_ID(household_MR_binned_het, traits_corr2_filled, "exposure_ID", "exposure_description")
+household_MR_binned_het_temp2 <- replace_Neale_ID(household_MR_binned_het_temp, traits_corr2_filled, "outcome_ID", "outcome_description")
+household_MR_binned_het <- household_MR_binned_het_temp2
+
+num_tests <- dim(traits_final)[1]^2
+sex_het_BF_result <- household_MR_binned_het %>% filter(grouping_var=="age_even_bins") %>% 
+  dplyr::select(exposure_description, outcome_description, exposure_sex, outcome_sex, same_trait, IVW_beta, IVW_pval, sex_het_pval) %>% filter(as.numeric(sex_het_pval) < 0.05/num_tests)
+DT::datatable(sex_het_BF_result, width = "100%") %>% formatSignif(columns=c('IVW_beta', 'IVW_pval', 'sex_het_pval'), digits=3)
 ```
 
-### Standard MR 
+However in this case, it may be more sensible to only consider same traits (i.e. testing for more of an "assortative mating" effect), reducing the number of tests to ``r dim(traits_final)[1]``. However, none pass BF-significance (p < `0.05/`r dim(traits_final)[1]` = `r 0.05/dim(traits_final)[1]``). The most significant results is `lifetime number of sexual partners`. 
+
+```{r sex_het_same_trait, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
+
+sex_het_same_trait_result <- household_MR_binned_het %>% filter(grouping_var=="age_even_bins") %>% filter(same_trait==TRUE) %>%
+ dplyr::select(exposure_description, exposure_sex, outcome_sex, same_trait, IVW_beta, IVW_pval, sex_het_pval) %>% arrange(sex_het_pval)
+
+DT::datatable(sex_het_same_trait_result, width = "100%") %>% formatSignif(columns=c('IVW_beta', 'IVW_pval', 'sex_het_pval'), digits=3)
+```
+
+### Binned heterogeneity
+
+For each proxyMR ($Y_{p} \sim X_i$), MR analyses were run in the full sample as well as in 5 roughly equal sized bins according to `time_together` and `age`. Specifically, the outcome data set was split into 5 bins, and the SNP-outcome effect was estimated in each bin separately. These outcome-SNP effects were then used to generate bin-specific MR estimates, using the same SNP-exposure effects from Neale. 
+
+To estimate the difference among bins, used two approaches: 
+
+  1. The Cochran's Q test to test for heterogeneity in meta-analyses.
+  2. Tested the significance of the slope of linear model of median bin (either `age` or `time together`) versus the bin-specific MR estimate.  
+  
+The two results are shown below, restricted to only same_traits. Note that each statistic was computed in each sex separately and meta-analyzed. 
+
+#### Q-statistic results 
+
+```{r bin_q_het, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
+
+q_het_result_age <- household_MR_binned_het %>% filter(same_trait==TRUE) %>% filter(grouping_var=="age_even_bins") %>% 
+  dplyr::select(exposure_description, exposure_sex, outcome_sex, grouping_var, IVW_beta, IVW_pval, Q_pval, Q_pval_meta) 
+
+q_het_result_tt <- household_MR_binned_het %>% filter(same_trait==TRUE) %>% filter(grouping_var=="time_together_even_bins") %>% 
+  dplyr::select(exposure_description, exposure_sex, outcome_sex, grouping_var, IVW_beta, IVW_pval, Q_pval, Q_pval_meta) 
+
+
+DT::datatable(q_het_result_age, width = "100%") %>% formatSignif(columns=c('IVW_beta', 'IVW_pval', 'Q_pval', 'Q_pval_meta'), digits=3)
+DT::datatable(q_het_result_tt, width = "100%") %>% formatSignif(columns=c('IVW_beta', 'IVW_pval', 'Q_pval', 'Q_pval_meta'), digits=3)
+```
+
+#### Slope results 
+
+```{r bin_slope_het, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
+
+slope_het_result_age <- household_MR_binned_het %>% filter(same_trait==TRUE) %>% filter(grouping_var=="age_even_bins") %>% 
+  dplyr::select(exposure_description, exposure_sex, outcome_sex, grouping_var, IVW_beta, IVW_pval, bin_slope_beta, bin_slope_pval, bin_slope_meta_beta, bin_slope_meta_pval, bin_slope_sex_het_pval) 
+
+slope_het_result_tt <- household_MR_binned_het %>% filter(same_trait==TRUE) %>% filter(grouping_var=="time_together_even_bins") %>% 
+  dplyr::select(exposure_description, exposure_sex, outcome_sex, grouping_var, IVW_beta, IVW_pval, bin_slope_beta, bin_slope_pval, bin_slope_meta_beta, bin_slope_meta_pval, bin_slope_sex_het_pval) 
+
+DT::datatable(slope_het_result_age, width = "100%") %>% formatSignif(columns=c('IVW_beta', 'IVW_pval', 'bin_slope_beta', 'bin_slope_pval', 'bin_slope_meta_beta', 'bin_slope_meta_pval', 'bin_slope_sex_het_pval'), digits=3)
+DT::datatable(slope_het_result_tt, width = "100%") %>% formatSignif(columns=c('IVW_beta', 'IVW_pval', 'bin_slope_beta', 'bin_slope_pval', 'bin_slope_meta_beta', 'bin_slope_meta_pval', 'bin_slope_sex_het_pval'), digits=3)
+```
+
+## Standard MR 
+
+To complete all MR anlayses in the DAG above, needed to generate same-person MR estimates (i.e. standard MR). These were also run sex-specific, using Neale summary statistics. As expected, there are many BF-significant summary MR results. Significance was determined based on the meta-analyzed result across sexes. Thus the number of tests was equal to: ``r dim(traits_final)[1]`^2 - `r dim(traits_final)[1]` = `r dim(traits_final)[1]^2 - dim(traits_final)[1]` (number of traits = ``r dim(traits_final)[1]``). The BF-significant results can be seen below. 
 
 ```{r standard_MR, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
-tar_load(standard_MR_summary_BF_sig)
-DT::datatable(standard_MR_summary_BF_sig, width = "100%")
+
+standard_MR_summary_BF_sig_sub <- standard_MR_summary_BF_sig %>% dplyr::select(exposure_description, outcome_description, N_snps, IVW_meta_beta, IVW_meta_pval) %>% unique()
+DT::datatable(standard_MR_summary_BF_sig_sub, width = "100%") %>% formatSignif(columns=c('IVW_meta_beta', 'IVW_meta_pval'), digits=3)
 ```
 
-### Paths from X-index to Y-partner
+Number of BF-signifcant MR pairs: `r dim(standard_MR_summary_BF_sig)[1]`.
 
-```{r proxyMR_products, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
-tar_load(proxyMR_figure_data)
-DT::datatable(proxyMR_figure_data, width = "100%")
+## Paths from X-index to Y-partner
+
+There are three distinct paths from $X_{index}$ to $Y_{partner}$ as illustrated in the DAG above:
+
+  1. Assortative mating through $X$: $\gamma$
+  2. Assortative mating through $Y$: $\rho$
+  3. Indirectly (i.e. through a latent variable which either increases or decreases the observed effect of $X_{index}$ to $Y_{partner}$): $\omega$
+
+The estimates of $\gamma$, $\rho$ and $\omega$ can be seen below, meta-analyzed across sex. 
+
+```{r proxyMR_products, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), eval = TRUE}
+
+proxyMR_comparison_summary.DT <- proxyMR_comparison_summary %>% filter(exposure_sex=="male") %>% 
+  dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, 
+                gam_meta_beta, gam_meta_pval, gam_sex_het_pval, 
+                rho_meta_beta, rho_meta_pval, rho_sex_het_pval,
+                rho_meta_beta, rho_meta_pval, rho_sex_het_pval)
+
+DT::datatable(proxyMR_comparison_summary.DT, width = "100%") %>% formatSignif(columns=c('gam_meta_beta', 'gam_meta_pval', 'gam_sex_het_pval', 
+                                                                                        'rho_meta_beta', 'rho_meta_pval', 'rho_sex_het_pval',
+                                                                                        'rho_meta_beta', 'rho_meta_pval', 'rho_sex_het_pval'), digits=3)
 ```
 
-#### Heterogeneity among paths
+### Heterogeneity among paths
 
+Next, we wanted to compare the three paths from $X_index$ to $Y_partner$. This was done using a standard heterogeneity test. 
 
-```{r proxyMR_figure1, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
-tar_load(proxyMR_prod_comparison_figure)
+```{r proxyMR_product_comparison, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), eval = TRUE}
+
+proxyMR_comparison_summary_prod <- proxyMR_comparison_summary %>%
+  dplyr::select(exposure_description, outcome_description, 
+                exposure_category, outcome_category, exposure_sex,
+                omega_vs_gam_p, omega_vs_gam_meta_p,
+                omega_vs_rho_p, omega_vs_rho_meta_p,
+                gam_vs_rho_p, gam_vs_rho_meta_p,
+                omega_vs_gam_rho_p, omega_vs_gam_rho_meta_p)
+                
+
+DT::datatable(proxyMR_comparison_summary_prod, width = "100%") %>% formatSignif(
+  columns = c(
+    'omega_vs_gam_p',
+    'omega_vs_gam_meta_p',
+    'omega_vs_rho_p',
+    'omega_vs_rho_meta_p',
+    'gam_vs_rho_p',
+    'gam_vs_rho_meta_p',
+    'omega_vs_gam_rho_p',
+    'omega_vs_gam_rho_meta_p'
+  ),
+  digits = 3
+)
+```
+
+``````{r proxyMR_figure1, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600}
 proxyMR_prod_comparison_figure
 ```
 
-#### Sex heterogeneity amongst paths
+### Sex heterogeneity amongst paths
 
-``````{r proxyMR_figure2, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
-tar_load(proxyMR_sex_comparison_figure)
+``````{r proxyMR_figure2, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600}
 proxyMR_sex_comparison_figure
 ```
 
-#### Hierarchical clustering 
+### Hierarchical clustering 
 
+Working on a figure like the one [here](https://www.r-graph-gallery.com/310-custom-hierarchical-edge-bundling.html) and [here](https://www.r-graph-gallery.com/311-add-labels-to-hierarchical-edge-bundling.html).

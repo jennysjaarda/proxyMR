@@ -1,6 +1,6 @@
 ---
 title: "Update Meeting: 06-09-2021"
-author: "jennysjaarda"
+author: "Jenny Sjaarda"
 date: "2021-09-06"
 output: workflowr::wflow_html
 editor_options:
@@ -12,19 +12,12 @@ editor_options:
 
 options(scipen=999)
 source("code/settings.R")
+source("R/functions.R")
 library(targets)
 library(dplyr)
 library(DT)
 library(knitr)
-
-```
-
-# Model summaries
-
-```{r proxyMR_DAG, echo = FALSE}
-library(knitr)
-knitr::include_graphics("assets/proxyMR_DAG.png", error = FALSE)
-knitr::include_graphics("assets/proxyMR_DAG_MV.png", error = FALSE)
+library(kableExtra)
 
 ```
 
@@ -38,72 +31,77 @@ tar_load(proxyMR_comparison_summary)
 
 ```
 
-# Questions
+# Last meeting summary.
+
+- Need to sum $\rho$ and $\gamma$ together and calculate difference of the ***sum*** from $\omega$ (previously only calculated differences between each pair, not sum).
+- Use less stringent BF calculation for AM MR (for calculating trends across bins).
+
+# Model summaries.
+
+```{r proxyMR_DAG, echo = FALSE}
+library(knitr)
+knitr::include_graphics("assets/two_trait_model.png", error = FALSE)
+knitr::include_graphics("assets/MV_trait_model.png", error = FALSE)
+
+```
+
+# Questions.
 
 1. Impact of meta-analyzing after MR is calculated? 
-
 2. Trend across bins: should it be a weighted linear model? 
-
 3. Less stringent BF correction: 
     - Calculate correlation matrix of all 131 traits tested. 
     - Perform PCs on the resulting corr matrix. 
-    - Number of tests = # of PCs needed until variance explained is > 99.5%.
-    - Resulting # of tests: `r num_tests_by_PCs`.
-
+    - Number of tests = # of PCs needed until variance explained is > 99.5%. 
+    - Resulting # of tests: `r num_tests_by_PCs`.  
 4. Filter by same-person MR or proxyMR?
-
-5. Summed `rho` and `gamma` and compared this to `omega`, for the variance - it's just the sum of these two variances? 
-
-6. MV MR: X -> Z -> Y
-    - Drop Z's if not significant in MV MR (i.e. `Y ~ X + Z1 + Z2 + Z3 + ...`)
+5. Summed $\rho$ and $\gamma$ and compared this to `omega`, for the variance - it's just the sum of these two variances? 
+6. MV MR: $X \rightarrow  Z \rightarrow Y$
+    - Drop Z's if not significant in MV MR (i.e. $Y \sim X + Z_1 + Z_2 + Z_3...$)
     - Do we drop from the model itself and recompute the beta-coefficients? Or simply not include them in the result sum? 
   
-  
-# AM summary
+# AM summary.
 
-
-```{r AM_summary, echo = TRUE, include = TRUE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
-
-AM_result <- household_MR_binned_het %>% filter(same_trait)
-
-AM_sig_sex_het <- AM_result %>% filter(sex_het_pval < 0.05/num_tests_by_PCs) %>% dplyr::select(exposure_ID, exposure_sex, IVW_beta, IVW_se, sex_het_pval) %>% unique()
-
-AM_sig_age_slope <- AM_result %>% filter(grouping_var=="age_even_bins") %>% filter(bin_slope_pval_meta < 0.05/num_tests_by_PCs) %>%
-  dplyr::select(exposure_ID, exposure_sex, IVW_beta, IVW_se, bin_slope_beta_meta, bin_slope_pval_meta) %>% unique()
-
-AM_sig_tt_slope <- AM_result %>% filter(grouping_var=="time_together_even_bins") %>% filter(bin_slope_pval_meta < 0.05/num_tests_by_PCs) %>%
-  dplyr::select(exposure_ID, exposure_sex, IVW_beta, IVW_se, bin_slope_beta_meta, bin_slope_pval_meta) %>% unique()
-
-AM_sig_age_sex_het <- AM_result %>% filter(grouping_var=="age_even_bins") %>% filter(bin_slope_sex_het_pval < 0.05/num_tests_by_PCs) %>%
-  dplyr::select(exposure_ID, exposure_sex, IVW_beta, IVW_se, bin_slope_beta, bin_slope_pval, bin_slope_beta_meta, bin_slope_pval_meta) %>% unique()
-
-AM_sig_tt_sex_het <- AM_result %>% filter(grouping_var=="time_together_even_bins") %>% filter(bin_slope_sex_het_pval < 0.05/num_tests_by_PCs) %>%
-  dplyr::select(exposure_ID, exposure_sex, IVW_beta, IVW_se, bin_slope_beta, bin_slope_pval, bin_slope_beta_meta, bin_slope_pval_meta) %>% unique()
-
-```
+A summary of single trait MR within couples (AM MR) can be found [here](AM_MR_summary.html).
 
 # ProxyMR 
 
 Restricting XY pairs: 
+
   - If we base it on a significant MR in the same individuals (same MR: $X \rightarrow Y$), the number of tests is: `r dim(standard_MR_summary_BF_sig)[1]`.
   - If we base it on a significant **proxyMR** ($X_{i} \rightarrow Y_{p}$), the number of tests is: `r dim(household_MR_summary_BF_sig)[1]`.
-
+  
 Can we use the PC multiple-test correction we applied above here, or just use conservative raw BF correction? 
 
-Comparison of omega to rho + gamma instead of just rho or gamma alone. There are more significant results using both. 
+Comparison of omega to rho + gamma instead of just rho or gamma alone. There are more significant results using both, would have expected there to be less. An example of one such result is shown below. 
 
-```{r proxy_MR_update, echo = TRUE, include = TRUE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+```{r proxy_MR_update, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
 
-table(proxyMR_comparison_summary$omega_vs_gam_BF_sig_meta)
+t1 <- as.data.frame(table(proxyMR_comparison_summary$omega_vs_gam_BF_sig_meta))
+colnames(t1) <- c("omega_vs_gam_BF_sig_meta", "Frq")
 
-table(proxyMR_comparison_summary$omega_vs_rho_BF_sig_meta)
+kbl(t1) %>% kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
 
-table(proxyMR_comparison_summary$omega_vs_gam_rho_BF_sig_meta)
+t2 <- as.data.frame(table(proxyMR_comparison_summary$omega_vs_rho_BF_sig_meta))
+colnames(t2) <- c("omega_vs_rho_BF_sig_meta", "Frq")
+
+kbl(t2) %>% kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+
+t3 <- as.data.frame(table(proxyMR_comparison_summary$omega_vs_gam_rho_BF_sig_meta))
+colnames(t3) <- c("omega_vs_gam_rho_BF_sig_meta", "Frq")
+
+kbl(t3) %>% kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
 
 #which(proxyMR_comparison_summary$omega_vs_gam_rho_BF_sig_meta & !proxyMR_comparison_summary$omega_vs_rho_BF_sig_meta)[1:10]
 
-t(proxyMR_comparison_summary[205,c("exposure_ID", "outcome_ID", "exposure_description", "outcome_description", "gam_meta_beta", "rho_meta_beta", "omega_meta_beta", "gam_rho_meta_beta",
+sample_dat <- t(proxyMR_comparison_summary[241,c("exposure_ID", "outcome_ID", "exposure_description", "outcome_description", "gam_meta_beta", "rho_meta_beta", "omega_meta_beta", "gam_rho_meta_beta",
                                     "gam_meta_se", "rho_meta_se", "omega_meta_se", "gam_rho_meta_se",
                                    "omega_vs_gam_meta_p", "omega_vs_rho_meta_p", "omega_vs_gam_rho_meta_p")])
+sample_dat <- as.data.frame(sample_dat)
+colnames(sample_dat) <- c("Info")
+
+
+kbl(sample_dat) %>% kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+
 
 ```
