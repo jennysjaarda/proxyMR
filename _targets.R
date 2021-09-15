@@ -200,7 +200,7 @@ list(
 
   tar_target(
     PCs_corr,
-    compute_pc_corr(sqc_munge, hh_pairs_filter)
+    compute_pc_corr(sqc_munge, hh_pairs_filter, data_id_sex)
   ),
   # write_traits_corr = write.csv(trait_corrs, file_out( "output/tables/1.household_correlations.csv"), row.names=F),
 

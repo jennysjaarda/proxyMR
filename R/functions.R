@@ -351,10 +351,13 @@ ivt <- function(x){
 }
 
 
-compute_pc_corr <- function(sqc_munge, pairs_filter){
+compute_pc_corr <- function(sqc_munge, pairs_filter, data_id_sex){
 
-  sqc_munge <- sqc_munge %>% mutate_at(vars(starts_with("PC_")), ivt)
-  PCs <- colnames(sqc_munge)[-which(colnames(sqc_munge)=="ID")]
+
+  euro_phes_data <- merge(sqc_munge, data_id_sex, by.x = "ID", by.y = "userId")
+
+  sqc_munge <- euro_phes_data %>% mutate_at(vars(starts_with("PC_")), ivt)
+  PCs <- colnames(sqc_munge)[-which(colnames(sqc_munge) %in% c("ID", "sex"))]
   trait_corr <- numeric()
   ID_sub <- NA
   for (PC in PCs)
