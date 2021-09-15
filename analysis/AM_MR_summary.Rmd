@@ -1,0 +1,162 @@
+---
+title: "Assortative mating MR summary"
+author: "Jenny Sjaarda"
+date: "2021-09-15"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+
+options(scipen=999)
+source("code/settings.R")
+source("R/functions.R")
+library(targets)
+library(dplyr)
+library(DT)
+library(knitr)
+
+```
+
+```{r load_targets, include = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+
+tar_load(traits_final)
+tar_load(household_MR_binned_het)
+tar_load(household_MR_summary_AM)
+tar_load(traits_corr2_filled)
+tar_load(num_tests_by_PCs)
+tar_load(num_tests_by_PCs_AM_sig)
+
+```
+
+# Background 
+
+- For certain analyses it is worth only looking at MR results between couples where the exposure trait is the same as the outcome trait. 
+- These results we have termed, the assortative mating MR results. 
+
+```{r single_trait_fig, echo = FALSE}
+library(knitr)
+knitr::include_graphics("assets/single_trait_MR.png", error = FALSE)
+```
+
+# Results 
+
+```{r AM_data_prep, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE, include = FALSE}
+
+AM_sig_traits <- household_MR_summary_AM %>% filter(IVW_meta_pval < 0.05/num_tests_by_PCs) %>% pull(exposure_ID) %>% unique()
+AM_result_sig <- household_MR_summary_AM %>% filter(exposure_ID %in% AM_sig_traits)
+ 
+household_MR_binned_het_temp <- replace_Neale_ID(household_MR_binned_het, traits_corr2_filled, "exposure_ID", "exposure_description")
+household_MR_binned_het_temp2 <- replace_Neale_ID(household_MR_binned_het_temp, traits_corr2_filled, "outcome_ID", "outcome_description")
+household_MR_binned_het_descript <- household_MR_binned_het_temp2
+
+```
+
+- The number of analyses corresponds to the number of traits = `r dim(traits_final)[1]`. 
+- The significant results after adjusting for multiple hypothesis testing are shown below. 
+- `IVW_meta_beta` and `IVW_meta_pval` corresponds to the beta and p-value of the meta-analyzed MR across sexes, respectively.  
+- After adjusting for multiple tests (p < `0.05 / `r num_tests_by_PCs``), the number of significant AM MRs was `r length(AM_sig_traits)` (see below on details for how number of effective tests was obtained).
+
+```{r AM_overview, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
+
+AM_result_sig.DT <- AM_result_sig %>% dplyr::select(exposure_description, IVW_meta_beta, IVW_meta_pval) %>% unique()
+DT::datatable(AM_result_sig.DT, width = "100%") %>% formatSignif(columns=c('IVW_meta_beta', 'IVW_meta_pval'), digits=3)
+
+```
+
+**A note on multiple testing adjustment:**
+- Adjustment was based on PCs of correlation matrix.  
+- Calculate correlation matrix of all `r dim(traits_final)[1]` traits tested. 
+- Perform PCs on the resulting corr matrix. 
+- Number of tests = # of PCs needed until variance explained is > 99.5%. 
+- Resulting # of effective tests: `r num_tests_by_PCs`.  
+
+## Sex heterogeneity
+
+- For each AM MR ($X_{p} \sim X_i$), analyses were run in each sex separately. 
+- Of the `r length(AM_sig_traits)` significant results shown above, we tested to see if there was any difference in AM MR estimates between sexes. 
+- A similar adjustment for multiple hypothesis testing was applied as above, resulting in the number of effective tests as `r num_tests_by_PCs_AM_sig`. 
+- The table below displays the results that significantly differ among sexes (p < `0.05/`r num_tests_by_PCs_AM_sig``).
+
+```{r AM_sex_het, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
+
+AM_sig_sex_het <- AM_result_sig %>% filter(IVW_sex_het_pval < 0.05/num_tests_by_PCs_AM_sig)
+
+AM_result_sig.DT <- AM_sig_sex_het %>% dplyr::select(exposure_description, IVW_beta, IVW_pval, IVW_meta_beta, IVW_meta_pval, IVW_sex_het_pval) %>% unique()
+DT::datatable(AM_result_sig.DT, width = "100%") %>% formatSignif(columns=c('IVW_beta', 'IVW_pval', 'IVW_meta_beta', 'IVW_meta_pval', 'IVW_sex_het_pval'), digits=3)
+
+```
+
+- Only `r dim(AM_result_sig.DT)[1]/2` was significant after adjustment. 
+- The table below shows the results significant at `p < 0.05`.
+
+```{r AM_sex_het_nom, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
+
+AM_sig_sex_het_nom <- AM_result_sig %>% filter(IVW_sex_het_pval < 0.05)
+AM_result_sig_nom.DT <- AM_sig_sex_het_nom %>% dplyr::select(exposure_description, IVW_beta, IVW_pval, IVW_meta_beta, IVW_meta_pval, IVW_sex_het_pval) %>% unique()
+DT::datatable(AM_result_sig_nom.DT, width = "100%") %>% formatSignif(columns=c('IVW_beta', 'IVW_pval', 'IVW_meta_beta', 'IVW_meta_pval', 'IVW_sex_het_pval'), digits=3)
+
+```
+
+## Binned results
+
+- For each AM MR ($X_{p} \sim X_i$), MR analyses were run in the full sample as well as in 5 roughly equal sized bins according to time couple had been together (`time_together`) estimated using [time at household variable](https://biobank.ctsu.ox.ac.uk/showcase/field.cgi?id=699), and median age (`age`). 
+- Of the `r length(AM_sig_traits)` significant results shown above, we tested to see if there was any significant difference in AM MR estimates amongst the two grouping variables. 
+- Specifically, the outcome data set was split into 5 bins, and the SNP-outcome effect was estimated in each bin separately. 
+- These outcome-SNP effects were then used to generate bin-specific MR estimates, using the same SNP-exposure effects from Neale. 
+- To estimate the difference among bins, we used two approaches: 
+  1. The Cochran's Q test to test for heterogeneity in meta-analyses.
+  2. Tested the significance of the slope of linear model of median bin (either `age` or `time together`) versus the bin-specific MR estimate.  
+- The two results are shown below. Note that each statistic was computed in each sex separately and meta-analyzed. 
+
+### Q-statistic across bins
+
+```{r bin_q_het_setup, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
+
+q_het_result_age <- household_MR_binned_het_descript %>% filter(same_trait==TRUE) %>% filter(grouping_var=="age_even_bins") %>% filter(IVW_meta_pval < 0.05/num_tests_by_PCs) %>%
+  dplyr::select(exposure_description, exposure_sex, outcome_sex, grouping_var, IVW_beta, IVW_pval, Q_pval, Q_pval_meta) %>% arrange(Q_pval_meta)
+
+q_het_result_tt <- household_MR_binned_het_descript %>% filter(same_trait==TRUE) %>% filter(grouping_var=="time_together_even_bins") %>% filter(IVW_meta_pval < 0.05/num_tests_by_PCs) %>%
+  dplyr::select(exposure_description, exposure_sex, outcome_sex, grouping_var, IVW_beta, IVW_pval, Q_pval, Q_pval_meta) %>% arrange(Q_pval_meta)
+
+```
+
+The number of significant q-statistics significant after multiple hypothesis testing (p < `0.05/`r num_tests_by_PCs_AM_sig` = `r 0.05/num_tests_by_PCs_AM_sig```) in each group was:
+  - Binned by median *age* of couples, number of significant results within meta = `r length(which(q_het_result_age$Q_pval_meta < 0.05/num_tests_by_PCs_AM_sig))/2` and sex-specific = `r length(which(q_het_result_age$Q_pval < 0.05/num_tests_by_PCs_AM_sig))/2`.
+  - Binned by *time* couple had been together, number of significant results within meta = `r length(which(q_het_result_tt$Q_pval_meta < 0.05/num_tests_by_PCs_AM_sig))/2` and sex-specific = `r length(which(q_het_result_tt$Q_pval < 0.05/num_tests_by_PCs_AM_sig))/2`.
+
+All results are displayed below (sort by Q_pval to view significant results):
+
+```{r bin_q_het, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
+
+DT::datatable(q_het_result_age, width = "100%") %>% formatSignif(columns=c('IVW_beta', 'IVW_pval', 'Q_pval', 'Q_pval_meta'), digits=3)
+DT::datatable(q_het_result_tt, width = "100%") %>% formatSignif(columns=c('IVW_beta', 'IVW_pval', 'Q_pval', 'Q_pval_meta'), digits=3)
+```
+
+### Trend across bins 
+
+```{r bin_slope_setup, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
+
+slope_result_age <- household_MR_binned_het_descript %>% filter(same_trait==TRUE) %>% filter(grouping_var=="age_even_bins") %>% filter(IVW_meta_pval < 0.05/num_tests_by_PCs) %>%
+  dplyr::select(exposure_description, exposure_sex, grouping_var, bin_slope_beta, bin_slope_pval, bin_slope_meta_pval, bin_slope_meta_pval_wt, bin_slope_sex_het_pval) %>% arrange(bin_slope_meta_pval)
+
+slope_result_tt <- household_MR_binned_het_descript %>% filter(same_trait==TRUE) %>% filter(grouping_var=="time_together_even_bins") %>% filter(IVW_meta_pval < 0.05/num_tests_by_PCs) %>%
+  dplyr::select(exposure_description, exposure_sex, grouping_var, bin_slope_beta, bin_slope_pval, bin_slope_meta_pval, bin_slope_meta_pval_wt, bin_slope_sex_het_pval) %>% arrange(bin_slope_meta_pval)
+
+```
+
+Slopes were calculated by estimating the beta-coefficient of a linear regression between MR estimate within each bin (outcome) and median bin (either age or time at same household). Linear models were run both *unweighted* and *weighted* for the by the inverse of the SE of the MR estimate. 
+
+The number of significant slopes ($MR_{bin} \sim median_{bin}$) significant after multiple hypothesis testing (p < `0.05/`r num_tests_by_PCs_AM_sig` = `r 0.05/num_tests_by_PCs_AM_sig```) in each group was:
+  - Binned by median *age* of couples, number of significant results within meta = `r length(which(slope_result_age$bin_slope_meta_pval < 0.05/num_tests_by_PCs_AM_sig))/2`, weighted by inverse of the SE = `r length(which(slope_result_age$bin_slope_meta_pval_wt < 0.05/num_tests_by_PCs_AM_sig))/2`, different between sexes = `r length(which(slope_result_age$bin_slope_sex_het_pval < 0.05/num_tests_by_PCs_AM_sig))/2`
+  - Binned by *time* couple had been together, number of significant results within meta = `r length(which(slope_result_tt$bin_slope_meta_pval < 0.05/num_tests_by_PCs_AM_sig))/2` and weighted by inverse of the SE = `r length(which(slope_result_tt$bin_slope_meta_pval_wt < 0.05/num_tests_by_PCs_AM_sig))/2`, different between sexes = `r length(which(slope_result_tt$bin_slope_sex_het_pval < 0.05/num_tests_by_PCs_AM_sig))/2`
+All results are displayed below (sort by Q_pval to view significant results):
+
+All results are displayed below (sort by various p-values to view significant results):
+
+```{r bin_q_het, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
+
+DT::datatable(slope_result_age, width = "100%") %>% formatSignif(columns=c('bin_slope_beta', 'bin_slope_pval', 'bin_slope_meta_pval', 'bin_slope_meta_pval_wt', 'bin_slope_sex_het_pval'), digits=3)
+DT::datatable(slope_result_tt, width = "100%") %>% formatSignif(columns=c('bin_slope_beta', 'bin_slope_pval', 'bin_slope_meta_pval', 'bin_slope_meta_pval_wt', 'bin_slope_sex_het_pval'), digits=3)
+```
