@@ -2443,7 +2443,7 @@ calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, househo
 
         meta_summ <- c(Q_stat_meta, Q_pval_meta, lm_summary_meta, lm_summary_meta_weight)
         names(meta_summ) <- c("Q_stat_meta", "Q_pval_meta",
-                              "bin_slope_meta_beta", "bin_slope_meta_se", "bin_slope_pval_meta",
+                              "bin_slope_meta_beta", "bin_slope_meta_se", "bin_slope_meta_pval",
                               "bin_slope_meta_beta_wt", "bin_slope_meta_se_wt", "bin_slope_meta_pval_wt")
 
         out_temp <- as.data.frame(t(c(description_sum, all_sum, diff_sum, meta_summ))) %>%
