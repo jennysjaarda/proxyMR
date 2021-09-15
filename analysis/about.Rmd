@@ -1,5 +1,6 @@
 ---
 title: "About"
+author: "Jenny Sjaarda"
 output:
   workflowr::wflow_html:
     toc: false

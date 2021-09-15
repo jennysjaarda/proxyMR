@@ -1,5 +1,6 @@
 ---
 title: "Home"
+author: "Jenny Sjaarda"
 site: workflowr::wflow_site
 output:
   bookdown::html_document2:
@@ -33,10 +34,11 @@ later project or manuscript development.
 
 Current tasks and completed tasks (roughly organized by dates/weeks).
 
-## [Workflow management](workflow.html) {.unnumbered}
+## [Project Workflow Status](status.html) {.unnumbered}
 
-This project uses the [`targets`](https://wlandau.github.io/targets/) and [`workflowr`](https://github.com/jdblischak/workflowr) packages for managing the workflow of the project (making sure that the dependencies between computational steps are satisfied). This notebook contains notes on the proposed workflow for
-using `targets` and `workflowr`.
+This notebook displays the computational status of the project, that is, whether everything is up to date. Ironically, this is currently the only notebook that must be run manually, so this notebook only displays the status **when the notebook was last executed** and there is no indication whether the project status has changed since then.
+
+This project uses the [`targets`](https://wlandau.github.io/targets/) and [`workflowr`](https://github.com/jdblischak/workflowr) packages for managing the workflow of the project (making sure that the dependencies between computational steps are satisfied). 
 
 ## [Meetings](meetings.html) {.unnumbered}
 
@@ -79,7 +81,7 @@ Final list of phenotypes for analysis in pipeline and some basic characteristics
 - Test SNP-outcome effects between genetic instruments and partner outcome phenotypes (sex specific) [$Y_{p} \sim G_{i}$].
 - Combine in MR to assess causal relationships between index and partner [$Y_{p} \sim X_{i}$].
 
-### [Assortative mating MR]() {.unnumbered}
+### [Assortative mating MR](AM_MR_summary.html) {.unnumbered}
 
 - Restrict to only MRs where exposure is the same as outcome (for downstream analyses) [$X_{p} \sim X_{i}$].
 
@@ -93,7 +95,7 @@ Final list of phenotypes for analysis in pipeline and some basic characteristics
 
 - Compare paths from index exposure phenotype to partner outcome phenotype [$X_{i} \rightarrow Y_{p}$].
 
-### [PC correlation among couples]() {.unnumbered}
+### [Assess impact of geography on causal relationships between couples](geographical_impact.html) {.unnumbered}
 
 ------------------------------------------------------------------------
 
