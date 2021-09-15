@@ -1,0 +1,13 @@
+---
+title: "Pipeline Overview"
+author: "Jenny Sjaarda"
+date: "2021-09-15"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r pipeline_fig, dpi = 150, echo = FALSE, out.width = "200%"}
+library(knitr)
+knitr::include_graphics("assets/pipeline.png", error = FALSE)
+```
