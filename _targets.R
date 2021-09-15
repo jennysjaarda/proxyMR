@@ -507,7 +507,7 @@ list(
 
 
   tar_target(
-    household_MR, ## `household_MR` is run in full sample only, not binned by age / time-together categories
+    household_MR, ## `household_MR` is run in full sample only, not binned by age / time-together categories.
     run_household_MR_comprehensive(exposure_info, outcomes_to_run, household_harmonised_data, MR_method_list),
     pattern = map(exposure_info, household_harmonised_data), iteration = "list"
   ),
@@ -525,9 +525,25 @@ list(
   ),
 
   tar_target(
-    ##filter to only MR between same traits
+    ## filter to only MR between same traits.
     household_MR_summary_AM,
     AM_filter_household_MR_summary(household_MR_summary)
+  ),
+
+  tar_target(
+    ## after AM MR results is reduced to only those significant based on `num_tests_by_PCs`, reduce further for testing heterogeneity between sexes and amongst bins to reduce number of tests.
+    exposure_info_AM_sig,
+    find_AM_sig_exposure_info(household_MR_summary_AM, exposure_info, num_tests_by_PCs)
+  ),
+
+  tar_target(
+    PC_traits_AM_sig,
+    calc_PC_traits(exposure_info_AM_sig, data_sqc, data_fam, data_relatives)
+  ),
+
+  tar_target(
+    num_tests_by_PCs_AM_sig,
+    calc_num_tests_by_PCs(PC_traits_AM_sig, 0.995)
   ),
 
   tar_target(

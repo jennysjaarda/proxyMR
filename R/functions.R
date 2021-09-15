@@ -2830,6 +2830,26 @@ AM_filter_household_MR_summary <- function(household_MR_summary){
 }
 
 
+find_AM_sig_exposure_info <- function(household_MR_summary_AM, exposure_info, num_tests_by_PCs){
+
+
+  AM_sig_traits <- household_MR_summary_AM %>% filter(IVW_meta_pval < 0.05/num_tests_by_PCs) %>% pull(exposure_ID) %>% unique()
+  exposure_info_sub <- list()
+  j <- 1
+  for(i in 1:length(exposure_info)){
+    exposure_info_i <- exposure_info[[i]]
+    exposure_ID <- exposure_info_i %>% filter(Value=="trait_ID") %>% pull(Info)
+
+    if(exposure_ID %in% AM_sig_traits){
+      exposure_info_sub[[j]] <- exposure_info_i
+      j <- j+1
+    }
+  }
+  return(exposure_info_sub)
+
+}
+
+
 z.test_p <- Vectorize(function(x, sigma.x, y, sigma.y) {z.test(x, sigma.x, y, sigma.y)$p},
                         vectorize.args = c("x", "sigma.x", "y", "sigma.y"))
 
@@ -2948,17 +2968,16 @@ run_proxyMR_comparison <- function(exposure_info, household_MR_summary_BF_sig, h
     prod_diff_list <- list()
 
     prod_diff_result <- summarized_result %>%
-      mutate(omega_vs_gam_p = z.test_p(gam_beta, gam_se, omega_beta, omega_se)) %>%
-      mutate(omega_vs_rho_p = z.test_p(rho_beta, rho_se, omega_beta, omega_se)) %>%
-      mutate(omega_vs_gam_rho_p = z.test_p(gam_rho_beta, gam_rho_se, omega_beta, omega_se)) %>%
-      mutate(gam_vs_rho_p = z.test_p(rho_beta, rho_se, gam_beta, gam_se)) %>%
+      mutate(omega_vs_gam_pval = z.test_p(gam_beta, gam_se, omega_beta, omega_se)) %>%
+      mutate(omega_vs_rho_pval = z.test_p(rho_beta, rho_se, omega_beta, omega_se)) %>%
+      mutate(omega_vs_gam_rho_pval = z.test_p(gam_rho_beta, gam_rho_se, omega_beta, omega_se)) %>%
+      mutate(gam_vs_rho_pval = z.test_p(rho_beta, rho_se, gam_beta, gam_se)) %>%
 
 
-      mutate(omega_vs_gam_meta_p = z.test_p(gam_meta_beta, gam_meta_se, omega_meta_beta, omega_meta_se)) %>%
-      mutate(omega_vs_rho_meta_p = z.test_p(rho_meta_beta, rho_meta_se, omega_meta_beta, omega_meta_se)) %>%
-      mutate(omega_vs_gam_rho_meta_p = z.test_p(gam_rho_meta_beta, gam_rho_meta_se, omega_meta_beta, omega_meta_se)) %>%
-
-      mutate(gam_vs_rho_meta_p = z.test_p(rho_meta_beta, rho_meta_se, gam_meta_beta, gam_meta_se)) %>%
+      mutate(omega_vs_gam_meta_pval = z.test_p(gam_meta_beta, gam_meta_se, omega_meta_beta, omega_meta_se)) %>%
+      mutate(omega_vs_rho_meta_pval = z.test_p(rho_meta_beta, rho_meta_se, omega_meta_beta, omega_meta_se)) %>%
+      mutate(omega_vs_gam_rho_meta_pval = z.test_p(gam_rho_meta_beta, gam_rho_meta_se, omega_meta_beta, omega_meta_se)) %>%
+      mutate(gam_vs_rho_meta_pval = z.test_p(rho_meta_beta, rho_meta_se, gam_meta_beta, gam_meta_se)) %>%
 
       dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, exposure_sex, outcome_sex, starts_with("gam"), starts_with("rho"), starts_with("omega"))
 
@@ -2980,21 +2999,21 @@ summarize_proxyMR_comparison <- function(proxyMR_comparison, traits_corr2_filled
 
 
   comparison_result <- comparison_result %>%
-    mutate(omega_vs_gam_BF_sig_sex_specific = case_when(TRUE ~ omega_vs_gam_p < 0.05/num_result,
+    mutate(omega_vs_gam_BF_sig_sex_specific = case_when(TRUE ~ omega_vs_gam_pval < 0.05/num_result,
                                                         TRUE ~ TRUE)) %>%
-    mutate(omega_vs_rho_BF_sig_sex_specific = case_when(TRUE ~ omega_vs_rho_p < 0.05/num_result,
+    mutate(omega_vs_rho_BF_sig_sex_specific = case_when(TRUE ~ omega_vs_rho_pval < 0.05/num_result,
                                                         TRUE ~ TRUE)) %>%
-    mutate(gam_vs_rho_BF_sig_sex_specific = case_when(TRUE ~ gam_vs_rho_p < 0.05/num_result,
+    mutate(gam_vs_rho_BF_sig_sex_specific = case_when(TRUE ~ gam_vs_rho_pval < 0.05/num_result,
                                                       TRUE ~ TRUE)) %>%
-    mutate(omega_vs_gam_rho_BF_sig_meta = case_when(TRUE ~ omega_vs_gam_rho_p < 0.05/num_result,
+    mutate(omega_vs_gam_rho_BF_sig_meta = case_when(TRUE ~ omega_vs_gam_rho_pval < 0.05/num_result,
                                               TRUE ~ TRUE)) %>%
-    mutate(omega_vs_gam_BF_sig_meta = case_when(TRUE ~ omega_vs_gam_meta_p < 0.05/num_result,
+    mutate(omega_vs_gam_BF_sig_meta = case_when(TRUE ~ omega_vs_gam_meta_pval < 0.05/num_result,
                                                 TRUE ~ TRUE)) %>%
-    mutate(omega_vs_rho_BF_sig_meta = case_when(TRUE ~ omega_vs_rho_meta_p < 0.05/num_result,
+    mutate(omega_vs_rho_BF_sig_meta = case_when(TRUE ~ omega_vs_rho_meta_pval < 0.05/num_result,
                                                 TRUE ~ TRUE)) %>%
-    mutate(gam_vs_rho_BF_sig_meta = case_when(TRUE ~ gam_vs_rho_meta_p < 0.05/num_result,
+    mutate(gam_vs_rho_BF_sig_meta = case_when(TRUE ~ gam_vs_rho_meta_pval < 0.05/num_result,
                                               TRUE ~ TRUE)) %>%
-    mutate(omega_vs_gam_rho_BF_sig_meta = case_when(TRUE ~ omega_vs_gam_rho_meta_p < 0.05/num_result,
+    mutate(omega_vs_gam_rho_BF_sig_meta = case_when(TRUE ~ omega_vs_gam_rho_meta_pval < 0.05/num_result,
                                               TRUE ~ TRUE))
 
 
