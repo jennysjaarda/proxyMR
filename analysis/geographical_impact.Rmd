@@ -36,13 +36,14 @@ tar_load(PCs_corr)
 
 ## GWAS of PCs
 
-- GWAS of first 40 PCs run using [bgenie](https://jmarchini.org/bgenie/).
-- First, inverse normal rank transformation (INT) was applied within genetic, consenting, European sample (N = `r dim(data_id_sex)[1]`) before performing GWAS (this was done before dividing into sex-specific subgroups).
-- After INT, PCs were residualized for `age` and `sex`.
-- Run in:
-  - Entire sample (residualized for both age and sex).  
-  - In sex-specific subgroups (residualized for only age). 
-- This was run in the entire genetic, consenting, European UKB sample (not just couples).
+- Performed GWAS of first 40 PCs, run using [bgenie](https://jmarchini.org/bgenie/).
+- Sample selection: genetic, consenting, European sample (N = `r dim(data_id_sex)[1]`), in attempt to best replicate the GWAS used in other analyses from the Neale lab. 
+- Data transformation:
+    - First, inverse normal rank tansformation (INT) was applied within the selected (this was done before dividing into sex-specific subgroups).
+    - Next, PCs were residualized for `age` and `sex`.
+- GWAS was run in:
+    - Entire sample (residualized for both age and sex).  
+    - Sex-specific subgroups (residualized for only age). 
 - GWAS was **not** adjusted for PCs (as is typical in GWAS) because PCs are linearly independent of each other (although the sample used for PC calculation - by the UKB investigators - would be slightly different that our GWAS sample, so the PCs would not necessarily be completely linearly independent in this sample).
 
 ## Correlation of PCs between couples  
@@ -53,7 +54,7 @@ tar_load(PCs_corr)
 ```{r pc_corr, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
 
 PCs_corr.DT <- PCs_corr %>% mutate(r = sqrt(as.numeric(r2))) 
-DT::datatable(PCs_corr, width = "100%")  %>% formatSignif(columns=c('r2', 'r'), digits=3)
+DT::datatable(PCs_corr.DT, width = "100%")  %>% formatSignif(columns=c('r2', 'r'), digits=3)
 
 ```
 
