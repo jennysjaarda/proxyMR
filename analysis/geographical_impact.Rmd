@@ -1,0 +1,60 @@
+---
+title: Assessing impact of geography as confounder in causal relationships between couples
+author: "jennysjaarda"
+date: "2021-09-14"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+
+options(scipen=999)
+source("code/settings.R")
+
+library(DT)
+library(knitr)
+library(targets)
+library(tidyverse)
+```
+
+```{r load_targets, include = FALSE}
+
+tar_load(data_id_sex)
+tar_load(PCs_corr)
+
+```
+
+# Background
+
+- Geographical location is clearly a strong indicator of couple choice. 
+- Not only do couples tend to choose partners that are phenotypically similar to them (because of common interests, political views, etc.), but also because of location (i.e. convenience).
+- Geographical similarity induces genetic and in turn phenotypic similarity. 
+- We sought to explore the impact of genography on mate-choice by adding PCs to the pipeline. 
+
+# Analysis
+
+## GWAS of PCs
+
+- GWAS of first 40 PCs run using [bgenie](https://jmarchini.org/bgenie/).
+- First, inverse normal rank transformation (INT) was applied within genetic, consenting, European sample (N = `r dim(data_id_sex)[1]`) before performing GWAS (this was done before dividing into sex-specific subgroups).
+- After INT, PCs were residualized for `age` and `sex`.
+- Run in:
+  - Entire sample (residualized for both age and sex).  
+  - In sex-specific subgroups (residualized for only age). 
+- This was run in the entire genetic, consenting, European UKB sample (not just couples).
+- GWAS was **not** adjusted for PCs (as is typical in GWAS) because PCs are linearly independent of each other (although the sample used for PC calculation - by the UKB investigators - would be slightly different that our GWAS sample, so the PCs would not necessarily be completely linearly independent in this sample).
+
+## Correlation of PCs between couples  
+
+- Test raw "phenotypic" correlation of PCs between partners in UKB. 
+- As above, PCs were transformed using INT within genetic, consenting, European sample (N = `r dim(data_id_sex)[1]`) and correlations were calculated within couples on the transformed PCs.
+
+```{r pc_corr, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+
+PCs_corr.DT <- PCs_corr %>% mutate(r = sqrt(as.numeric(r2))) 
+DT::datatable(PCs_corr, width = "100%")  %>% formatSignif(columns=c('r2', 'r'), digits=3)
+
+```
+
+
