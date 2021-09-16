@@ -4101,7 +4101,7 @@ xy_plot_binned_sex_specifc <- function(harmonised_data, MR_binned, group, custom
   x_ticks <- unique(fig_data %>% pull(bin_median))
   x_labels <- unique(fig_data %>% pull(bin))
 
-  xlab <- ifelse(group == "time_together_even_bins", "Time together in\nsame household (years)", "Median age of\ncouples (years)")
+  xlab <- ifelse(group == "time_together_even_bins", "Time together in same household (years)", "Median age of couples (years)")
 
   legend_title <- "Exposure sex"
 
@@ -4123,7 +4123,7 @@ xy_plot_binned_sex_specifc <- function(harmonised_data, MR_binned, group, custom
                        axis.title.y = element_text(margin = unit(c(0, 3, 0, 0), "mm"))) +
 
     ggplot2::labs(colour = legend_title, x =xlab,
-                  y = paste0("AM MR estimate for\n", tolower(trait_description) ," (sex specific)")) +
+                  y = paste0("AM MR estimate for\n", tolower(trait_description) ,"\n(sex-specific)")) +
     ggplot2::theme(legend.position = "right", legend.direction = "vertical") +
     ggplot2::guides(colour = ggplot2::guide_legend(ncol = 1))
 
@@ -4194,7 +4194,7 @@ xy_plot_binned_single_sex <- function(harmonised_data, MR_binned, exposure_sex, 
   x_ticks <- unique(fig_data %>% pull(bin_median))
   x_labels <- unique(fig_data %>% pull(bin))
 
-  xlab <- ifelse(group == "time_together_even_bins", "Time together in same household (years)", "Median age of couples (years)")
+  xlab <- ifelse(group == "time_together_even_bins", "Time together in\nsame household (years)", "Median age of\ncouples (years)")
 
   legend_title <- "Exposure sex"
 
@@ -4220,7 +4220,7 @@ xy_plot_binned_single_sex <- function(harmonised_data, MR_binned, exposure_sex, 
                        axis.title.y = element_text(margin = unit(c(0, 3, 0, 0), "mm"))) +
 
     ggplot2::labs(colour = legend_title, x =xlab,
-                  y = paste0("AM MR estimate for\n", tolower(trait_description) ," (", exposure_sex, "s to ", outcome_sex, "s)")) +
+                  y = paste0("AM MR estimate for\n", tolower(trait_description) ,"\n(", exposure_sex, "s to ", outcome_sex, "s)")) +
     ggplot2::theme(legend.position = "right", legend.direction = "vertical") +
     ggplot2::guides(colour = ggplot2::guide_legend(ncol = 1))
 
