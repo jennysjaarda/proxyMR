@@ -602,6 +602,11 @@ list(
   ),
 
   tar_target(
+    proxyMR_MR_paths_summary, ## summarize the different MR paths in each Xi -> Yp
+    summarize_proxyMR_paths(proxyMR_comparison)
+  ),
+
+  tar_target(
     proxyMR_comparison_summary, ## used to be `proxyMR_figure_data`
     summarize_proxyMR_comparison(proxyMR_comparison, traits_corr2_filled)
   ),

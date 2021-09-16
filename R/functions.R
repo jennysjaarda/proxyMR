@@ -2890,7 +2890,7 @@ run_proxyMR_comparison <- function(exposure_info, household_MR_summary_BF_sig, h
       hh_MR_sub <- household_MR_summary %>% filter(exposure_sex==!!exposure_sex) %>%
         filter(outcome_ID==!!outcome_ID)
 
-      cols_interst <- c("IVW_beta", "IVW_se", "IVW_pval", "N_outcome_GWAS", "N_snps")
+      cols_interst <- c("IVW_beta", "IVW_se", "IVW_pval", "N_exposure_GWAS", "N_outcome_GWAS", "N_snps")
 
 
       ## Sex-specific proxy MR
@@ -2990,6 +2990,14 @@ run_proxyMR_comparison <- function(exposure_info, household_MR_summary_BF_sig, h
   return(output)
 
 }
+
+summarize_proxyMR_paths <- function(proxyMR_comparison){
+
+  MR_paths_result <- bind_rows(lapply(proxyMR_comparison, function(x) {x[[1]]}))
+  return(MR_paths_result)
+
+}
+
 
 summarize_proxyMR_comparison <- function(proxyMR_comparison, traits_corr2_filled){
 
