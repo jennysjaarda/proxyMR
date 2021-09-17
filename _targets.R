@@ -527,7 +527,7 @@ list(
   tar_target(
     ## filter to only MR between same traits.
     household_MR_summary_AM,
-    AM_filter_household_MR_summary(household_MR_summary)
+    pull_AM_MRs_household_MR_summary(household_MR_summary)
   ),
 
   tar_target(
@@ -596,9 +596,19 @@ list(
     map(exposure_info, household_MR_summary, standard_MR_summary), iteration = "list"
   ),
 
+  tar_group_count(
+    MV_z, ## z's are based on standard_MR: x > z > y
+    find_MV_z(household_MR_summary_BF_sig, standard_MR_summary),
+    count=100
+  ),
+
   tar_target(
-    MV_z,
-    find_MV_z(standard_MR_summary_BF_sig, standard_MR_summary)
+    z_summ_stats,
+    {
+      path_summ_stats
+      pull_z_summ_stats()
+    },
+    map(MV_z), iteration = "list"
   ),
 
   tar_target(

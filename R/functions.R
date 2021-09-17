@@ -2749,49 +2749,6 @@ summarize_standard_MR_comprehensive <- function(standard_MR){
 
 }
 
-find_MV_z <- function(standard_MR_summary_BF_sig, standard_MR_summary_meta){
-
-  standard_MR_summary_BF_sig$MV_z <- NA
-  exposure_ID_prev <- ""
-  outcome_ID_prev <- ""
-  for(i in 1:dim(standard_MR_summary_BF_sig)[1]){
-
-
-    exposure_ID <- standard_MR_summary_BF_sig$exposure_ID[i]
-    outcome_ID <- standard_MR_summary_BF_sig$outcome_ID[i]
-
-    if(exposure_ID!=exposure_ID_prev | outcome_ID!=outcome_ID_prev){
-      z_vs_x <- standard_MR_summary_meta %>% filter(exposure_ID==!!exposure_ID) %>% filter(outcome_ID!=!!outcome_ID)
-      y_vs_z <- standard_MR_summary_meta %>% filter(outcome_ID==!!outcome_ID) %>% filter(exposure_ID!=!!exposure_ID)
-
-      num_tests <- (dim(z_vs_x)[1] + dim(y_vs_z)[1])/2
-
-      z_vs_x_BF <- z_vs_x %>% filter(IVW_meta_pval < 0.05/num_tests) %>% pull(outcome_ID)
-      y_vs_z_BF <- y_vs_z %>% filter(IVW_meta_pval < 0.05/num_tests) %>% pull(exposure_ID)
-
-      union_z <- union(z_vs_x_BF, y_vs_z_BF)
-
-    }
-
-    exposure_ID_prev <- exposure_ID
-    outcome_ID_prev <- outcome_ID
-
-    standard_MR_summary_BF_sig$MV_z[i] <- list(union_z)
-
-  }
-
-  return(standard_MR_summary_BF_sig)
-}
-
-pull_z_summ_stats <- function(){
-
-  for(z in z_list){
-
-
-  }
-}
-
-
 ## data -> data_set with a column that has Neale_ID that we want to replace with description (eg. "exposure_ID")
 ## traits_corr2_filled -> reference data set which has both Neale_ID and descrition
 ## data_Neale_ID_col -> the column name of the Neale_ID (eg. "exposure_ID")
@@ -2822,13 +2779,11 @@ find_sig_household_MR_summary <- function(household_MR_summary){
   return(sig_only)
 }
 
-
-AM_filter_household_MR_summary <- function(household_MR_summary){
+pull_AM_MRs_household_MR_summary <- function(household_MR_summary){
 
   output <- household_MR_summary %>% filter(same_trait=="TRUE")
   return(output)
 }
-
 
 find_AM_sig_exposure_info <- function(household_MR_summary_AM, exposure_info, num_tests_by_PCs){
 
@@ -2849,7 +2804,6 @@ find_AM_sig_exposure_info <- function(household_MR_summary_AM, exposure_info, nu
 
 }
 
-
 z.test_p <- Vectorize(function(x, sigma.x, y, sigma.y) {z.test(x, sigma.x, y, sigma.y)$p},
                         vectorize.args = c("x", "sigma.x", "y", "sigma.y"))
 
@@ -2865,11 +2819,10 @@ variance_of_sum <- function(x_se, y_se){
   x_se^2 + y_se^2
 }
 
-
 run_proxyMR_comparison <- function(exposure_info, household_MR_summary_BF_sig, household_MR_summary, standard_MR_summary, household_MR_summary_AM){
 
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
-  ## only run this for those where omega is significant
+  ## only run this for those where omega is significant and where exposure and outcome ID are different.
   MR_sub <- household_MR_summary_BF_sig %>% filter(exposure_ID==!!exposure_ID) %>% filter(exposure_ID!=outcome_ID)
 
   summarized_result <- as_tibble(numeric())
@@ -2997,7 +2950,6 @@ summarize_proxyMR_paths <- function(proxyMR_comparison){
   return(MR_paths_result)
 
 }
-
 
 summarize_proxyMR_comparison <- function(proxyMR_comparison, traits_corr2_filled){
 
@@ -3256,6 +3208,133 @@ create_proxy_sex_comparison_fig <- function(proxyMR_figure_data){
 
   return(figures_grid_plus_legend)
 }
+
+
+find_MV_z <- function(household_MR_summary_BF_sig, standard_MR_summary){
+
+  #exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+  ## only run this for those where omega is significant and where exposure and outcome ID are different.
+  MR_sub <- household_MR_summary_BF_sig %>% filter(exposure_ID!=outcome_ID)
+
+  MR_sub$MV_z <- NA
+  exposure_ID_prev <- ""
+  outcome_ID_prev <- ""
+  for(i in 1:dim(MR_sub)[1]){
+
+
+    exposure_ID <- MR_sub$exposure_ID[i]
+    outcome_ID <- MR_sub$outcome_ID[i]
+    exposure_sex <- MR_sub$exposure_sex[i]
+
+    cat(paste0("Identifying summary statistics for MV MR for  `", exposure_ID, "` as exposure and `", outcome_ID, "` as outcome in ", exposure_sex, "s as exposure sex.\n\n"))
+
+    if(exposure_ID!=exposure_ID_prev | outcome_ID!=outcome_ID_prev){
+      z_vs_x <- standard_MR_summary %>% filter(exposure_ID==!!exposure_ID) %>% filter(outcome_ID!=!!outcome_ID)
+      y_vs_z <- standard_MR_summary %>% filter(outcome_ID==!!outcome_ID) %>% filter(exposure_ID!=!!exposure_ID)
+
+      num_tests <- (dim(z_vs_x)[1] + dim(y_vs_z)[1])/2
+
+      z_vs_x_BF <- z_vs_x %>% filter(IVW_meta_pval < 0.05/num_tests) %>% pull(outcome_ID)
+      y_vs_z_BF <- y_vs_z %>% filter(IVW_meta_pval < 0.05/num_tests) %>% pull(exposure_ID)
+
+      union_z <- union(z_vs_x_BF, y_vs_z_BF)
+
+    }
+
+    exposure_ID_prev <- exposure_ID
+    outcome_ID_prev <- outcome_ID
+
+    MR_sub$MV_z[i] <- list(union_z)
+
+  }
+
+  return(MR_sub)
+}
+
+pull_z_summ_stats <- function(MV_z_data){
+
+  MV_z_data$MV_z_summ_stats <- NA
+  output_list <- list()
+  for(i in 1:dim(MV_z_data)[1]){
+
+    exposure_ID <- MV_z_data$exposure_ID[i]
+    outcome_ID <- MV_z_data$outcome_ID[i]
+    exposure_sex <- MV_z_data$exposure_sex[i]
+    z_list <- MV_z_data$MV_z[i][[1]]
+    all_phenos <- c(z_list, exposure_ID, outcome_ID)
+    data_i <- tibble()
+
+    cat(paste0("Extracting summary statistics for MV MR for  `", exposure_ID, "` as exposure and `", outcome_ID, "` as outcome in ", exposure_sex, "s as exposure sex.\n\n"))
+
+    for(k in all_phenos){
+      print(which(k==all_phenos))
+      if(k != outcome_ID){
+        data_k <- tibble(IVs_from = k)
+        for(j in all_phenos){
+
+          GWAS_file <- paste0("analysis/traitMR/standard_GWAS/", j, "/", j, "_vs_", k, "_GWAS.csv")
+          ## this will pull the GWAS results for phenotype `j` for IVs from `k`
+          GWAS_results_j_vs_k <- fread(GWAS_file, data.table = F)
+          GWAS_results_j_vs_k_sex <- GWAS_results_j_vs_z[which(GWAS_results_j_vs_k$sex==exposure_sex),]
+
+          data_k[[paste0("GWAS_", j, "_results")]] <- list(GWAS_results_j_vs_k_sex)
+
+        }
+        data_i <- bind_rows(data_i, data_k)
+
+      }
+
+    }
+    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_", exposure_sex)]] <- (data_i)
+
+  }
+  return(output_list)
+
+}
+
+
+IV_clump <- function()
+{
+  data_prune <- numeric()
+  for(chr in 1:22)
+  {
+    data_IV_temp <- data_IV[which(data_IV[["chr"]]==chr),]
+    fn <- tempfile(tmpdir = tempdir())
+    snps <- data_IV_temp$SNP
+    if(length(snps)==0) next
+    pvals <- data_IV_temp$pval
+    write.table(data.frame(SNP=snps, P=pvals), file=fn, row=F, col=T, qu=F)
+    refdat=paste0("/data/sgg2/jenny/data/1000G/chr",chr,"/1000G_EUR_chr",chr,"_filt")
+
+    snp_clump <- plink_clump(refdat, fn, prune_threshold)
+
+    data_prune_temp <- data_IV_temp[which(data_IV_temp$SNP %in% snp_clump),]
+    data_prune <- rbind(data_prune, data_prune_temp)
+  }
+  return(data_prune)
+}
+
+plink_clump <- function(bfile, fn, prune_threshold)
+{
+
+  fun2 <- paste0(
+    "plink",
+    " --bfile ", bfile,
+    " --clump ", fn,
+    " --clump-p1 ", clump_p1,
+    " --clump-p2 ", clump_p2,
+    " --clump-r2 ", prune_threshold,
+    " --clump-kb ", clump_kb,
+    " --threads 10",
+    " --out ", fn
+  )
+  system(fun2)
+  a <- read.table(paste(fn, ".clumped", sep=""), he=T)
+  unlink(paste(fn, "*", sep=""))
+  a_out <- a[,"SNP"]
+  return(a_out)
+}
+
 
 
 #saveRDS(out, "code/shiny/mr_summary.rds")
