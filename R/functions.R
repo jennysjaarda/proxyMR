@@ -3274,7 +3274,7 @@ pull_z_summ_stats <- function(MV_z_data){
           GWAS_file <- paste0("analysis/traitMR/standard_GWAS/", j, "/", j, "_vs_", k, "_GWAS.csv")
           ## this will pull the GWAS results for phenotype `j` for IVs from `k`
           GWAS_results_j_vs_k <- fread(GWAS_file, data.table = F)
-          GWAS_results_j_vs_k_sex <- GWAS_results_j_vs_z[which(GWAS_results_j_vs_k$sex==exposure_sex),]
+          GWAS_results_j_vs_k_sex <- GWAS_results_j_vs_k[which(GWAS_results_j_vs_k$sex==exposure_sex),]
 
           data_k[[paste0("GWAS_", j, "_results")]] <- list(GWAS_results_j_vs_k_sex)
 
