@@ -3267,7 +3267,7 @@ pull_z_summ_stats <- function(MV_z_data){
     cat(paste0("Extracting summary statistics for MV MR for  `", exposure_ID, "` as exposure and `", outcome_ID, "` as outcome in ", exposure_sex, "s as exposure sex.\n\n"))
 
     for(k in all_phenos){
-      print(which(k==all_phenos))
+
       if(k != outcome_ID){
         data_k <- tibble(IVs_from = k)
         for(j in all_phenos){
