@@ -606,7 +606,7 @@ list(
     z_summ_stats,
     {
       path_summ_stats
-      pull_z_summ_stats()
+      pull_z_summ_stats(MV_z)
     },
     map(MV_z), iteration = "list"
   ),

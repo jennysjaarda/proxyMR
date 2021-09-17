@@ -3253,7 +3253,6 @@ find_MV_z <- function(household_MR_summary_BF_sig, standard_MR_summary){
 
 pull_z_summ_stats <- function(MV_z_data){
 
-  MV_z_data$MV_z_summ_stats <- NA
   output_list <- list()
   for(i in 1:dim(MV_z_data)[1]){
 
