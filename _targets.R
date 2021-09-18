@@ -605,7 +605,7 @@ list(
   tar_target(
     z_summ_stats,
     {
-      path_summ_stats
+      path_outcome_stats
       pull_z_summ_stats(MV_z)
     },
     map(MV_z), iteration = "list"
@@ -614,6 +614,15 @@ list(
   tar_target(
     proxyMR_MR_paths_summary, ## summarize the different MR paths in each Xi -> Yp
     summarize_proxyMR_paths(proxyMR_comparison)
+  ),
+
+  tar_target(
+    proxyyMR_IV_overlap,
+    {
+      path_summ_stats
+      find_proxyMR_IV_overlap(proxyMR_MR_paths_summary)
+    }
+
   ),
 
   tar_target(
