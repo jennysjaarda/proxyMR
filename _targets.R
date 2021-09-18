@@ -19,6 +19,7 @@ tar_option_set(
                "forestplot", "R.utils"),
   error = "workspace",
   memory = "transient",
+  storage = "worker",
   garbage_collection = TRUE
 
 )
