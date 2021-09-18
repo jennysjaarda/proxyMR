@@ -599,7 +599,7 @@ list(
   tar_group_count(
     MV_z, ## z's are based on standard_MR: x > z > y
     find_MV_z(household_MR_summary_BF_sig, standard_MR_summary),
-    count=200
+    count=350
   ),
 
   tar_target(
@@ -608,7 +608,7 @@ list(
       path_outcome_stats
       pull_z_summ_stats(MV_z)
     },
-    map(MV_z), iteration = "list"
+    map(MV_z)
   ),
 
   tar_target(

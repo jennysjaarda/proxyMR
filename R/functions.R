@@ -3226,7 +3226,7 @@ find_MV_z <- function(household_MR_summary_BF_sig, standard_MR_summary){
     outcome_ID <- MR_sub$outcome_ID[i]
     exposure_sex <- MR_sub$exposure_sex[i]
 
-    cat(paste0("Identifying summary statistics for MV MR for  `", exposure_ID, "` as exposure and `", outcome_ID, "` as outcome in ", exposure_sex, "s as exposure sex.\n\n"))
+    cat(paste0("Identifying Z's MV MR for  `", exposure_ID, "` as exposure and `", outcome_ID, "` as outcome in ", exposure_sex, "s as exposure sex.\n\n"))
 
     if(exposure_ID!=exposure_ID_prev | outcome_ID!=outcome_ID_prev){
       z_vs_x <- standard_MR_summary %>% filter(exposure_ID==!!exposure_ID) %>% filter(outcome_ID!=!!outcome_ID)
@@ -3263,7 +3263,7 @@ pull_z_summ_stats <- function(MV_z_data){
     all_phenos <- c(z_list, exposure_ID, outcome_ID)
     data_i <- tibble()
 
-    cat(paste0("Extracting summary statistics for MV MR for  `", exposure_ID, "` as exposure and `", outcome_ID, "` as outcome in ", exposure_sex, "s as exposure sex.\n\n"))
+    cat(paste0("Extracting summary statistics for MV MR for  `", exposure_ID, "` as exposure and `", outcome_ID, "` as outcome in ", exposure_sex, "s as exposure sex.\n"))
 
     for(k in all_phenos){
 
@@ -3285,6 +3285,8 @@ pull_z_summ_stats <- function(MV_z_data){
 
     }
     output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_", exposure_sex)]] <- (data_i)
+    cat(paste0("Finished extraction summary statistics for ", i, " of ", dim(MV_z_data)[1], " traits.\n\n"))
+
 
   }
   return(output_list)
@@ -3335,7 +3337,23 @@ plink_clump <- function(bfile, fn, prune_threshold)
 }
 
 
+find_proxyMR_IV_overlap <- function(proxyMR_MR_paths_summary){
 
+  summarized_result <- as_tibble(numeric())
+
+  for(i in 1:dim(proxyMR_MR_paths_summary)){
+
+    exposure_ID <-  proxyMR_MR_paths_summary$exposure_ID[i]
+    outcome_ID <-  proxyMR_MR_paths_summary$outcome_ID[i]
+    exposure_sex <- proxyMR_MR_paths_summary$exposure_sex[i]
+
+    cat(paste0("Assessing IV overlap between `", exposure_ID, "` as exposure and `", outcome_ID, "` as outcome.\n\n"))
+    IV_file <- paste0("analysis/traitMR/IVs/Neale/", exposure_ID, "/", exposure_sex, "_IVs.txt")
+    IV_data <- fread(IV_file)
+
+  }
+
+}
 #saveRDS(out, "code/shiny/mr_summary.rds")
 
 
