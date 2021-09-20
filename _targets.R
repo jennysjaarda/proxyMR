@@ -597,16 +597,12 @@ list(
     map(exposure_info, household_MR_summary, standard_MR_summary), iteration = "list"
   ),
 
-
   tar_target(
-    household_MR_summary_BF_sig_adj_xIVs,
-    adjust(exposure_info, household_MR_summary_BF_sig, household_MR_summary, standard_MR_summary, household_MR_summary_AM),
-    map(exposure_info, household_MR_summary, standard_MR_summary), iteration = "list"
-  ),
-
-  tar_target(
-    proxyMR_yiyp_mv,
-    adj_yiyp_xIVs(exposure_info, household_harmonised_data, household_MR_summary_BF_sig),
+    proxyMR_yiyp_adj,
+    {
+      path_household_GWAS
+      adj_yiyp_xIVs(exposure_info, household_harmonised_data, household_MR_summary_BF_sig)
+    },
     map(exposure_info, household_harmonised_data)
   ),
 
