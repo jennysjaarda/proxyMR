@@ -2944,6 +2944,69 @@ run_proxyMR_comparison <- function(exposure_info, household_MR_summary_BF_sig, h
 
 }
 
+adj_yiyp_xIVs <- function(exposure_info, household_harmonised_data, household_MR_summary_BF_sig){
+
+  outcome_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+  ## only run this for those where omega is significant and where exposure and outcome ID are different.
+  MR_sub <- household_MR_summary_BF_sig %>% filter(outcome_ID==!!outcome_ID) %>% filter(exposure_ID!=outcome_ID)
+  summarized_result <- as_tibble(numeric())
+
+  cat(paste0("Adjusting all relevant YiYp MRs of `", outcome_ID, "` for effects from Xi to Yp (for all relevant exposures).\n\n"))
+  result <- numeric()
+  if(dim(MR_sub)[1]!=0){
+
+    for(i in 1:dim(MR_sub)[1]){
+
+      exposure_ID <- MR_sub$exposure_ID[[i]]
+      exposure_sex <- MR_sub$exposure_sex[[i]]
+      if(exposure_sex=="male"){outcome_sex="female"}
+      if(exposure_sex=="female"){outcome_sex="male"}
+      harmonised_dat_name <- paste0(outcome_ID, "_vs_", outcome_ID, "_harmonised_data")
+      expsosure_sex_name <- paste0("exp_", exposure_sex, "_harmonised_data")
+      univar_harmonised_dat <- household_harmonised_data[[harmonised_dat_name]][[expsosure_sex_name]] %>% filter(bin == "all" & grouping_var == "time_together_even_bins")
+
+      GWAS_file <- paste0("analysis/traitMR/household_GWAS/", exposure_ID, "/", exposure_ID, "_vs_", outcome_ID, "_GWAS.csv")
+
+      ## this will pull the houshold GWAS results for phenotype `exposure_ID` for IVs from `outcome_ID`, i.e. the effect of Xi on Yp for Y IVs.
+
+      xi_GWAS_results <- fread(GWAS_file, data.table = F) %>% filter(bin == "all" & grouping_var == "time_together_even_bins" & exposure_sex == !!exposure_sex)
+
+      mv_data <- merge(univar_harmonised_dat, xi_GWAS_results, by = "SNP")
+
+      mv_data_format <- mr_mvinput(bx = cbind(mv_data[["beta.exposure"]], mv_data[["geno_index_beta"]]), bxse = cbind(mv_data[["se.exposure"]], mv_data[["geno_index_se"]]),
+                                   by = mv_data[["beta.outcome"]], byse = mv_data[["se.outcome"]])
+
+
+      mv_result <- mr_mvivw(mv_data_format) # see `str(mv_result)` to know how to access the results
+      betas <- mv_result@Estimate
+      ses <- mv_result@StdError
+      pvalues <- mv_result@Pvalue
+      mv_yi <- c(betas[1], ses[1], pvalues[1])
+      names(mv_yi) <- paste0("yi", c("_beta", "_se", "_pval"))
+      mv_xi <- c(betas[2], ses[2], pvalues[2])
+      names(mv_xi) <- paste0("xi", c("_beta", "_se", "_pval"))
+
+      temp_row <- c(mv_yi, mv_xi)
+      description <- c(exposure_ID, outcome_ID, exposure_sex)
+      names(description) <- c("exposure_ID", "outcome_ID", "exposure_sex")
+
+      out_temp <- as.data.frame(t(c(description, temp_row)))
+
+      result <- rbind(result, out_temp)
+
+    }
+
+
+  }
+
+  result_out <- result %>%
+    as_tibble() %>% type_convert() %>%
+    mutate_at(c("exposure_ID", "outcome_ID"), as.character)
+
+  return(result_out)
+
+}
+
 summarize_proxyMR_paths <- function(proxyMR_comparison){
 
   MR_paths_result <- bind_rows(lapply(proxyMR_comparison, function(x) {x[[1]]}))
@@ -3345,7 +3408,7 @@ IV_clump <- function(data_IV, prune_threshold)
     write.table(data.frame(SNP=snps, P=pvals), file=fn, row=F, col=T, qu=F)
     refdat=paste0("/data/sgg2/jenny/data/1000G/chr",chr,"/1000G_EUR_chr",chr,"_filt")
 
-    snp_clump <- plink_clump(bfile = refdat, clump_file = fn, prune_threshold = prune_threshold)
+    snp_clump <- plink_clump(bfile = refdat, filename = fn, prune_threshold = prune_threshold)
 
     data_prune_temp <- data_IV_temp[which(data_IV_temp$SNP %in% snp_clump),]
     data_prune <- rbind(data_prune, data_prune_temp)
@@ -3353,19 +3416,38 @@ IV_clump <- function(data_IV, prune_threshold)
   return(data_prune)
 }
 
-plink_clump <- function(bfile, clump_file, clump_p1 = 1, clump_p2 = 1, prune_threshold = 0.001, clump_kb = 10000, threads = 1)
+plink_clump <- function(bfile, filename, clump_p1 = 1, clump_p2 = 1, prune_threshold = 0.001, clump_kb = 10000, threads = 1)
 {
 
   fun2 <- paste0(
     "plink",
     " --bfile ", bfile,
-    " --clump ", clump_file,
+    " --clump ", filename,
     " --clump-p1 ", clump_p1,
     " --clump-p2 ", clump_p2,
     " --clump-r2 ", prune_threshold,
     " --clump-kb ", clump_kb,
     " --threads ", threads,
-    " --out ", clump_file
+    " --out ", filename
+  )
+  system(fun2)
+  a <- read.table(paste(filename, ".clumped", sep=""), he=T)
+  unlink(paste(filename, "*", sep=""))
+  a_out <- a[,"SNP"]
+  return(a_out)
+}
+
+plink_r2_mat <- function(bfile, filename, threads = 1)
+{
+
+  fun2 <- paste0(
+    "plink",
+    "--ld-snp-list ", filename, # create a list of snps to calculated r2 matrix between 'mysnps.txt', see: https://zzz.bwh.harvard.edu/plink/ld.shtml
+    " --bfile ", bfile,
+    " --r2",
+    " --matrix",
+    " --threads ", threads,
+    " --out ", filename
   )
   system(fun2)
   a <- read.table(paste(clump_file, ".clumped", sep=""), he=T)
@@ -3373,7 +3455,6 @@ plink_clump <- function(bfile, clump_file, clump_p1 = 1, clump_p2 = 1, prune_thr
   a_out <- a[,"SNP"]
   return(a_out)
 }
-
 
 find_proxyMR_IV_overlap <- function(proxyMR_MR_paths_summary){
 

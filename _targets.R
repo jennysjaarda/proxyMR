@@ -11,7 +11,7 @@ options(clustermq.scheduler = "slurm", clustermq.template = "slurm_clustermq.tmp
 tar_option_set(
   resources = tar_resources(
     clustermq = tar_resources_clustermq(template = list(num_cores = 1, account = "sgg",
-                                                        ntasks = 4, partition = "sgg",
+                                                        ntasks = 1, partition = "sgg",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
   packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR",
@@ -597,8 +597,21 @@ list(
     map(exposure_info, household_MR_summary, standard_MR_summary), iteration = "list"
   ),
 
+
+  tar_target(
+    household_MR_summary_BF_sig_adj_xIVs,
+    adjust(exposure_info, household_MR_summary_BF_sig, household_MR_summary, standard_MR_summary, household_MR_summary_AM),
+    map(exposure_info, household_MR_summary, standard_MR_summary), iteration = "list"
+  ),
+
+  tar_target(
+    proxyMR_yiyp_mv,
+    adj_yiyp_xIVs(exposure_info, household_harmonised_data, household_MR_summary_BF_sig),
+    map(exposure_info, household_harmonised_data)
+  ),
+
   tar_group_count(
-    MV_z, ## z's are based on standard_MR: x > z > y
+    MV_z, ## z's are based on standard_MR: x -> z -> y
     find_MV_z(household_MR_summary_BF_sig, standard_MR_summary),
     count=350
   ),
@@ -610,6 +623,15 @@ list(
       pull_z_summ_stats(MV_z)
     },
     map(MV_z)
+  ),
+
+  tar_target(
+    z_summ_stats_pruned,
+    {
+      path_outcome_stats
+      prune_z_summ_stats(MV_z, z_summ_stats, prune_threshold)
+    },
+    map(MV_z, z_summ_stats)
   ),
 
   tar_target(
