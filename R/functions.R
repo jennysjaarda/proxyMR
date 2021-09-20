@@ -3275,7 +3275,10 @@ pull_z_summ_stats <- function(MV_z_data){
           ## this will pull the GWAS results for phenotype `j` for IVs from `k`
           GWAS_results_j_vs_k <- fread(GWAS_file, data.table = F)
           GWAS_results_j_vs_k_sex <- GWAS_results_j_vs_k[which(GWAS_results_j_vs_k$sex==exposure_sex),]
-
+          ## get the results for both sexes for pruning
+          GWAS_results_j_vs_k_both <- GWAS_results_j_vs_k[which(GWAS_results_j_vs_k$sex=="both_sexes"),c("SNP", "pval")]
+          colnames(GWAS_results_j_vs_k_both) <- c("SNP", "pval_both_sexes")
+          GWAS_results_j_vs_k_sex <- merge(GWAS_results_j_vs_k_sex, GWAS_results_j_vs_k_both)
           data_k[[paste0("GWAS_", j, "_results")]] <- list(GWAS_results_j_vs_k_sex)
 
         }
@@ -3293,8 +3296,43 @@ pull_z_summ_stats <- function(MV_z_data){
 
 }
 
+prune_z_summ_stats <- function(MV_z, z_summ_stats, prune_threshold){
 
-IV_clump <- function()
+  for(i in 1:length(z_summ_stats)){
+
+    exposure_ID <- MV_z$exposure_ID[i]
+    z_summ_stats_i <- z_summ_stats[[1]]
+    # extract all SNPs
+    col <- which(colnames(z_summ_stats_i)==paste0("GWAS_", exposure_ID, "_results"))
+    SNPs_i <- numeric()
+    chr_i <- numeric()
+    pvals_i <- numeric()
+
+    for(k in 1:dim(z_summ_stats_i)[1]){
+      SNPs_k <- z_summ_stats_i[k, col][[1]][[1]]$SNP
+      chr_k <- z_summ_stats_i[k, col][[1]][[1]]$chr
+      pvals_k <- z_summ_stats_i[k, col][[1]][[1]]$pval_both_sexes
+
+      SNPs_i <- c(SNPs_i, SNPs_k)
+      chr_i <- c(chr_i, chr_k)
+      pvals_i <- c(pvals_i, pvals_k)
+
+    }
+
+    ## This should be based on meta-analyzed pvals
+    to_prune_mat <- tibble(SNP = SNPs_i,
+                        chr = chr_i,
+                        pval = pvals_i) %>% unique()
+
+    pruned_result <- IV_clump(prune_mat, prune_threshold)
+
+
+  }
+
+}
+
+
+IV_clump <- function(data_IV, prune_threshold)
 {
   data_prune <- numeric()
   for(chr in 1:22)
@@ -3307,7 +3345,7 @@ IV_clump <- function()
     write.table(data.frame(SNP=snps, P=pvals), file=fn, row=F, col=T, qu=F)
     refdat=paste0("/data/sgg2/jenny/data/1000G/chr",chr,"/1000G_EUR_chr",chr,"_filt")
 
-    snp_clump <- plink_clump(refdat, fn, prune_threshold)
+    snp_clump <- plink_clump(bfile = refdat, clump_file = fn, prune_threshold = prune_threshold)
 
     data_prune_temp <- data_IV_temp[which(data_IV_temp$SNP %in% snp_clump),]
     data_prune <- rbind(data_prune, data_prune_temp)
@@ -3315,23 +3353,23 @@ IV_clump <- function()
   return(data_prune)
 }
 
-plink_clump <- function(bfile, fn, prune_threshold)
+plink_clump <- function(bfile, clump_file, clump_p1 = 1, clump_p2 = 1, prune_threshold = 0.001, clump_kb = 10000, threads = 1)
 {
 
   fun2 <- paste0(
     "plink",
     " --bfile ", bfile,
-    " --clump ", fn,
+    " --clump ", clump_file,
     " --clump-p1 ", clump_p1,
     " --clump-p2 ", clump_p2,
     " --clump-r2 ", prune_threshold,
     " --clump-kb ", clump_kb,
-    " --threads 10",
-    " --out ", fn
+    " --threads ", threads,
+    " --out ", clump_file
   )
   system(fun2)
-  a <- read.table(paste(fn, ".clumped", sep=""), he=T)
-  unlink(paste(fn, "*", sep=""))
+  a <- read.table(paste(clump_file, ".clumped", sep=""), he=T)
+  unlink(paste(clump_file, "*", sep=""))
   a_out <- a[,"SNP"]
   return(a_out)
 }
@@ -3348,12 +3386,20 @@ find_proxyMR_IV_overlap <- function(proxyMR_MR_paths_summary){
     exposure_sex <- proxyMR_MR_paths_summary$exposure_sex[i]
 
     cat(paste0("Assessing IV overlap between `", exposure_ID, "` as exposure and `", outcome_ID, "` as outcome.\n\n"))
-    IV_file <- paste0("analysis/traitMR/IVs/Neale/", exposure_ID, "/", exposure_sex, "_IVs.txt")
-    IV_data <- fread(IV_file)
+    IV_file_exposure <- paste0("analysis/traitMR/IVs/Neale/", exposure_ID, "/", exposure_sex, "_IVs.txt")
+    IV_data_exposure <- fread(IV_file_exposure, data.table = F)
 
+    IV_file_outcome <- paste0("analysis/traitMR/IVs/Neale/", outcome_ID, "/", exposure_sex, "_IVs.txt")
+    IV_data_outcome <- fread(IV_file_outcome, data.table = F)
+
+    exposure_snps <- IV_data_exposure$rsid
+    outcome_snps <- IV_data_outcome$rsid
+
+    which(outcome_snps %in% exposure_snps)
   }
 
 }
+
 #saveRDS(out, "code/shiny/mr_summary.rds")
 
 
