@@ -2996,12 +2996,11 @@ adj_yiyp_xIVs <- function(exposure_info, household_harmonised_data, household_MR
 
     }
 
+    result_out <- result %>%
+      as_tibble() %>% type_convert() %>%
+      mutate_at(c("exposure_ID", "outcome_ID"), as.character)
 
-  }
-
-  result_out <- result %>%
-    as_tibble() %>% type_convert() %>%
-    mutate_at(c("exposure_ID", "outcome_ID"), as.character)
+  } else result_out <- NULL
 
   return(result_out)
 
