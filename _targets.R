@@ -16,7 +16,7 @@ tar_option_set(
   ),
   packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR",
                "ggplot2", "purrr", "rmeta", "PASWR2", "cowplot", "meta", "strex", "RColorBrewer",
-               "forestplot", "R.utils"),
+               "forestplot", "R.utils", "MendelianRandomization"),
   error = "workspace",
   memory = "transient",
   storage = "worker",
