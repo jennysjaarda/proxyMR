@@ -609,7 +609,7 @@ list(
 
   tar_target(
     proxyMR_comparison_yiyp_adj,
-    run_proxyMR_comparison(exposure_info, household_MR_summary_BF_sig, household_MR_summary, standard_MR_summary, household_MR_summary_AM, proxyMR_yiyp_adj),
+    run_proxyMR_comparison_adj_yiyp(exposure_info, household_MR_summary_BF_sig, household_MR_summary, standard_MR_summary, household_MR_summary_AM, proxyMR_yiyp_adj),
     map(exposure_info, household_MR_summary, standard_MR_summary), iteration = "list"
   ),
 
