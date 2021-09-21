@@ -598,6 +598,16 @@ list(
   ),
 
   tar_target(
+    proxyMR_MR_paths_summary, ## summarize the different MR paths in each Xi -> Yp
+    summarize_proxyMR_paths(proxyMR_comparison)
+  ),
+
+  tar_target(
+    proxyMR_comparison_summary, ## used to be `proxyMR_figure_data`
+    summarize_proxyMR_comparison(proxyMR_comparison, traits_corr2_filled)
+  ),
+
+  tar_target(
     proxyMR_yiyp_adj,
     {
       path_household_GWAS
@@ -606,11 +616,20 @@ list(
     map(exposure_info, household_harmonised_data)
   ),
 
-
   tar_target(
     proxyMR_comparison_yiyp_adj,
     run_proxyMR_comparison_adj_yiyp(exposure_info, household_MR_summary_BF_sig, household_MR_summary, standard_MR_summary, household_MR_summary_AM, proxyMR_yiyp_adj),
     map(exposure_info, household_MR_summary, standard_MR_summary), iteration = "list"
+  ),
+
+  tar_target(
+    proxyMR_MR_paths_summary_yiyp_adj, ## summarize the different MR paths in each Xi -> Yp
+    summarize_proxyMR_paths(proxyMR_comparison_yiyp_adj)
+  ),
+
+  tar_target(
+    proxyMR_comparison_summary_yiyp_adj, ## used to be `proxyMR_figure_data`
+    summarize_proxyMR_comparison(proxyMR_comparison_yiyp_adj, traits_corr2_filled)
   ),
 
   tar_group_count(
@@ -637,10 +656,6 @@ list(
     map(MV_z, z_summ_stats)
   ),
 
-  tar_target(
-    proxyMR_MR_paths_summary, ## summarize the different MR paths in each Xi -> Yp
-    summarize_proxyMR_paths(proxyMR_comparison)
-  ),
 
   tar_target(
     proxyyMR_IV_overlap,
@@ -650,12 +665,6 @@ list(
     }
 
   ),
-
-  tar_target(
-    proxyMR_comparison_summary, ## used to be `proxyMR_figure_data`
-    summarize_proxyMR_comparison(proxyMR_comparison, traits_corr2_filled)
-  ),
-
 
   tar_target(
     proxyMR_prod_comparison_fig,
