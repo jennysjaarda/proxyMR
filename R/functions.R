@@ -3615,23 +3615,25 @@ find_proxyMR_IV_overlap <- function(exposure_info, proxyMR_MR_paths_summary, LD_
 
           refdat=paste0("/data/sgg2/jenny/data/1000G/chr",chr,"/1000G_EUR_chr",chr,"_filt")
 
-          r2_mat <- plink_r2_mat(bfile = refdat, filename = fn)
+          r2_dat <- plink_r2_dat(bfile = refdat, filename = fn)
 
-          X <- as.data.frame(r2_mat)
-          X[X < LD_threshold] <- 0
-          X[!X < LD_threshold] <- 1
 
-          if(length(X[X==1])==length(snps)){
+          if(length(which(outcome_snps_chr %in% c(r2_dat$SNP_A, r2_dat$SNP_B)))==0){
             signal_overlap_chr <- exact_overlap_chr
           } else{
 
             signal_overlap_chr <- exact_overlap_chr
             for(snp_outcome in outcome_snps_chr){
 
-              col_y <- which(grepl(snp_outcome, rownames(X)))
-              cols_x <- sapply(exposure_snps_chr, function(x) {which(grepl(x, colnames(X)))})
-              X_sub <- X[col_y, cols_x]
-              signal_overlap_chr <- exact_overlap_chr + length(which(X_sub!=0))
+              rows_y <- which(r2_dat$SNP_A %in% snp_outcome | r2_dat$SNP_B %in% snp_outcome)
+              if(length(rows_y)!=0){
+
+                r2_dat_sub <- r2_dat[rows_y,]
+                rows_x <- which(r2_dat_sub$SNP_A %in% exposure_snps_chr | r2_dat_sub$SNP_B %in% exposure_snps_chr)
+                r2_dat_sub2 <- r2_dat_sub[rows_x,]
+                signal_overlap_chr <- exact_overlap_chr + length(which(r2_dat_sub2$R2 > LD_threshold))
+
+              }
 
             }
 
@@ -3646,7 +3648,7 @@ find_proxyMR_IV_overlap <- function(exposure_info, proxyMR_MR_paths_summary, LD_
       }
 
       MR_sub$YiXi_IV_sig_overlap[i] <- percent_overlap
-      MR_sub$YiXi_IV_exact_overlap[i] <- exact_overlap
+      MR_sub$YiXi_IV_exact_overlap[i] <- exact_overlap / length(outcome_snps)
       outcome_ID_prev <- outcome_ID
 
     }
@@ -3660,25 +3662,43 @@ find_proxyMR_IV_overlap <- function(exposure_info, proxyMR_MR_paths_summary, LD_
 }
 
 
-plink_r2_mat <- function(bfile, filename, threads = 1){
+plink_r2_dat <- function(bfile, filename, threads = 1){
+
+  # If you want the r2 matrix
+
+  # fun2 <- paste0(
+  #   "plink",
+  #   " --recodeAD ",
+  #   " --extract ", filename, # create a list of snps to calculated r2 matrix between 'mysnps.txt', see: https://zzz.bwh.harvard.edu/plink/ld.shtml
+  #   " --bfile ", bfile,
+  #   " --threads ", threads,
+  #   " --out ", filename
+  # )
+  #
+
+  # d <- read.table(paste0(filename, ".raw"),header=T)
+  # remove_cols <- c(1:6, which(endsWith(colnames(d), "_HET")))
+  # d_sub <- d[,-remove_cols]
+  #
+  # r2_mat <- cor(d_sub, use = "complete.obs")^2
 
   fun2 <- paste0(
     "plink",
-    " --recodeAD ",
-    " --extract ", filename, # create a list of snps to calculated r2 matrix between 'mysnps.txt', see: https://zzz.bwh.harvard.edu/plink/ld.shtml
+    " --r2 ",
+    " --extract ", filename, # create a list of snps to calculate r2 matrix between 'mysnps.txt', see: https://zzz.bwh.harvard.edu/plink/ld.shtml
     " --bfile ", bfile,
     " --threads ", threads,
-    " --out ", filename
+    " --out ", filename,
+    " --ld-window-kb 10000",
+    " --ld-window 99999"
+
   )
+
   system(fun2)
 
-  d <- read.table(paste0(filename, ".raw"),header=T)
-  remove_cols <- c(1:6, which(endsWith(colnames(d), "_HET")))
-  d_sub <- d[,-remove_cols]
+  t <- read.table(paste0(filename, ".ld"), he=T)
 
-  r2_mat <- cor(d_sub, use = "complete.obs")^2
-
-  return(r2_mat)
+  return(t)
 }
 
 
