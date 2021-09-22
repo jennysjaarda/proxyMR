@@ -3609,7 +3609,7 @@ find_proxyMR_IV_overlap <- function(exposure_info, proxyMR_MR_paths_summary, LD_
           fn <- tempfile(tmpdir = tempdir())
           snps <- unique(c(exposure_snps_chr, outcome_snps_chr))
 
-          if(length(snps)<=1) next
+          if(length(outcome_snps_chr)<=1 | length(exposure_snps_chr)==0) next
 
           write.table(data.frame(SNP=snps), file=fn, row=F, col=F, qu=F)
 
