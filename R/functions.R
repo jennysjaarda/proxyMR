@@ -3136,8 +3136,6 @@ run_proxyMR_comparison_adj_yiyp <- function(exposure_info, household_MR_summary_
 }
 
 
-
-
 summarize_proxyMR_paths <- function(proxyMR_comparison){
 
   MR_paths_result <- bind_rows(lapply(proxyMR_comparison, function(x) {x[[1]]}))
@@ -3403,7 +3401,6 @@ create_proxy_sex_comparison_fig <- function(proxyMR_figure_data){
   return(figures_grid_plus_legend)
 }
 
-
 find_MV_z <- function(household_MR_summary_BF_sig, standard_MR_summary){
 
   #exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
@@ -3526,8 +3523,7 @@ prune_z_summ_stats <- function(MV_z, z_summ_stats, prune_threshold){
 }
 
 
-IV_clump <- function(data_IV, prune_threshold)
-{
+IV_clump <- function(data_IV, prune_threshold){
   data_prune <- numeric()
   for(chr in 1:22)
   {
@@ -3547,8 +3543,7 @@ IV_clump <- function(data_IV, prune_threshold)
   return(data_prune)
 }
 
-plink_clump <- function(bfile, filename, clump_p1 = 1, clump_p2 = 1, prune_threshold = 0.001, clump_kb = 10000, threads = 1)
-{
+plink_clump <- function(bfile, filename, clump_p1 = 1, clump_p2 = 1, prune_threshold = 0.001, clump_kb = 10000, threads = 1){
 
   fun2 <- paste0(
     "plink",
@@ -3568,49 +3563,124 @@ plink_clump <- function(bfile, filename, clump_p1 = 1, clump_p2 = 1, prune_thres
   return(a_out)
 }
 
-plink_r2_mat <- function(bfile, filename, threads = 1)
-{
+find_proxyMR_IV_overlap <- function(exposure_info, proxyMR_MR_paths_summary, LD_threshold = 0.9){
+
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+  ## only run this for those where omega is significant and where exposure and outcome ID are different.
+  MR_sub <- proxyMR_MR_paths_summary %>% filter(exposure_ID==!!exposure_ID)
+  MR_sub$YiXi_IV_perc_overlap <- NA
+  MR_sub$YiXi_IV_raw_overlap <- NA
+
+  summarized_result <- as_tibble(numeric())
+
+  if(dim(MR_sub)[1]!=0){
+
+    outcome_ID_prev <- ""
+    for(i in 1:dim(MR_sub)){
+
+      outcome_ID <-  MR_sub$outcome_ID[i]
+      exposure_sex <- MR_sub$exposure_sex[i]
+
+      if(outcome_ID!=outcome_ID_prev){
+
+        ## same IVs are used for both sexes so it doens't matter which sex we use.
+
+        cat(paste0("Assessing IV overlap between `", exposure_ID, "` as exposure and `", outcome_ID, "` as outcome.\n\n"))
+        IV_file_exposure <- paste0("analysis/traitMR/IVs/Neale/", exposure_ID, "/", exposure_sex, "_IVs.txt")
+        IV_data_exposure <- fread(IV_file_exposure, data.table = F)
+
+        IV_file_outcome <- paste0("analysis/traitMR/IVs/Neale/", outcome_ID, "/", exposure_sex, "_IVs.txt")
+        IV_data_outcome <- fread(IV_file_outcome, data.table = F)
+
+        exposure_snps <- IV_data_exposure$rsid
+        outcome_snps <- IV_data_outcome$rsid
+
+        exact_overlap <- length(which(outcome_snps %in% exposure_snps))
+
+        signal_overlap <- 0
+
+        for(chr in 1:22)
+        {
+
+          exposure_snps_chr <- IV_data_exposure[which(IV_data_exposure$chr==chr),"rsid"]
+          outcome_snps_chr <- IV_data_outcome[which(IV_data_outcome$chr==chr),"rsid"]
+          exact_overlap_chr <- length(which(outcome_snps_chr %in% exposure_snps_chr))
+
+          fn <- tempfile(tmpdir = tempdir())
+          snps <- unique(c(exposure_snps_chr, outcome_snps_chr))
+
+          if(length(snps)<=1) next
+
+          write.table(data.frame(SNP=snps), file=fn, row=F, col=F, qu=F)
+
+          refdat=paste0("/data/sgg2/jenny/data/1000G/chr",chr,"/1000G_EUR_chr",chr,"_filt")
+
+          r2_mat <- plink_r2_mat(bfile = refdat, filename = fn)
+
+          X <- as.data.frame(r2_mat)
+          X[X < LD_threshold] <- 0
+          X[!X < LD_threshold] <- 1
+
+          if(length(X[X==1])==length(snps)){
+            signal_overlap_chr <- exact_overlap_chr
+          } else{
+
+            signal_overlap_chr <- exact_overlap_chr
+            for(snp_outcome in outcome_snps_chr){
+
+              col_y <- which(grepl(snp_outcome, rownames(X)))
+              cols_x <- sapply(exposure_snps_chr, function(x) {which(grepl(x, colnames(X)))})
+              X_sub <- X[col_y, cols_x]
+              signal_overlap_chr <- exact_overlap_chr + length(which(X_sub!=0))
+
+            }
+
+          }
+
+          signal_overlap <- signal_overlap + signal_overlap_chr
+
+        }
+
+        percent_overlap <- signal_overlap / length(outcome_snps)
+
+      }
+
+      MR_sub$YiXi_IV_sig_overlap[i] <- percent_overlap
+      MR_sub$YiXi_IV_exact_overlap[i] <- exact_overlap
+      outcome_ID_prev <- outcome_ID
+
+    }
+    output <- MR_sub
+
+  } else output <- NULL
+
+
+  return(output)
+
+}
+
+
+plink_r2_mat <- function(bfile, filename, threads = 1){
 
   fun2 <- paste0(
     "plink",
-    "--ld-snp-list ", filename, # create a list of snps to calculated r2 matrix between 'mysnps.txt', see: https://zzz.bwh.harvard.edu/plink/ld.shtml
+    " --recodeAD ",
+    " --extract ", filename, # create a list of snps to calculated r2 matrix between 'mysnps.txt', see: https://zzz.bwh.harvard.edu/plink/ld.shtml
     " --bfile ", bfile,
-    " --r2",
-    " --matrix",
     " --threads ", threads,
     " --out ", filename
   )
   system(fun2)
-  a <- read.table(paste(clump_file, ".clumped", sep=""), he=T)
-  unlink(paste(clump_file, "*", sep=""))
-  a_out <- a[,"SNP"]
-  return(a_out)
+
+  d <- read.table(paste0(filename, ".raw"),header=T)
+  remove_cols <- c(1:6, which(endsWith(colnames(d), "_HET")))
+  d_sub <- d[,-remove_cols]
+
+  r2_mat <- cor(d_sub, use = "complete.obs")^2
+
+  return(r2_mat)
 }
 
-find_proxyMR_IV_overlap <- function(proxyMR_MR_paths_summary){
-
-  summarized_result <- as_tibble(numeric())
-
-  for(i in 1:dim(proxyMR_MR_paths_summary)){
-
-    exposure_ID <-  proxyMR_MR_paths_summary$exposure_ID[i]
-    outcome_ID <-  proxyMR_MR_paths_summary$outcome_ID[i]
-    exposure_sex <- proxyMR_MR_paths_summary$exposure_sex[i]
-
-    cat(paste0("Assessing IV overlap between `", exposure_ID, "` as exposure and `", outcome_ID, "` as outcome.\n\n"))
-    IV_file_exposure <- paste0("analysis/traitMR/IVs/Neale/", exposure_ID, "/", exposure_sex, "_IVs.txt")
-    IV_data_exposure <- fread(IV_file_exposure, data.table = F)
-
-    IV_file_outcome <- paste0("analysis/traitMR/IVs/Neale/", outcome_ID, "/", exposure_sex, "_IVs.txt")
-    IV_data_outcome <- fread(IV_file_outcome, data.table = F)
-
-    exposure_snps <- IV_data_exposure$rsid
-    outcome_snps <- IV_data_outcome$rsid
-
-    which(outcome_snps %in% exposure_snps)
-  }
-
-}
 
 #saveRDS(out, "code/shiny/mr_summary.rds")
 
