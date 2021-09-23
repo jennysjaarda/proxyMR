@@ -3469,7 +3469,7 @@ pull_z_summ_stats <- function(MV_z_data){
           ## get the results for both sexes for pruning
           GWAS_results_j_vs_k_both <- GWAS_results_j_vs_k[which(GWAS_results_j_vs_k$sex=="both_sexes"),c("SNP", "pval")]
           colnames(GWAS_results_j_vs_k_both) <- c("SNP", "pval_both_sexes")
-          GWAS_results_j_vs_k_sex <- merge(GWAS_results_j_vs_k_sex, GWAS_results_j_vs_k_both)
+          GWAS_results_j_vs_k_sex <- merge(GWAS_results_j_vs_k_sex, GWAS_results_j_vs_k_both) %>% as_tibble %>% type_convert() %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character)
           data_k[[paste0("GWAS_", j, "_results")]] <- list(GWAS_results_j_vs_k_sex)
 
         }
@@ -3515,8 +3515,9 @@ prune_z_summ_stats <- function(MV_z, z_summ_stats, prune_threshold){
                         chr = chr_i,
                         pval = pvals_i) %>% unique()
 
-    pruned_result <- IV_clump(prune_mat, prune_threshold)
+    pruned_mat <- IV_clump(to_prune_mat, prune_threshold)
 
+    full_dat <- tidyr::unnest(z_summ_stats_i, starts_with("GWAS_"), names_sep="_")
 
   }
 
