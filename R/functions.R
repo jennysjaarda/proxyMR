@@ -3099,7 +3099,7 @@ run_proxyMR_comparison_adj_yiyp <- function(exposure_info, household_MR_summary_
         # note can't easily use the `z.test_p` function because it isn't set up for vector of beta and se's, but rather one argument for each
         dplyr::group_by(exposure_ID, outcome_ID) %>% group_modify(~ summarize_sex_specific_results(.x$beta, .x$se))
 
-      if(var = "yiyp_IVW"){
+      if(var == "yiyp_IVW"){
         meta_temp_adj <- summarized_result %>% dplyr::select(exposure_ID, outcome_ID, starts_with(var)) %>% rename_all(~stringr::str_replace(., paste0("^", var, "_"),"")) %>%
           dplyr::group_by(exposure_ID, outcome_ID) %>%
           # note can't easily use the `z.test_p` function because it isn't set up for vector of beta and se's, but rather one argument for each
