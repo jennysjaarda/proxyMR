@@ -2969,7 +2969,7 @@ adj_yiyp_xIVs <- function(exposure_info, household_harmonised_data, household_MR
 
       ## this will pull the standard GWAS results for phenotype `exposure_ID` for IVs from `outcome_ID`, i.e. the effect of G on Xi for only Y IVs.
 
-      # preivously had accidentally pulled effect on Xp instead Xi
+      # previously had accidentally pulled effect on Xp instead Xi
       #xi_GWAS_results <- fread(GWAS_file, data.table = F) %>% filter(bin == "all" & grouping_var == "time_together_even_bins" & exposure_sex == !!exposure_sex)
       xi_GWAS_results <- fread(GWAS_file, data.table = F) %>% filter(sex == !!exposure_sex)
 
