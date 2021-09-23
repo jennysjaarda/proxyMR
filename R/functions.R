@@ -3569,7 +3569,7 @@ find_proxyMR_IV_overlap <- function(exposure_info, proxyMR_MR_paths_summary, LD_
   ## only run this for those where omega is significant and where exposure and outcome ID are different.
   MR_sub <- proxyMR_MR_paths_summary %>% filter(exposure_ID==!!exposure_ID)
   MR_sub$YiXi_IV_perc_overlap <- NA
-  MR_sub$YiXi_IV_raw_overlap <- NA
+  MR_sub$YiXi_IV_exact_overlap <- NA
 
   summarized_result <- as_tibble(numeric())
 
