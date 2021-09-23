@@ -3518,6 +3518,7 @@ prune_z_summ_stats <- function(MV_z, z_summ_stats, prune_threshold){
     pruned_mat <- IV_clump(to_prune_mat, prune_threshold)
 
     full_dat <- tidyr::unnest(z_summ_stats_i, starts_with("GWAS_"), names_sep="_")
+    # extract only the pruned SNPs
 
   }
 
@@ -3569,7 +3570,7 @@ find_proxyMR_IV_overlap <- function(exposure_info, proxyMR_MR_paths_summary, LD_
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
   ## only run this for those where omega is significant and where exposure and outcome ID are different.
   MR_sub <- proxyMR_MR_paths_summary %>% filter(exposure_ID==!!exposure_ID)
-  MR_sub$YiXi_IV_perc_overlap <- NA
+  MR_sub$YiXi_IV_sig_overlap <- NA
   MR_sub$YiXi_IV_exact_overlap <- NA
 
   summarized_result <- as_tibble(numeric())
