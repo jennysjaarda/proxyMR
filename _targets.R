@@ -649,13 +649,9 @@ list(
 
   tar_target(
     z_summ_stats_pruned,
-    {
-      path_outcome_stats
-      prune_z_summ_stats(MV_z, z_summ_stats, prune_threshold)
-    },
+    prune_z_summ_stats(MV_z, z_summ_stats, prune_threshold),
     map(MV_z, z_summ_stats)
   ),
-
 
   tar_target(
     proxyyMR_IV_overlap,

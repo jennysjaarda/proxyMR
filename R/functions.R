@@ -2965,15 +2965,17 @@ adj_yiyp_xIVs <- function(exposure_info, household_harmonised_data, household_MR
       expsosure_sex_name <- paste0("exp_", exposure_sex, "_harmonised_data")
       univar_harmonised_dat <- household_harmonised_data[[harmonised_dat_name]][[expsosure_sex_name]] %>% filter(bin == "all" & grouping_var == "time_together_even_bins")
 
-      GWAS_file <- paste0("analysis/traitMR/household_GWAS/", exposure_ID, "/", exposure_ID, "_vs_", outcome_ID, "_GWAS.csv")
+      GWAS_file <- paste0("analysis/traitMR/standard_GWAS/", exposure_ID, "/", exposure_ID, "_vs_", outcome_ID, "_GWAS.csv") # SHOULD BE STANDARD GWAS?
 
-      ## this will pull the houshold GWAS results for phenotype `exposure_ID` for IVs from `outcome_ID`, i.e. the effect of Xi on Yp for Y IVs.
+      ## this will pull the standard GWAS results for phenotype `exposure_ID` for IVs from `outcome_ID`, i.e. the effect of G on Xi for only Y IVs.
 
-      xi_GWAS_results <- fread(GWAS_file, data.table = F) %>% filter(bin == "all" & grouping_var == "time_together_even_bins" & exposure_sex == !!exposure_sex)
+      # preivously had accidentally pulled effect on Xp instead Xi
+      #xi_GWAS_results <- fread(GWAS_file, data.table = F) %>% filter(bin == "all" & grouping_var == "time_together_even_bins" & exposure_sex == !!exposure_sex)
+      xi_GWAS_results <- fread(GWAS_file, data.table = F) %>% filter(sex == !!exposure_sex)
 
       mv_data <- merge(univar_harmonised_dat, xi_GWAS_results, by = "SNP")
 
-      mv_data_format <- mr_mvinput(bx = cbind(mv_data[["beta.exposure"]], mv_data[["geno_index_beta"]]), bxse = cbind(mv_data[["se.exposure"]], mv_data[["geno_index_se"]]),
+      mv_data_format <- mr_mvinput(bx = cbind(mv_data[["beta.exposure"]], mv_data[["beta"]]), bxse = cbind(mv_data[["se.exposure"]], mv_data[["se"]]),
                                    by = mv_data[["beta.outcome"]], byse = mv_data[["se.outcome"]])
 
 
@@ -3097,6 +3099,16 @@ run_proxyMR_comparison_adj_yiyp <- function(exposure_info, household_MR_summary_
         # note can't easily use the `z.test_p` function because it isn't set up for vector of beta and se's, but rather one argument for each
         dplyr::group_by(exposure_ID, outcome_ID) %>% group_modify(~ summarize_sex_specific_results(.x$beta, .x$se))
 
+      if(var = "yiyp_IVW"){
+        meta_temp_adj <- summarized_result %>% dplyr::select(exposure_ID, outcome_ID, starts_with(var)) %>% rename_all(~stringr::str_replace(., paste0("^", var, "_"),"")) %>%
+          dplyr::group_by(exposure_ID, outcome_ID) %>%
+          # note can't easily use the `z.test_p` function because it isn't set up for vector of beta and se's, but rather one argument for each
+          dplyr::group_by(exposure_ID, outcome_ID) %>% group_modify(~ summarize_sex_specific_results(.x$beta_adj, .x$se_adj))
+
+        colnames(meta_temp_adj)[-c(1:2)] <- paste0(var, "_", colnames(meta_temp)[-c(1:2)], "_adj")
+        meta_list[[paste0(var, "_adj")]] <- meta_temp_adj
+      }
+
       colnames(meta_temp)[-c(1:2)] <- paste0(var, "_", colnames(meta_temp)[-c(1:2)])
       meta_list[[var]] <- meta_temp
 
@@ -3134,7 +3146,6 @@ run_proxyMR_comparison_adj_yiyp <- function(exposure_info, household_MR_summary_
 
 
 }
-
 
 summarize_proxyMR_paths <- function(proxyMR_comparison){
 
@@ -3489,10 +3500,16 @@ pull_z_summ_stats <- function(MV_z_data){
 
 prune_z_summ_stats <- function(MV_z, z_summ_stats, prune_threshold){
 
+  output_list <- list()
   for(i in 1:length(z_summ_stats)){
 
     exposure_ID <- MV_z$exposure_ID[i]
+    outcome_ID <- MV_z$outcome_ID[i]
+    exposure_sex <- MV_z$exposure_sex[i]
+
     z_summ_stats_i <- z_summ_stats[[1]]
+    cat(paste0("Pruning summary statistics for MV MR for  `", exposure_ID, "` as exposure and `", outcome_ID, "` as outcome in ", exposure_sex, "s as exposure sex.\n"))
+
     # extract all SNPs
     col <- which(colnames(z_summ_stats_i)==paste0("GWAS_", exposure_ID, "_results"))
     SNPs_i <- numeric()
@@ -3518,9 +3535,54 @@ prune_z_summ_stats <- function(MV_z, z_summ_stats, prune_threshold){
     pruned_mat <- IV_clump(to_prune_mat, prune_threshold)
 
     full_dat <- tidyr::unnest(z_summ_stats_i, starts_with("GWAS_"), names_sep="_")
-    # extract only the pruned SNPs
+
+    ## remove duplicate columns, like SNP, chr, allele, etc.
+    full_dat_shrink <- full_dat[!duplicated(as.list(full_dat))]
+
+    SNP_col <- which(grepl("_results_SNP", colnames(full_dat_shrink)))
+
+    ## restrict to only pruned SNPs
+    full_dat_sub <- full_dat_shrink[which(full_dat_shrink[[SNP_col]] %in% pruned_mat$SNP),-1]
+
+    full_dat_pruned <- full_dat_sub %>% unique()
+
+
+    bx_dat <- list()
+    bxse_dat <- list()
+    mv_dat_cols <- colnames(z_summ_stats_i)[-1]
+    by_col <- which(mv_dat_cols==paste0("GWAS_", outcome_ID, "_results"))
+    by_col_name <- mv_dat_cols[by_col]
+    bx_cols <- mv_dat_cols[-by_col]
+
+    count <- 1
+    for(mv_name in bx_cols){
+
+      beta_col <- which(colnames(full_dat_pruned)==paste0(mv_name, "_beta"))
+      se_col <- which(colnames(full_dat_pruned)==paste0(mv_name, "_se"))
+      bx_dat[[count]] <- full_dat_pruned[,beta_col]
+      bxse_dat[[count]] <- full_dat_pruned[,se_col]
+      count <- count + 1
+
+    }
+
+    by_beta_col <- which(colnames(full_dat_pruned)==paste0("GWAS_", outcome_ID, "_results", "_beta"))
+    by_se_col <- which(colnames(full_dat_pruned)==paste0("GWAS_", outcome_ID, "_results", "_se"))
+
+
+    mv_data_format <- mr_mvinput(bx = as.matrix(data.frame(bx_dat)), bxse = as.matrix(data.frame(bxse_dat)),
+                                 by = unlist(full_dat_pruned[,by_beta_col]), byse = unlist(full_dat_pruned[,by_se_col]))
+
+
+    #mv_result <- mr_mvivw(mv_data_format) # see `str(mv_result)` to know how to access the results
+
+    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_", exposure_sex)]] <- (mv_data_format)
+    cat(paste0("Finished pruning summary statistics for ", i, " of ", dim(MV_z_data)[1], " traits.\n\n"))
+
+
 
   }
+
+  return(output_list)
 
 }
 
@@ -3578,7 +3640,7 @@ find_proxyMR_IV_overlap <- function(exposure_info, proxyMR_MR_paths_summary, LD_
   if(dim(MR_sub)[1]!=0){
 
     outcome_ID_prev <- ""
-    for(i in 1:dim(MR_sub)){
+    for(i in 1:dim(MR_sub)[1]){
 
       outcome_ID <-  MR_sub$outcome_ID[i]
       exposure_sex <- MR_sub$exposure_sex[i]
