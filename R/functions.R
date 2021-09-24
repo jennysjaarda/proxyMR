@@ -3576,7 +3576,7 @@ prune_z_summ_stats <- function(MV_z, z_summ_stats, prune_threshold){
     #mv_result <- mr_mvivw(mv_data_format) # see `str(mv_result)` to know how to access the results
 
     output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_", exposure_sex)]] <- (mv_data_format)
-    cat(paste0("Finished pruning summary statistics for ", i, " of ", dim(MV_z_data)[1], " traits.\n\n"))
+    cat(paste0("Finished pruning summary statistics for ", i, " of ", length(z_summ_stats), " traits.\n\n"))
 
 
 
