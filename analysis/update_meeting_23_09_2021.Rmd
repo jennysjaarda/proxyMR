@@ -1,0 +1,136 @@
+---
+title: "Update Meeting: 23-09-2021"
+author: "Jenny Sjaarda"
+date: "2021-09-20"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+
+options(scipen=999)
+source("code/settings.R")
+library(targets)
+library(dplyr)
+library(DT)
+library(knitr)
+library(ggplot2)
+
+```
+
+```{r load_targets, include = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+
+tar_load(proxyyMR_IV_overlap)
+tar_load(proxyMR_MR_paths_summary_yiyp_adj)
+tar_load(proxyMR_comparison_summary_yiyp_adj)
+```
+
+
+# Last meeting summary.
+
+- Because the results comparing $\omega$ to $\rho + \gamma$ were slightly confusing (see last meeting summary [here](https://jennysjaarda.github.io/proxyMR/update_meeting_06_09_2021.html)), decided we should explore the impact of $X_i$ on the $Y_i \rightarrow Y_p$ causal effects.
+
+```{r two_trait_model, echo = FALSE}
+library(knitr)
+knitr::include_graphics("assets/two_trait_model.png", error = FALSE)
+```
+
+- Two tasks to explore:
+    1. Identify overlap between $X_i \rightarrow X_p$ IVs and $Y_i \rightarrow Y_p$. 
+    2. Adjust the $Y_i \rightarrow Y_p$ MR results for effects of $X_i$ (as depicted below). 
+
+```{r YiYp_adj_model, echo = FALSE}
+library(knitr)
+knitr::include_graphics("assets/two_trait_model_yiyp_adj.png", error = FALSE)
+```
+
+# Results.
+
+## Overlap between IVs for $X$ and $Y$.
+
+- Is simply calculating the SNP overlap good enough? 
+- Better to calculate signal overlap using LD at some $r^2$ cutoff (what threshold would be useful?).
+  - For each IV used to estimate the causal effect $Y_i \rightarrow Y_p$,
+  - Test if they are in LD with any IV used to estimate the causal effect $X_i \rightarrow X_p$ at $r^2$ > `0.9`, 
+  - Repeat for all IVs for $Y_i$ to calcualte the percentage overlap between the two sets of IVs. 
+  - Define percentage overlap as: (# of $Y_i$ IVs are in LD with at least one $X_i$ IV at $r^2$ > `0.9`) / (total number of $Y_i$ IVs used).
+
+The results can be seen below. The `YiXi_IV_exact_overlap` column indicates the percentage of $Y_i$ IVs that are an exact match with $X_i$ IVs (same `rs#`). The `YiXi_IV_sig_overlap` column denotes the percentage overlap of signals, as defined above. 
+
+```{r XiYi_IV_overlap, include = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+proxyyMR_IV_overlap.DT <- proxyyMR_IV_overlap %>% dplyr::select(exposure_description, outcome_description, YiXi_IV_exact_overlap, YiXi_IV_sig_overlap) %>% unique() %>% arrange(desc(YiXi_IV_sig_overlap))
+
+DT::datatable(proxyyMR_IV_overlap.DT, width = "100%") %>% formatRound(columns=c('YiXi_IV_exact_overlap', 'YiXi_IV_sig_overlap'), digits = 3)
+```
+
+The results with the most overlap involve traits that are nearly identical. 
+
+## Adjust $Y_i \rightarrow Y_p$.
+
+Performed MV MR $Y_i \rightarrow Y_p$ relationships: $Y_p \sim Y_i + X_i$. Where IVs were the same as the two trait MR ($Y_p \sim Y_i$) based on $Y$, but the effect of the IVs on $X_i$ were also included in the model. 
+
+```{r YiYp_adj, include = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+yiyp_adj.DT <- proxyMR_MR_paths_summary_yiyp_adj %>% dplyr::select(exposure_description, outcome_description, exposure_sex, starts_with("yiyp_IVW"))
+
+DT::datatable(yiyp_adj.DT, width = "100%") %>% formatRound(columns=c('YiXi_IV_exact_overlap', 'YiXi_IV_sig_overlap'), digits = 3)
+
+
+fig_dat <- full_join(proxyyMR_IV_overlap, proxyMR_MR_paths_summary_yiyp_adj)
+
+create_fig <- function(fig_dat, custom_col){
+
+  #AM_result <- household_MR_binned_het %>% filter(same_trait)
+
+  plot_data <- fig_dat %>% #dplyr::select(exposure_ID, exposure_sex, IVW_beta, IVW_se, IVW_pval, sex_het_pval) %>% unique() %>%
+    #pivot_wider(names_from = "exposure_sex", values_from = c("IVW_beta", "IVW_se", "IVW_pval")) %>%
+    mutate(overlap_above_50 = case_when(YiXi_IV_sig_overlap > 0.5 ~ TRUE, TRUE ~ FALSE))
+
+
+  legend_title <- "IV overlap"
+  plot <- ggplot2::ggplot(data = plot_data, ggplot2::aes(x = yiyp_IVW_beta_adj,
+                                                         y = yiyp_IVW_beta, color = factor(overlap_above_50))) +
+    geom_point(alpha = 3/4) +
+
+    geom_smooth(mapping = aes(x = yiyp_IVW_beta_adj, y = yiyp_IVW_beta), method = "lm", se=FALSE, formula = y~x+0, fullrange=TRUE, color = custom_col[4]) +
+    geom_abline(slope=1, intercept=0, color = "black") +
+    scale_color_manual(values = custom_col[c(1,2)], labels=c("overlap > 50%","overlap =< 50%")) +
+    theme_minimal() +
+    ggplot2::labs(colour = legend_title, x = paste0("MR estimate (Y-index to Y-partner)"),
+                  y = paste("AM MR estimate adjusted for IV effect on relevant X"))
+}
+
+```
+
+## Updated results with adjusted $Y_i$
+
+```{r proxy_MR_update, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+
+t1 <- as.data.frame(table(proxyMR_comparison_summary_yiyp_adj$omega_vs_gam_BF_sig_meta))
+colnames(t1) <- c("omega_vs_gam_BF_sig_meta", "Frq")
+
+kbl(t1) %>% kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+
+t2 <- as.data.frame(table(proxyMR_comparison_summary_yiyp_adj$omega_vs_rho_BF_sig_meta))
+colnames(t2) <- c("omega_vs_rho_BF_sig_meta", "Frq")
+
+kbl(t2) %>% kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+
+t3 <- as.data.frame(table(proxyMR_comparison_summary_yiyp_adj$omega_vs_gam_rho_BF_sig_meta))
+colnames(t3) <- c("omega_vs_gam_rho_BF_sig_meta", "Frq")
+
+```
+
+## MVMR 
+
+Run all MVMR models but need to sum up along all $\beta$ from the MV model to create the $\gamma_{mv}$.
+
+MV MR: $X \rightarrow  Z \rightarrow Y$
+  - Drop Z's if not significant in MV MR (i.e. $Y \sim X + Z_1 + Z_2 + Z_3...$)
+  - Do we drop from the model itself and recompute the beta-coefficients? Or simply not include them in the result sum? 
+
+
+```{r MV_model, echo = FALSE}
+library(knitr)
+knitr::include_graphics("assets/MV_trait_model_yiyp_adj.png", error = FALSE)
+``
