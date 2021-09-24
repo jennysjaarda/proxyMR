@@ -17,3 +17,4 @@ Meeting minutes can be found at the links below (DD-MM-YYY).
 4. [14-07-2021](update_meeting_14_06_2021.html)
 5. [25-08-2021](update_meeting_25_08_2021.html)
 6. [06-09-2021](update_meeting_06_09_2021.html)
+7. [23-09-2021](update_meeting_23_09_2021.html)
