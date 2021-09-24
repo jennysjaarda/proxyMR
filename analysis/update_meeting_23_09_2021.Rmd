@@ -71,9 +71,10 @@ The results with the most overlap involve traits that are nearly identical.
 Performed MV MR $Y_i \rightarrow Y_p$ relationships: $Y_p \sim Y_i + X_i$. Where IVs were the same as the two trait MR ($Y_p \sim Y_i$) based on $Y$, but the effect of the IVs on $X_i$ were also included in the model. 
 
 ```{r YiYp_adj, include = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
-yiyp_adj.DT <- proxyMR_MR_paths_summary_yiyp_adj %>% dplyr::select(exposure_description, outcome_description, exposure_sex, starts_with("yiyp_IVW"))
+yiyp_adj.DT <- proxyMR_MR_paths_summary_yiyp_adj %>% dplyr::select(exposure_description, outcome_description, exposure_sex, yiyp_IVW_beta, yiyp_IVW_se, yiyp_IVW_pval, yiyp_IVW_beta_adj, yiyp_IVW_se_adj, yiyp_IVW_pval_adj)
 
-DT::datatable(yiyp_adj.DT, width = "100%") %>% formatRound(columns=c('YiXi_IV_exact_overlap', 'YiXi_IV_sig_overlap'), digits = 3)
+format_round_cols <- colnames(dplyr::select_if(yiyp_adj.DT, is.numeric))
+DT::datatable(yiyp_adj.DT, width = "100%") %>% formatRound(columns=format_round_cols, digits = 3)
 
 
 fig_dat <- full_join(proxyyMR_IV_overlap, proxyMR_MR_paths_summary_yiyp_adj)
@@ -99,6 +100,8 @@ create_fig <- function(fig_dat, custom_col){
     ggplot2::labs(colour = legend_title, x = paste0("MR estimate (Y-index to Y-partner)"),
                   y = paste("AM MR estimate adjusted for IV effect on relevant X"))
 }
+
+create_fig(fig_dat, custom_col)
 
 ```
 
