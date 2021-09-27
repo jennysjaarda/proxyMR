@@ -27,6 +27,7 @@ tar_load(traits_corr2)
 tar_load(traits_corr3)
 tar_load(traits_corr4)
 tar_load(traits_corr5)
+tar_load(traits_corr6)
 
 ```
 
@@ -112,18 +113,33 @@ traits_corr4_filt.DT <- traits_corr4_filt %>% as_tibble() %>% mutate(r = sqrt(as
 DT::datatable(traits_corr4_filt.DT, width = "100%") %>% formatRound(columns=c('r2', 'r'), digits = 3)
 ```
 
-# Non-binary. 
+# Non-diet. 
 
-Phenotypes were limited to `continuous_irnt` or `ordinal` (i.e. `binary` traits were removed).
+Dietary phenotypes were removed due to high correlation amongst phenotypes, insufficient power and difficult interpretation.
 
 Number remaining after filter = **`r dim(traits_corr5)[1]`**.
 
-The traits remaining after sex-heterogeneity filtering can be seen below. 
+The traits remaining after removing dietary traits can be seen below. 
 
-```{r continuous_filter, echo=FALSE}
+```{r non_diet_filter, echo=FALSE}
 
 traits_corr5.DT <- traits_corr5 %>% as_tibble() %>% mutate(r = sqrt(as.numeric(r2))) %>% dplyr::select(Neale_pheno_ID, description, variable_type, category, N_pairs, r2, r, num_IVs, num_IVs_pass_het)
 DT::datatable(traits_corr5.DT, width = "100%") %>% formatRound(columns=c('r2', 'r'), digits = 3)
+
+```
+
+# Non-redundant phenotypes.
+
+Lastly, left-side body traits (highly correlated with right-side) were removed and all 'qualifications' data (corresponding to field [6138](https://biobank.ctsu.ox.ac.uk/showcase/field.cgi?id=6138)) because data is roughly captured with continuous variables (such as years of education).
+
+Number remaining after filter = **`r dim(traits_corr6)[1]`**.
+
+The traits remaining after removing dietary traits can be seen below. 
+
+```{r non_redundant_filter, echo=FALSE}
+
+traits_corr6.DT <- traits_corr6 %>% as_tibble() %>% mutate(r = sqrt(as.numeric(r2))) %>% dplyr::select(Neale_pheno_ID, description, variable_type, category, N_pairs, r2, r, num_IVs, num_IVs_pass_het)
+DT::datatable(traits_corr6.DT, width = "100%") %>% formatRound(columns=c('r2', 'r'), digits = 3)
 
 ```
 
