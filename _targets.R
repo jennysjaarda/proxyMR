@@ -11,7 +11,7 @@ options(clustermq.scheduler = "slurm", clustermq.template = "slurm_clustermq.tmp
 tar_option_set(
   resources = tar_resources(
     clustermq = tar_resources_clustermq(template = list(num_cores = 1, account = "sgg",
-                                                        ntasks = 4, partition = "sgg",
+                                                        ntasks = 1, partition = "sgg",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
   packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR",
@@ -327,10 +327,23 @@ list(
     continuous_filter(traits_corr4$to_run)
   ),
 
+  # filter for non-diet traits only
+  tar_target(
+    traits_corr5,
+    non_diet_filter(traits_corr4$to_run)
+  ),
+
+  # filter out left-side traits (highly correlated with right-side)
+  # filter out categorical 'Qualifications:', because data is roughly captured with continuous variables
+  tar_target(
+    traits_corr6,
+    non_redundant_filter(traits_corr5)
+  ),
+
   # final list of traits to run in pipeline, just a copy of above target
   tar_target(
     traits_final,
-    traits_corr5
+    traits_corr6
   ),
 
   tar_target(

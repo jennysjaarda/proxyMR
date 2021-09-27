@@ -917,6 +917,27 @@ continuous_filter <- function(traits){
   return(output)
 }
 
+non_diet_filter <- function(traits){ # filter out only binary diet traits?
+  output <- traits %>% filter(!category=="diet") %>% filter(!grepl("intake", description))
+  return(output)
+}
+
+non_qual_filter <- function(traits){
+  output <- traits %>% filter(!grepl("Qualifications:", description))
+  return(output)
+}
+
+non_left_side_filter <- function(traits){
+  output <- traits %>% filter(!grepl("left", description))
+  return(output)
+}
+
+non_redundant_filter <- function(traits){
+  temp <- non_qual_filter(traits)
+  output <- non_left_side_filter(temp)
+  return(output)
+}
+
 write_final_filter <- function(traits_final, output_name){
   output_name <- ("output/tables/household_correlations.final_filter.csv")
   write.csv(traits_final, "output/tables/household_correlations.final_filter.csv", row.names=F)
