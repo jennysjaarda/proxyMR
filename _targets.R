@@ -396,6 +396,11 @@ list(
   ),
 
   tar_target(
+    corr_mat_traits,
+    calc_corr_mat_traits(exposure_info, data_sqc, data_fam, data_relatives)
+  ),
+
+  tar_target(
     PC_traits,
     calc_PC_traits(exposure_info, data_sqc, data_fam, data_relatives)
   ),
@@ -730,9 +735,15 @@ list(
     path_bgenie_pcs_unzip,
     unzip_bgenie(path_bgenie_pcs),
     pattern = map(path_bgenie_pcs), format = "file"
-  )
+  ),
 
 
+
+  ### markdown docs
+
+  tar_render(rmd_index, "analysis/index.Rmd"),
+  tar_render(rmd_final_phenotype_list, "analysis/final_phenotype_list.Rmd"),
+  tar_render(rmd_phenotype_selection, "analysis/index.Rmd") # Here is our call to tar_render().
 
 
 
