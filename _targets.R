@@ -321,11 +321,6 @@ list(
     traits_corr4,
     sex_het_filter(traits_corr3$to_run, IV_data_summary, num_IVs_threshold)
   ),
-  # filter for continuous traits only
-  tar_target(
-    traits_corr5,
-    continuous_filter(traits_corr4$to_run)
-  ),
 
   # filter for non-diet traits only
   tar_target(
