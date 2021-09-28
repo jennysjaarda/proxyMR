@@ -1180,8 +1180,7 @@ extract_trait_info <- function(pheno_data){
 
 }
 
-
-calc_PC_traits <- function(exposure_info_list, sqc, fam, relatives){
+calc_corr_mat_traits <- function(exposure_info_list, sqc, fam, relatives){
 
   full_df <- numeric()
 
@@ -1215,6 +1214,13 @@ calc_PC_traits <- function(exposure_info_list, sqc, fam, relatives){
   calc_PC_data <- unrelated_data[,-c(1:3)]
 
   cor_matrix <- cor(calc_PC_data, use = "pairwise.complete.obs")
+
+  return(cor_matrix)
+}
+
+calc_PC_traits <- function(exposure_info_list, sqc, fam, relatives){
+
+  cor_matrix <- calc_corr_mat_traits (exposure_info_list, sqc, fam, relatives)
 
   res.pca <- prcomp((cor_matrix), scale = TRUE)
   # to visualize the PC results
@@ -1785,11 +1791,11 @@ define_models <- function(traits){
 
 }
 
-summarize_gwas <- function(geno, outcome, covar, tempdir = "/data/sgg2/jenny"){
+summarize_gwas <- function(geno, outcome, covar, variable_type, tempdir = "/data/sgg2/jenny"){
 
   temp_file <- tempfile(tmpdir = tempdir)
-  gwas <- big_univLinReg(as_FBM(geno, backingfile = temp_file), y.train = outcome,
-                         covar.train = covar_from_df(covar))
+  gwas <- suppressWarnings(big_univLinReg(as_FBM(geno, backingfile = temp_file), y.train = outcome,
+                         covar.train = covar_from_df(covar)))
 
   unlink(paste0(temp_file, ".bk"))
   gwas$pval <- predict(gwas, log10 = FALSE)
@@ -1804,6 +1810,8 @@ household_GWAS_bin <- function(exposure_info, summ_stats, pheno_data, outcome_ID
                                IV_genetic_data, joint_model_adjustments, grouping_var, household_time_munge){
 
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+
+  variable_type <- exposure_info %>% filter(Value=="variable_type") %>% pull(Info)
 
   cat(paste0("Calculating household GWAS for phenotype `", exposure_ID, "` as exposure and phenotype `", outcome_ID, "` as outcome...\n"))
   pheno_dir <- paste0("analysis/traitMR/")
@@ -1848,7 +1856,8 @@ household_GWAS_bin <- function(exposure_info, summ_stats, pheno_data, outcome_ID
     colnames(final_data) <- c(colnames(pheno_cov), "outcome", grouping_var)
 
     pheno_run <- final_data[,c(grep("_age", names(final_data)),grep("_PC_", names(final_data)), which(names(final_data)=="outcome"))]
-    pheno_run$outcome <- scale(pheno_run$outcome)
+
+    if(variable_type!="binary") {pheno_run$outcome <- scale(pheno_run$outcome)}
 
 
     IIDs_keep <- as.character(format(final_data[[index]], scientific = F))
@@ -1866,7 +1875,7 @@ household_GWAS_bin <- function(exposure_info, summ_stats, pheno_data, outcome_ID
       bin_sub <- final_data[which(final_data[[grouping_var]]==bin),]
       bin_pheno_run <- bin_sub[,c(grep("_age", names(bin_sub)),grep("_PC_", names(bin_sub)), which(names(bin_sub)=="outcome"))]
 
-      bin_pheno_run$outcome <- scale(bin_pheno_run$outcome)
+      if(variable_type!="binary") {pheno_run$outcome <- scale(pheno_run$outcome)}
       bin_pheno_run <- bin_pheno_run[complete.cases(bin_pheno_run),] #if all values are the same then NA's will be produced
 
       bin_IIDs_keep <- bin_sub[[index]]
@@ -1934,10 +1943,10 @@ run_household_GWAS <- function(exposure_info, summ_stats, outcomes_to_run, trait
     GWAS_file_i <- paste0(pheno_dir, "/household_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
     output_files <- c(output_files, GWAS_file_i)
 
-    if(file.exists(GWAS_file_i)) {
-      cat(paste0("Skipping `", outcome_ID, "` because GWAS results already exist...\n\n"))
-      next
-    }
+    #if(file.exists(GWAS_file_i)) {
+    #  cat(paste0("Skipping `", outcome_ID, "` because GWAS results already exist...\n\n"))
+    #  next
+    #}
 
     male_file <- paste0(pheno_dir,"/pheno_files/phesant/", outcome_ID, "_male.txt")
     female_file <- paste0(pheno_dir,"/pheno_files/phesant/", outcome_ID, "_female.txt")

@@ -743,7 +743,7 @@ list(
 
   tar_render(rmd_index, "analysis/index.Rmd"),
   tar_render(rmd_final_phenotype_list, "analysis/final_phenotype_list.Rmd"),
-  tar_render(rmd_phenotype_selection, "analysis/index.Rmd") # Here is our call to tar_render().
+  tar_render(rmd_phenotype_selection, "analysis/index.Rmd")
 
 
 
