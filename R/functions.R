@@ -1266,7 +1266,11 @@ create_summary_stats <- function(Neale_pheno_ID, trait_info, IV_data_summary){
     temp <- IV_data_summary[[paste0(sex, "_IV_data")]] #read.table(file_name,header=T)
     SNP_rows <- which(temp[,"rsid"] %in% IV_list_filter[,1])
     temp <- temp[SNP_rows,]
-    IV_cols <- c("rsid", "chr", "beta", "se", "pval", "ref", "alt", "AF","n_complete_samples")
+
+    temp <- temp %>% mutate(alt_AF = case_when(minor_allele_Neale == alt ~ minor_AF_Neale,
+                                               TRUE ~ 1 - minor_AF_Neale))
+
+    IV_cols <- c("rsid", "chr", "beta", "se", "pval", "ref", "alt", "alt_AF","n_complete_samples")
     exp_var_merge <- temp[,IV_cols]
     assign(paste0(sex, "_IV_data"), exp_var_merge)
   }
@@ -1450,7 +1454,7 @@ extract_ind_Neale_file <- function(Neale_file, variant_data){
 
   cols <- c("rsid", "chr", "beta", "se", "pval", "ref", "alt", "AF", "n_complete_samples")
   outcome_filter <- outcome_var_merge[,cols]
-  colnames(outcome_filter) <- c("SNP", "chr", "beta", "se", "pval", "other_allele", "effect_allele","eaf", "samplesize")
+  colnames(outcome_filter) <- c("SNP", "chr", "beta", "se", "pval", "other_allele", "effect_allele","alt_AF", "samplesize")
   #outcome_format <- format_data(outcome_filter, type="outcome")
 
   return(outcome_filter)
