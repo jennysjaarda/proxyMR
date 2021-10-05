@@ -1148,19 +1148,9 @@ prep_pheno_data <- function(traits, Neale_pheno_ID, sqc, fam, relatives){
   pheno_male_full <- merge(pheno_male_comp, sqc_sub, by.x="IID", by.y="ID")
   pheno_female_full <- merge(pheno_female_comp, sqc_sub, by.x="IID", by.y="ID")
 
-  maleIDs <- as.integer(pheno_male_full$IID)
-  femaleIDs <- as.integer(pheno_female_full$IID)
-
-
-  related_males <- ukb_gen_samples_to_remove(relatives, ukb_with_data = maleIDs)
-  related_females <- ukb_gen_samples_to_remove(relatives, ukb_with_data = femaleIDs)
-
-  unrelated_male_data <- pheno_male_full[-which(pheno_male_full$IID %in% related_males ),]
-  unrelated_female_data <- pheno_female_full[-which(pheno_female_full$IID %in% related_females ),]
-
   cat(paste0("Successfully prepared phenotype for processing (created directories, phenotype file inputs, trait summary, etc).\n"))
 
-  pheno_data = list(unrelated_male_data = unrelated_male_data, unrelated_female_data = unrelated_female_data)
+  pheno_data = list(unrelated_male_data = pheno_male_full, unrelated_female_data = pheno_female_full)
   return(pheno_data)
 }
 
