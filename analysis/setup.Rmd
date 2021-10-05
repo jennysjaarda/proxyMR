@@ -28,7 +28,7 @@ library("workflowr")
 wflow_start(project_name) # creates directory called `project_name`
 
 options("workflowr.view" = FALSE) # if using cluster
-options("workflowr.view" = TRUE) # defaule, if using Rstudio on personal computer
+options("workflowr.view" = TRUE) # default, if using Rstudio on personal computer
 
 wflow_build() # create directories
 options(workflowr.sysgit = "")
@@ -55,8 +55,15 @@ git clone https://GitHub.com/jennysjaarda/proxyMR.git proxyMR
 Open project in Rstudio (or preferred text editor) and modify the following files:
 
 - Because Terminal cannot generate a preview and `workflowr` doesn't like the sysgit, to the `.Rprofile` file, add:
-  - `options(workflowr.sysgit = "")`
-  - `options("workflowr.view" = FALSE)`
+
+```{r, engine = 'bash', eval = FALSE}
+library("targets")
+
+if(Sys.info()["sysname"]=="Linux"){
+  options("workflowr.view" = FALSE)
+}
+```
+
 - To ensure git hub isn't managing large files, modify the `.gitignore` file, by adding the following lines:
 ```
 analysis/*
@@ -187,13 +194,26 @@ Periodically call `renv::snapshot()` to save the state of the project library to
 
 # Copy relevant files to project directory. 
 
-Only do this once. The `Neale_SGG_directory.csv` file gives a summary of all SGG UKBB phenotypes that we have in our database and Neale phenotypes that have been downloaded. This file changes overtime as new phenotypes are requested from the UKBB and/or new Neale files are downloaded (i.e. more rows are added to the file). Because the `targets` package tracks input files and their changes, the current state of this file was copied to the project directory and this file was then used as an input file into the pipeline. This file is merely a reference file and changes to it don't correspond to changes in the underlying data used in the analyses.
+Only do this once. The `Neale_SGG_directory.csv` file gives a summary of all SGG UKBB phenotypes that we have in our database and Neale phenotypes that have been downloaded. This file changes overtime as new phenotypes are requested from the UKBB and/or new Neale files are downloaded (i.e. more rows are added to the file). Because the `targets` package tracks input files and their changes, the current state of this file was copied to the project directory and this file was then used as an input file into the pipeline. This file is merely a reference file and changes to it doesn't correspond to changes in the underlying data used in the analyses.
+
+Similarly, `PHESANT_file_directory.txt` and `UKBB_pheno_directory.csv` were copied once to the project directory in case more phenotypes were added to the SGG UKBB database and changed these files, but do not necessarily need to be added to the proxyMR project. 
 
 ```{r eval = FALSE}
 Neale_summary_dir <- "/data/sgg2/jenny/data/Neale_UKBB_GWAS"
+UKBB_processed_dir <- "/data/sgg2/jenny/data/UKBB_processed"
+
 Neale_SGG_dir_org <- paste0(Neale_summary_dir,"/Neale_SGG_directory.csv") 
+PHESANT_dir_org <- paste0(UKBB_processed_dir,"/PHESANT/","PHESANT_file_directory.txt")
+UKBB_dir_org <- paste0(UKBB_processed_dir,"/UKBB_pheno_directory.csv")
+
 Neale_SGG_dir_cp <- paste0("data/Neale_SGG_directory_", format(Sys.Date(), "%d_%m_%Y"), ".csv")
+PHESANT_dir_cp <- paste0("data/PHESANT_file_directory_", format(Sys.Date(), "%d_%m_%Y"), ".txt")
+UKBB_dir_cp <- paste0("data/UKBB_pheno_directory_", format(Sys.Date(), "%d_%m_%Y"), ".csv")
+
 file.copy(Neale_SGG_dir_org, Neale_SGG_dir_cp)
+file.copy(PHESANT_dir_org, PHESANT_dir_cp)
+file.copy(UKBB_dir_org, UKBB_dir_cp)
+
 ```
 
 
