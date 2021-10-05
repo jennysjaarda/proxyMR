@@ -58,7 +58,7 @@ download_neale_files  <-  function(phenotype_ids,
 
 
   to_download  =  read_tsv(reference_file) %>%
-    filter(str_detect("Phenotype Code", phenotype_ids)) %>%
+    filter(str_detect(`Phenotype Code`, phenotype_ids)) %>%
     dplyr::select(wget = 'wget command') %>%
     mutate(wget = str_replace(wget, '[.]bgz$', '.gz')) %>%
     filter(str_detect(.$wget, paste0('-O .*[.]', sex, '([.]v2)?[.]tsv[.]gz$'))) %>%
@@ -390,6 +390,46 @@ compute_pc_corr <- function(sqc_munge, pairs_filter, data_id_sex){
 
 
 }
+
+compute_pc_trait_corr <- function(sqc_munge, pairs_filter, Neale_pheno_ID, pheno_data){
+
+  pheno_data_full <- rbind(pheno_data[[1]], pheno_data[[2]])
+  pheno_data_ivs <- pheno_data_full %>% mutate_at(vars(starts_with("PC_")), ivt)
+
+  PCs <- colnames(pheno_data_full)[which(startsWith(colnames(pheno_data_full), "PC_"))]
+  trait_corr <- numeric()
+  ID_sub <- NA
+  for (PC in PCs)
+  {
+    id <- as.character(PC)
+    r2 <- NA
+    pairs_filter_copy <- pairs_filter
+    tsv_data <- sqc_munge %>% dplyr::select(ID, !!PC)
+    pairs_filter_copy$trait1 <- tsv_data[[PC]][match(pairs_filter_copy[["HOUSEHOLD_MEMBER1"]], tsv_data$ID)]
+    pairs_filter_copy$trait2 <- tsv_data[[PC]][match(pairs_filter_copy[["HOUSEHOLD_MEMBER2"]], tsv_data$ID)]
+    complete_pairs <- pairs_filter_copy[which(complete.cases(pairs_filter_copy$trait1 ,pairs_filter_copy$trait2 )),]
+    n_completed_pairs <- length(pairs_filter_copy[which(complete.cases(pairs_filter_copy$trait2, pairs_filter_copy$trait1)),"trait2"])
+    if(n_completed_pairs>1)
+    {
+      sd1 <- sd(complete_pairs$trait1,na.rm=TRUE)
+      sd2 <- sd(complete_pairs$trait2,na.rm=TRUE)
+      if(sd1!=0 & sd2!=0)
+      {
+        r <- cor(pairs_filter_copy$trait1, pairs_filter_copy$trait2, method = c("pearson"),use = "pairwise.complete.obs")
+        r2 <- r^2
+      }
+    }
+
+    trait_row <- cbind("22009", "22009", PC, n_completed_pairs,r2)
+    trait_corr <- rbind(trait_corr, trait_row)
+  }
+  colnames(trait_corr) <- c("ID", "ID_sub", "description", "N_pairs","r2")
+  cat(paste0("Household PC correlations successfully computed.\n"))
+  return(as.data.frame(trait_corr))
+
+
+}
+
 
 ## File A2 ----
 
@@ -2013,7 +2053,7 @@ harmonise_household_data_ind <- function(exposure_info, summ_stats, traits_corr2
 
     ## FORMAT IV DATA
     IV_data <- summ_stats[[paste0(exposure_sex, "_IV_data")]]
-    colnames(IV_data)[match(c("rsid", "chr", "beta", "se", "pval", "ref", "alt", "AF", "n_complete_samples"), colnames(IV_data))] <-
+    colnames(IV_data)[match(c("rsid", "chr", "beta", "se", "pval", "ref", "alt", "alt_AF", "n_complete_samples"), colnames(IV_data))] <-
       c("SNP", "chr", "beta", "se", "pval", "other_allele", "effect_allele","eaf","samplesize")
     IV_data$phenotype <- exposure_ID
     data_IV_format <- format_data(IV_data, type="exposure", phenotype_col = "phenotype")
