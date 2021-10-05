@@ -1891,7 +1891,7 @@ household_GWAS_bin <- function(exposure_info, summ_stats, pheno_data, outcome_ID
 
     pheno_run <- final_data[,c(grep("_age", names(final_data)),grep("_PC_", names(final_data)), which(names(final_data)=="outcome"))]
 
-    if(variable_type!="binary") {pheno_run$outcome <- scale(pheno_run$outcome)}
+    if(variable_type!="binary" | variable_type!="ordinal") {pheno_run$outcome <- scale(pheno_run$outcome)}
 
 
     IIDs_keep <- as.character(format(final_data[[index]], scientific = F))
