@@ -2582,17 +2582,28 @@ household_MR_comprehensive_ind <- function(harmonise_dat, MR_method_list){
   original_MR <- mr(harmonise_dat, method=MR_method_list)
   MR_res <- include_MR_NA(original_MR)
 
+  MR_ivw_row <- which(MR_res[,"method"]=="Inverse variance weighted")
+  MR_wald_row <- which(MR_res[,"method"]=="Wald ratio")
+
   ## Test for reverse causality
   harmonise_dat_sensitivity <- harmonise_dat[which(harmonise_dat[["pval.exposure"]] < harmonise_dat[["pval.outcome"]]),]
-  MR_res_sensitivity <- include_MR_NA(mr(harmonise_dat_sensitivity, method=MR_method_list))
+  if(dim(harmonise_dat_sensitivity)[1]!=0){
+    MR_res_sensitivity <- include_MR_NA(mr(harmonise_dat_sensitivity, method=MR_method_list))
+    nsnps_sensitivity <- dim(harmonise_dat_sensitivity)[1]
+    correct_row <- ifelse(nsnps_sensitivity==1, MR_wald_row, MR_ivw_row)
+    sensitivity_result <- cbind(nsnps_sensitivity, MR_res_sensitivity[correct_row,"b"],MR_res_sensitivity[correct_row,"se"], MR_res_sensitivity[correct_row,"pval"], make_beta_95ci(MR_res_sensitivity[correct_row,"b"],MR_res_sensitivity[correct_row,"se"]),pretty_round(MR_res_sensitivity[correct_row,"pval"]))
+
+  }
+
+  if(dim(harmonise_dat_sensitivity)[1]==0){
+    nsnps_sensitivity <- dim(harmonise_dat_sensitivity)[1]
+    sensitivity_result <- cbind(nsnps_sensitivity, NA, NA, NA, NA, NA)
+
+  }
 
   temp_summary <- summarize_mr_result (paste0(exposure_ID,"_INDEX"), paste0(outcome_ID,"_HOUSEHOLD"), exposure_sex, outcome_sex, nsnps, MR_res, het_test, egger_test,n_neale, ngwas)
 
-  MR_ivw_row <- which(MR_res[,"method"]=="Inverse variance weighted")
-  MR_wald_row <- which(MR_res[,"method"]=="Wald ratio")
-  nsnps_sensitivity <- dim(harmonise_dat_sensitivity)[1]
-  correct_row <- ifelse(nsnps_sensitivity==1, MR_wald_row, MR_ivw_row)
-  sensitivity_result <- cbind(nsnps_sensitivity, MR_res_sensitivity[correct_row,"b"],MR_res_sensitivity[correct_row,"se"], MR_res_sensitivity[correct_row,"pval"], make_beta_95ci(MR_res_sensitivity[correct_row,"b"],MR_res_sensitivity[correct_row,"se"]),pretty_round(MR_res_sensitivity[correct_row,"pval"]))
+
   temp_summary <- cbind(temp_summary, sensitivity_result)
 
   same_trait <- exposure_ID == outcome_ID
