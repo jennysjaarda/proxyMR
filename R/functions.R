@@ -394,7 +394,7 @@ compute_pc_corr <- function(sqc_munge, pairs_filter, data_id_sex){
 compute_pc_trait_corr <- function(sqc_munge, pairs_filter, Neale_pheno_ID, pheno_data){
 
   pheno_data_full <- rbind(pheno_data[[1]], pheno_data[[2]])
-  pheno_data_ivs <- pheno_data_full %>% mutate_at(vars(starts_with("PC_")), ivt)
+  pheno_data_ivt <- pheno_data_full %>% mutate_at(vars(starts_with("PC_")), ivt)
 
   PCs <- colnames(pheno_data_full)[which(startsWith(colnames(pheno_data_full), "PC_"))]
   trait_corr <- numeric()
@@ -2219,7 +2219,7 @@ harmonise_standard_data_ind <- function(exposure_info, summ_stats, traits_corr2_
 
     ## FORMAT IV DATA
     IV_data <- summ_stats[[paste0(exposure_sex, "_IV_data")]]
-    colnames(IV_data)[match(c("rsid", "chr", "beta", "se", "pval", "ref", "alt", "AF", "n_complete_samples"), colnames(IV_data))] <-
+    colnames(IV_data)[match(c("rsid", "chr", "beta", "se", "pval", "ref", "alt", "alt_AF", "n_complete_samples"), colnames(IV_data))] <-
       c("SNP", "chr", "beta", "se", "pval", "other_allele", "effect_allele","eaf","samplesize")
     IV_data$phenotype <- exposure_ID
     data_IV_format <- format_data(IV_data, type="exposure", phenotype_col = "phenotype")
