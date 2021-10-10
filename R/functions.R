@@ -2715,16 +2715,19 @@ summarize_sex_specific_results  <- function(d,se){
 
 
 
-summarize_household_MR_comprehensive <- function(household_MR){
+summarize_household_MR_comprehensive <- function(household_MR, corr_mat_traits){
 
   exposure_ID <- household_MR[[1]][["exp_male_MR_complete"]][["MR_summary"]][,"exposure_ID"][[1]]
   cat(paste0("Summarizing and meta-analyzing household MR results across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
 
   result <- numeric()
   for(i in 1:length(household_MR)){
+    outcome_ID <- household_MR[[i]][["exp_male_MR_complete"]][["MR_summary"]][,"outcome_ID"][[1]]
+    corr_traits <- corr_mat_traits[exposure_ID, outcome_ID]
     male_result <- household_MR[[i]][["exp_male_MR_complete"]][["MR_summary"]]
     female_result <- household_MR[[i]][["exp_female_MR_complete"]][["MR_summary"]]
     result_i <- rbind(male_result, female_result)
+    result_i <- corr_traits
     result <- rbind(result, result_i)
 
   }
@@ -2849,7 +2852,7 @@ find_sig_household_MR_summary <- function(household_MR_summary){
 
   denom <- dim(household_MR_summary)[1]/2 #divide by 2 because each meta result is there twice (one row/sex)
   num_traits <- sqrt(denom)
-  num_tests <- num_traits^2 - num_traits
+  num_tests <- num_traits^2 - num_traits # don't count the traits that are there tw
   sig_only <- household_MR_summary %>% filter(IVW_meta_pval < 0.05/num_tests)
   return(sig_only)
 }

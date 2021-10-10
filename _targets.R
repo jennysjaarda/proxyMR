@@ -198,12 +198,12 @@ list(
     traits_corr,
     compute_trait_corr(data_phesant_directory,data_UKBB_directory,hh_pairs_filter)
   ),
+  # write_traits_corr = write.csv(trait_corrs, file_out( "output/tables/1.household_correlations.csv"), row.names=F),
 
   tar_target(
     PCs_corr,
     compute_pc_corr(sqc_munge, hh_pairs_filter, data_id_sex)
   ),
-  # write_traits_corr = write.csv(trait_corrs, file_out( "output/tables/1.household_correlations.csv"), row.names=F),
 
   tar_target(
     Neale_SGG_dir_filt,
@@ -529,7 +529,7 @@ list(
   tar_target(
     ## summarize into one table, ignore leave-1-out analyses for now, meta-analyze across sexes and calculate heterogeneity statistic between sexes.
     household_MR_summary,
-    summarize_household_MR_comprehensive(household_MR),
+    summarize_household_MR_comprehensive(household_MR, corr_mat_traits),
     pattern = map(household_MR)
   ),
 
@@ -736,6 +736,13 @@ list(
     unzip_bgenie(path_bgenie_pcs),
     pattern = map(path_bgenie_pcs), format = "file"
   ),
+
+  tar_target(
+    PC_trait_corr,
+    compute_pc_trait_corr(sqc_munge, hh_pairs_filter, outcomes_to_run$Neale_pheno_ID, pheno_data),
+    pattern = map(outcomes_to_run, pheno_data)
+  ),
+
 
 
 
