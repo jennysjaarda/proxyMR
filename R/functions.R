@@ -2723,7 +2723,11 @@ summarize_household_MR_comprehensive <- function(household_MR, corr_mat_traits){
   result <- numeric()
   for(i in 1:length(household_MR)){
     outcome_ID <- household_MR[[i]][["exp_male_MR_complete"]][["MR_summary"]][,"outcome_ID"][[1]]
-    corr_traits <- corr_mat_traits[exposure_ID, outcome_ID]
+    outcome_IDX <- outcome_ID
+    if(endsWith(outcome_ID, "_irnt")) {
+      outcome_IDX <- gsub("_irnt", "", outcome_ID)
+    }
+    corr_traits <- corr_mat_traits[exposure_ID, outcome_IDX]
     male_result <- household_MR[[i]][["exp_male_MR_complete"]][["MR_summary"]]
     female_result <- household_MR[[i]][["exp_female_MR_complete"]][["MR_summary"]]
     result_i <- rbind(male_result, female_result)
