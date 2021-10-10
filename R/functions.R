@@ -2731,7 +2731,7 @@ summarize_household_MR_comprehensive <- function(household_MR, corr_mat_traits){
     male_result <- household_MR[[i]][["exp_male_MR_complete"]][["MR_summary"]]
     female_result <- household_MR[[i]][["exp_female_MR_complete"]][["MR_summary"]]
     result_i <- rbind(male_result, female_result)
-    result_i <- corr_traits
+    result_i$corr_traits <- corr_traits
     result <- rbind(result, result_i)
 
   }
