@@ -534,8 +534,13 @@ list(
   ),
 
   tar_target(
+    household_MR_summary_corr_filter,
+    find_non_corr_household_MR_summary(household_MR_summary)
+  ),
+
+  tar_target(
     household_MR_summary_BF_sig,
-    find_sig_household_MR_summary(household_MR_summary)
+    find_sig_household_MR_summary(household_MR_summary_corr_filter)
   ),
 
   tar_target(
