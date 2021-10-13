@@ -629,6 +629,7 @@ list(
     proxyMR_yiyp_adj,
     {
       path_household_GWAS
+      path_outcome_stats
       adj_yiyp_xIVs(exposure_info, household_harmonised_data, household_MR_summary_BF_sig)
     },
     map(exposure_info, household_harmonised_data)
