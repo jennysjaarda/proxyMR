@@ -3669,11 +3669,16 @@ corr_filter_MV_z <- function(MV_z_data, corr_mat_traits, z_prune_threshold){
       prune_pheno_to_fix <- which(which(all_phenos_fix %in% pruned_pheno) %in% which_fixed)
       pruned_pheno[prune_pheno_to_fix] <- paste0(pruned_pheno[prune_pheno_to_fix], "_irnt")
 
+      pruned_pheno_z <- pruned_pheno[-which(pruned_pheno %in% c(exposure_ID, outcome_ID))]
+
     }
 
     exposure_ID_prev <- exposure_ID
     outcome_ID_prev <- outcome_ID
-    MV_z_data$MV_z_prune[i] <- list(pruned_pheno)
+
+
+
+    MV_z_data$MV_z_prune[i] <- list(pruned_pheno_z)
 
   }
 
