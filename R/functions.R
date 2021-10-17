@@ -3611,7 +3611,7 @@ find_MV_z <- function(household_MR_summary_BF_sig, standard_MR_summary){
   return(MR_sub)
 }
 
-corr_filter_MV_z <- fucntion(MV_z_data, corr_mat_traits, z_prune_threshold){
+corr_filter_MV_z <- function(MV_z_data, corr_mat_traits, z_prune_threshold){
 
   MV_z_data$MV_z <- NA
   exposure_ID_prev <- ""
@@ -3619,11 +3619,12 @@ corr_filter_MV_z <- fucntion(MV_z_data, corr_mat_traits, z_prune_threshold){
 
   for(i in 1:dim(MV_z_data)[1]){
 
-    cat(paste0("Pruning Z's MV MR for  `", exposure_ID, "` as exposure and `", outcome_ID, "` as outcome in ", exposure_sex, "s as exposure sex.\n\n"))
 
     exposure_ID <- MV_z_data$exposure_ID[i]
     outcome_ID <- MV_z_data$outcome_ID[i]
     exposure_sex <- MV_z_data$exposure_sex[i]
+    cat(paste0("Pruning Z's MV MR for  `", exposure_ID, "` as exposure and `", outcome_ID, "` as outcome in ", exposure_sex, "s as exposure sex.\n\n"))
+
 
     # each exposure_ID/outcome_ID is in data twice (one for each sex), since we are prioritzing by meta-anlyzed results with y, we don't need to find z's for each sex - they will be the same.
     if(exposure_ID!=exposure_ID_prev | outcome_ID!=outcome_ID_prev){
