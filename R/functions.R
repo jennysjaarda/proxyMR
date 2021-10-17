@@ -3613,7 +3613,7 @@ find_MV_z <- function(household_MR_summary_BF_sig, standard_MR_summary){
 
 corr_filter_MV_z <- function(MV_z_data, corr_mat_traits, z_prune_threshold){
 
-  MV_z_data$MV_z <- NA
+  MV_z_data$MV_z_prune <- NA
   exposure_ID_prev <- ""
   outcome_ID_prev <- ""
 
@@ -3634,8 +3634,6 @@ corr_filter_MV_z <- function(MV_z_data, corr_mat_traits, z_prune_threshold){
       all_phenos_fix <- gsub("_irnt", "", all_phenos)
       which_fixed <- which(str_detect(all_phenos, "_irnt"))
       corr_mat_z <- corr_mat_traits[all_phenos_fix, all_phenos_fix]
-
-      cat(paste0("Extracting summary statistics for MV MR for  `", exposure_ID, "` as exposure and `", outcome_ID, "` as outcome in ", exposure_sex, "s as exposure sex.\n"))
 
       # first remove any z's that are in high correaltion with either x or y
 
