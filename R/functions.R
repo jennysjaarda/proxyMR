@@ -3592,19 +3592,96 @@ find_MV_z <- function(household_MR_summary_BF_sig, standard_MR_summary){
       z_vs_x_BF <- z_vs_x %>% filter(IVW_meta_pval < 0.05/num_tests) %>% pull(outcome_ID)
       y_vs_z_BF <- y_vs_z %>% filter(IVW_meta_pval < 0.05/num_tests) %>% pull(exposure_ID)
 
-      union_z <- union(z_vs_x_BF, y_vs_z_BF)
+
+      union_z <- intersect(z_vs_x_BF, y_vs_z_BF)
+
+      y_vs_z_order <- standard_MR_summary %>% filter(outcome_ID==!!outcome_ID) %>% filter(exposure_ID!=!!exposure_ID) %>% arrange(IVW_meta_pval) %>% pull(exposure_ID) %>% unique()
+
+      prioritze_z <- y_vs_z_order[which(y_vs_z_order %in% union_z)]
 
     }
 
     exposure_ID_prev <- exposure_ID
     outcome_ID_prev <- outcome_ID
 
-    MR_sub$MV_z[i] <- list(union_z)
+    MR_sub$MV_z[i] <- list(prioritze_z)
 
   }
 
   return(MR_sub)
 }
+
+corr_filter_MV_z <- fucntion(MV_z_data, corr_mat_traits, z_prune_threshold){
+
+  MV_z_data$MV_z <- NA
+  exposure_ID_prev <- ""
+  outcome_ID_prev <- ""
+
+  for(i in 1:dim(MV_z_data)[1]){
+
+    cat(paste0("Pruning Z's MV MR for  `", exposure_ID, "` as exposure and `", outcome_ID, "` as outcome in ", exposure_sex, "s as exposure sex.\n\n"))
+
+    exposure_ID <- MV_z_data$exposure_ID[i]
+    outcome_ID <- MV_z_data$outcome_ID[i]
+    exposure_sex <- MV_z_data$exposure_sex[i]
+
+    # each exposure_ID/outcome_ID is in data twice (one for each sex), since we are prioritzing by meta-anlyzed results with y, we don't need to find z's for each sex - they will be the same.
+    if(exposure_ID!=exposure_ID_prev | outcome_ID!=outcome_ID_prev){
+
+      z_list <- MV_z_data$MV_z[i][[1]]
+      all_phenos <- c(z_list, exposure_ID, outcome_ID)
+      all_phenos_fix <- gsub("_irnt", "", all_phenos)
+      which_fixed <- which(str_detect(all_phenos, "_irnt"))
+      corr_mat_z <- corr_mat_traits[all_phenos_fix, all_phenos_fix]
+
+      cat(paste0("Extracting summary statistics for MV MR for  `", exposure_ID, "` as exposure and `", outcome_ID, "` as outcome in ", exposure_sex, "s as exposure sex.\n"))
+
+      # first remove any z's that are in high correaltion with either x or y
+
+      corr_mat_z_prune <- corr_mat_z
+
+      row_x <- which(colnames(corr_mat_z)==gsub("_irnt", "", exposure_ID))
+      row_y <- which(colnames(corr_mat_z)==gsub("_irnt", "", outcome_ID))
+
+
+      remove_rows <- c(which(corr_mat_z[row_x,] > z_prune_threshold), which(corr_mat_z[row_y,] > z_prune_threshold))
+      remove_rows <- remove_rows[-which(remove_rows %in% c(row_x, row_y))]
+
+      if(length(remove_rows)!=0){
+        corr_mat_z_prune <- corr_mat_z_prune[-remove_rows, -remove_rows]
+      }
+
+      j <- 1
+      current_col <- colnames(corr_mat_z)[j]
+      while(current_col != gsub("_irnt", "", exposure_ID)){
+
+        remove_rows <- c(which(corr_mat_z_prune[j,] > z_prune_threshold))
+        remove_rows <- remove_rows[-which(remove_rows %in% c(j))]
+
+        if(length(remove_rows)!=0){
+          corr_mat_z_prune <- corr_mat_z_prune[-remove_rows, -remove_rows]
+        }
+        j <- j+1
+        current_col <- colnames(corr_mat_z_prune)[j]
+
+      }
+
+      pruned_pheno <- colnames(corr_mat_z_prune)
+      prune_pheno_to_fix <- which(which(all_phenos_fix %in% pruned_pheno) %in% which_fixed)
+      pruned_pheno[prune_pheno_to_fix] <- paste0(pruned_pheno[prune_pheno_to_fix], "_irnt")
+
+    }
+
+    exposure_ID_prev <- exposure_ID
+    outcome_ID_prev <- outcome_ID
+    MV_z_data$MV_z_prune[i] <- list(pruned_pheno)
+
+  }
+
+  return(MV_z_data)
+
+}
+
 
 pull_z_summ_stats <- function(MV_z_data){
 
@@ -3614,7 +3691,7 @@ pull_z_summ_stats <- function(MV_z_data){
     exposure_ID <- MV_z_data$exposure_ID[i]
     outcome_ID <- MV_z_data$outcome_ID[i]
     exposure_sex <- MV_z_data$exposure_sex[i]
-    z_list <- MV_z_data$MV_z[i][[1]]
+    z_list <- MV_z_data$MV_z_prune[i][[1]]
     all_phenos <- c(z_list, exposure_ID, outcome_ID)
     data_i <- tibble()
 

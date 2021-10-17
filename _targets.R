@@ -509,7 +509,6 @@ list(
     create_household_MR_AM_FvsM_fig(household_MR_binned_het, custom_col),
   ),
 
-
   tar_target(
     path_household_MR_binned,
     {
@@ -658,10 +657,18 @@ list(
   ),
 
   tar_target(
+    MV_z_corr_filter,
+    corr_filter_MV_z(MV_z, corr_mat_traits, z_prune_threshold),
+    map(MV_z)
+  ),
+
+  # filter to only z's that have correlation < 0.7 (play with this a bit).
+
+  tar_target(
     z_summ_stats,
     {
       path_outcome_stats
-      pull_z_summ_stats(MV_z)
+      pull_z_summ_stats(MV_z_corr_filter)
     },
     map(MV_z)
   ),
