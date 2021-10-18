@@ -1245,8 +1245,39 @@ calc_pc_trait_corr <- function(Neale_pheno_ID, pheno_data){
     result <- rbind(result, output_row)
   }
 
-  colnames(result) <- c("Neale_pheno_ID", "PC", "cor_both_sexes", "cor_male", "cor_female")
+  colnames(result) <- c("Neale_pheno_ID", "PC", "corr_both_sexes", "corr_male", "corr_female")
+
+  result <- result %>% as_tibble() %>% type_convert() %>% mutate_at(c("Neale_pheno_ID"), as.character)
   return(result)
+}
+
+calc_corr_impact_by_PCs <- function(traits_corr, PCs_corr, PC_trait_corr){
+
+  result <- numeric()
+
+  Neale_pheno_ID <- PC_trait_corr$Neale_pheno_ID[1]
+
+  trait_couple_r2 <- as.numeric(traits_corr[which(traits_corr$ID==Neale_pheno_ID),"r2"])
+  trait_couple_r <- sqrt(trait_couples_r2)
+
+  PCs <- PCs_corr$description
+
+  for(PC in PCs){
+
+    trait_PC_r <- PC_trait_corr[which(PC_trait_corr$PC==PC),"corr_both_sexes"][[1]]
+    PC_couple_r2 <- as.numeric(PCs_corr[which(PCs_corr$description==PC),"r2"])
+    PC_couple_r <- sqrt(PC_couple_r2)
+
+    correlation_due_to_confounding <- trait_PC_r^2 *PC_couple_r
+
+    temp_row <- cbind(Neale_pheno_ID, PC, trait_couple_r, PC_couple_r, trait_PC_r, correlation_due_to_confounding)
+    result <- rbind(result, temp_row)
+  }
+
+  colnames(result) <- c("Neale_pheno_ID", "PC", "trait_couple_corr", "PC_couple_corr", "trait_PC_corr", "corr_due_to_confounding")
+
+  result <- result %>% as_tibble() %>% type_convert() %>% mutate_at(c("Neale_pheno_ID"), as.character)
+
 }
 
 write_data_prep <- function(traits, traits_to_run, out1, out2){

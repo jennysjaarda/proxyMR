@@ -756,6 +756,11 @@ list(
     pattern = map(path_bgenie_pcs), format = "file"
   ),
 
+  tar_target(
+    corr_impact_by_PCs,
+    calc_corr_impact_by_PCs(traits_corr, PCs_corr, PC_trait_corr),
+    pattern = map(PC_trait_corr)
+  ),
 
 
   ### markdown docs
