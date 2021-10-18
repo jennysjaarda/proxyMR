@@ -1238,7 +1238,7 @@ calc_pc_trait_corr <- function(Neale_pheno_ID, pheno_data){
     for(sex_data in names(pheno_data)){
 
       dat <- pheno_data[[sex_data]]
-      cor_sex <- cor(dat[[Neale_pheno_ID]], dat[[PC]])
+      cor_sex <- cor(dat[[phes_ID]], dat[[PC]])
       output_row <- cbind(output_row, cor_sex)
     }
 
