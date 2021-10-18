@@ -1,0 +1,184 @@
+---
+title: "Update Meeting: 15-10-2021"
+author: "jennysjaarda"
+date: "2021-10-12"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+
+options(scipen=999)
+source("code/settings.R")
+library(targets)
+library(dplyr)
+library(DT)
+library(knitr)
+library(ggplot2)
+library(kableExtra)
+
+```
+
+```{r load_targets, include = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+tar_load(household_MR_summary)
+tar_load(PCs_corr)
+tar_load(PC_trait_corr)
+tar_load(corr_impact_by_PCs)
+```
+
+# Sample definition issue.
+
+## Update. 
+
+Noticed that the sample sizes we were working with were quite a bit larger than the Neale database. After a bit of digging, I think I figured out the main reason(s): it seems to be a result of the way we filtered related individuals. 
+
+- First of all, because we’ve done all analyses in each sex separately, I also have performed the related filters in each sex separately. Meaning there is surely related individuals between sexes that remain (of course each individual couple has been filtered separately for their own relatedness). 
+- Second, I am using a function to retain the maximal set of unrelated individuals which is relatively computation heavy and I believe that Neale would have simply filtered based on `used_in_pca_calculation` from the QC file, which results in <<N. 
+
+I assume Neale also applied related filtering *before* PHESANT transformations, while I applied it after (I was thinking that if someone was performing an analysis on a subset of UKB, they would have unnecessarily lost individuals even though the two related individuals weren’t in their subgroup). The problem is, these differences result in slightly different phenotypes in some cases I’ve realized. 
+
+For example, phenotype 1050 (amount of time spent outside, hours) is converted by the PHESANT pipeline to an ordinal variable with only 3 categories because the upper categories are so small. Where to split the categories directly depends on the data, with the goal to have roughly equal sized groups. Anyways, in Neale it’s split in different place than in our data. 
+
+### Discussion points.
+
+- Should we apply the same filter as Neale to get roughly the same sample size and data (particularly for these categorical phenotypes)? 
+    - Regarding the category definitions: best to have something as similar as possible to Neale's, because the instrument selection is based on his summary stats, which used his definition. But if it is hard to replicate his definition, it's not a big problem, it is much more important that we move forward fast
+    
+- And/or is it a problem that there we would have related individuals across sexes? 
+    - For the relateds: unfortunately, they have to be excluded (male-female relatives too, not only same-sex relatives), because when we meta-analyse male->female and female->male results, we assume inependence in the estimates, which is not true if you don't exclude all relatives.
+
+
+## Update 2.0. 
+
+I was able to nearly mimic the sample size of the round 1 GWAS, but not the round 2 GWAS. In the blog post describing the [first release](http://www.nealelab.is/blog/2017/9/11/details-and-considerations-of-the-uk-biobank-gwas), it is mentioned that N = 337,199 individuals are used in the GWAS. I can nearly replicate this number exactly with my data by removing un consenting, non-white and only retaining those that were `used_in_pca_calculation` (from the genetic QC file). However in the [round 2 blog post](http://www.nealelab.is/blog/2019/9/16/biomarkers-gwas-results), the sample size increases to N = 361,194 individuals.
+
+The details compairing the two samples are found on the [github page](https://github.com/Nealelab/UK_Biobank_GWAS/blob/master/README.md), specifically: 
+
+  * __imputed-v3 parameters__
+	* Used.in.pca.calculation filter (unrelated samples)
+	* sex chromosome aneuploidy filter
+	* Use provided PCs for European sample selection to determine British ancestry
+	  * Use 7 standard deviations away from the 1st 6 PCs
+	  * Further Filter to self-reported 'white-British' / 'Irish' / 'White'
+	* **QCed sample count: 361194 samples** 
+  * __imputed-v2 parameters__
+    * Used.in.pca.calculation filter (unrelated samples)
+    * sex chromosome aneuploidy filter
+    * White.british.ancestry filter
+    * **QCed sample count: 337199 samples** 
+
+
+### Discussion points.
+
+Our current filtering matches closely the v2 filtering. If we tried to mimic the v3 filtering, we could increase our sample size. What do we think about this discrepency? And more importantly, the decrease in power due to smaller sample size (about 25K less than the v3 parameters)?  
+
+# Progress update. 
+
+## Phenotype selection. 
+
+- Added back binary phenotypes. 
+- Removed all dietary phenotypes (binary, ordinal and continuous).
+- Removed some redundant phenotypes:
+  - Left-side body traits (highly correlated with right-side) were removed
+  - All 'qualifications' data (corresponding to field [6138](https://biobank.ctsu.ox.ac.uk/showcase/field.cgi?id=6138)) because data is roughly captured with continuous variables (such as years of education).
+- See [phenotype selection](phenotpye_selection.html) document for complete summary of selection and remaining phenotypes. 
+
+## Two-trait MR filtering. 
+
+Restrict to only XY pairs that are have correlation < `0.8`. Correlations were calculated in the full biobank (unrelated, British, consenting etc.), not just within couples, in both sexes combined. Trait pairs and their correlations are summarized in the table below. 
+
+```{r corr_traits_summary, include = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+
+household_MR_summary.DT <- household_MR_summary %>% filter(same_trait==FALSE) %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, corr_traits) %>% unique()
+
+format_round_cols <- colnames(dplyr::select_if(household_MR_summary.DT, is.numeric))
+DT::datatable(household_MR_summary.DT, width = "100%") %>% formatRound(columns=format_round_cols, digits = 3)
+
+```
+
+In total, `#r length(which(household_MR_summary.DT$corr_traits > 0.8))` trait pairs were removed due to correlation > `0.8`. 
+
+**Note**: after filtering out pairs with high correlation, a bonferroni correction applied (p < 0.05 / [num remaining pairs after correaltion filter]) before examining paths from $X_i \rightarrow Y_p$ (i.e we only examined pairs that were significant along the diagonal).
+
+```{r two_trait_model, echo = FALSE}
+library(knitr)
+knitr::include_graphics("assets/two_trait_model.png", error = FALSE)
+```
+
+## Adjust $Y_i \rightarrow Y_p$ for effect of $X_i \rightarrow Y_p$ in MVMR. 
+
+Previously, I had adjusted the $Y_i \rightarrow Y_p$ MR results for effects of $X_i$ (as depicted below), but had only used $Y$ IVs. 
+
+```{r YiYp_adj_model, echo = FALSE}
+library(knitr)
+knitr::include_graphics("assets/two_trait_model_yiyp_adj.png", error = FALSE)
+```
+
+Decided best to also include all $X$ IVs in the model as well. MRMR model is: $Y_p \sim Y_i + X_i$. 
+
+To ensure a set of independent SNPs, $X$ and $Y$ IVs were clumped using at a threshold of $r^2$ < `r prune_threshold` using the 1000 Genomes European data set. Clumping p-values for priorization of SNPs, were based on the Neale summary statistics with $Y_i$ in both sexes, ensuring the same set of SNPs were selected in the male and female models.
+
+## MVMR
+
+For each $X_i \rightarrow  Y_p$ MR, we included relevant covariates (Z's) in a MVMR framework in the $X_p \rightarrow Y_p$ MR. Z's were selected based on having BF significance in **both** of the MRs: 
+
+1. $X \rightarrow  Z$
+2. $Z \rightarrow  Y$
+
+After Z's were selected, they were further pruned based on phenotypic correlation (same as above). First, any Z with phenotypic correlation with $X$ or $Y$ > `r z_prune_threshold` was removed. Second, beginning with the most significant $Z_j$ association with $Y$ (i.e. $Z \rightarrow  Y$), all reamining Z's with phenoytpic correlation > `r z_prune_threshold` were removed. This process was repeated until all remaining Z's had phenotypic correlation < `r z_prune_threshold` with each other and $X$ and $Y$. 
+
+The resulting MVMR model is: $Y \sim X + Z_1 + ... + Z_k$ run in same individual (see figure).
+
+```{r MV_model, echo = FALSE}
+
+knitr::include_graphics("assets/MV_trait_model.png", error = FALSE)
+```
+
+Finally, IVs for all $Z$ and $X$ were clumped as above (using at a threshold of $r^2$ < `r prune_threshold` using the 1000 Genomes European data set. Clumping p-values for priorization of SNPs, were based on the Neale summary statistics with $X_i$ in both sexes, ensuring the same set of SNPs were selected in the male and female models).
+
+## PC impact
+
+Tested the following:
+- cor(PC_i,PC_p) for each PC (i.e. within couple PC correlation).
+- cor(X,PC) for all PCs.
+
+PC correlations among couples is shown below.
+
+```{r PC_corr_couples, include = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+
+PCs_corr.DT <- PCs_corr %>% mutate(r = sqrt(as.numeric(r2))) 
+DT::datatable(PCs_corr.DT, width = "100%")  %>% formatSignif(columns=c('r2', 'r'), digits=3)
+
+```
+
+Correlation of PCs with traits in pipeline is shown below. 
+
+```{r PC_traits_corr, include = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+
+## merge the list of dataframes 
+PCs_trait_corr.DT <- PC_trait_corr %>% mutate(r = sqrt(as.numeric(r2))) 
+DT::datatable(PCs_corr.DT, width = "100%")  %>% formatSignif(columns=c('r2', 'r'), digits=3)
+
+```
+
+Next, I calculated the correlation due to counfounding as `cor(X,PC)^2*cor(PC_i,PC_p)` values, and plotted them against the raw `cor(X_i,X_p)` values.
+
+```{r PC_trait_plot, include = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+
+plot <- ggplot2::ggplot(data = corr_impact_by_PCs, ggplot2::aes(x = trait_couple_corr,
+                                                                y = corr_due_to_confounding, color = factor(overlap_above_50))) +
+  geom_point(alpha = 3/4) +
+  
+  geom_smooth(mapping = aes(x = trait_couple_corr, y = corr_due_to_confounding), method = "lm", se=FALSE, formula = y~x+0, fullrange=TRUE, color = custom_col[4]) +
+  geom_abline(slope=1, intercept=0, color = "black") +
+  scale_color_manual(values = custom_col[c(1,2)], labels=c("overlap =< 50%", "overlap > 50%")) +
+  theme_minimal() +
+  ggplot2::labs(colour = legend_title, x = paste0("MR estimate\n(Y-index to Y-partner)"),
+                y = paste("AM MR estimate adjusted for\nIV effect on relevant X"), title = "Comparison of adjusted and unadjusted AM estimated \n (sex-specific results)") + 
+  theme(plot.title = element_text(hjust = 0.5))
+ 
+```
+
+
+
