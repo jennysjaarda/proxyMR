@@ -391,45 +391,6 @@ compute_pc_corr <- function(sqc_munge, pairs_filter, data_id_sex){
 
 }
 
-compute_pc_trait_corr <- function(sqc_munge, pairs_filter, Neale_pheno_ID, pheno_data){
-
-  pheno_data_full <- rbind(pheno_data[[1]], pheno_data[[2]])
-  pheno_data_ivt <- pheno_data_full %>% mutate_at(vars(starts_with("PC_")), ivt)
-
-  PCs <- colnames(pheno_data_full)[which(startsWith(colnames(pheno_data_full), "PC_"))]
-  trait_corr <- numeric()
-  ID_sub <- NA
-  for (PC in PCs)
-  {
-    id <- as.character(PC)
-    r2 <- NA
-    pairs_filter_copy <- pairs_filter
-    tsv_data <- sqc_munge %>% dplyr::select(ID, !!PC)
-    pairs_filter_copy$trait1 <- tsv_data[[PC]][match(pairs_filter_copy[["HOUSEHOLD_MEMBER1"]], tsv_data$ID)]
-    pairs_filter_copy$trait2 <- tsv_data[[PC]][match(pairs_filter_copy[["HOUSEHOLD_MEMBER2"]], tsv_data$ID)]
-    complete_pairs <- pairs_filter_copy[which(complete.cases(pairs_filter_copy$trait1 ,pairs_filter_copy$trait2 )),]
-    n_completed_pairs <- length(pairs_filter_copy[which(complete.cases(pairs_filter_copy$trait2, pairs_filter_copy$trait1)),"trait2"])
-    if(n_completed_pairs>1)
-    {
-      sd1 <- sd(complete_pairs$trait1,na.rm=TRUE)
-      sd2 <- sd(complete_pairs$trait2,na.rm=TRUE)
-      if(sd1!=0 & sd2!=0)
-      {
-        r <- cor(pairs_filter_copy$trait1, pairs_filter_copy$trait2, method = c("pearson"),use = "pairwise.complete.obs")
-        r2 <- r^2
-      }
-    }
-
-    trait_row <- cbind("22009", "22009", PC, n_completed_pairs,r2)
-    trait_corr <- rbind(trait_corr, trait_row)
-  }
-  colnames(trait_corr) <- c("ID", "ID_sub", "description", "N_pairs","r2")
-  cat(paste0("Household PC correlations successfully computed.\n"))
-  return(as.data.frame(trait_corr))
-
-
-}
-
 
 ## File A2 ----
 
@@ -1210,47 +1171,44 @@ extract_trait_info <- function(pheno_data){
 
 }
 
-calc_corr_mat_traits <- function(exposure_info_list, sqc, fam, relatives){
+calc_corr_mat_traits <- function(outcomes_to_run, path_pheno_data){
+
+
 
   full_df <- numeric()
 
-  for(i in 1:length(exposure_info_list)){
+  for(i in 1:dim(outcomes_to_run)[1]){
 
-    exposure_info_i <- exposure_info_list[[i]]
-    phes_ID <- exposure_info_i %>% filter(Value=="phes_ID") %>% pull(Info)
-    phesant_file <- exposure_info_i %>% filter(Value=="phesant_file") %>% pull(Info)
-    tsv_data <- fread(phesant_file, header=TRUE, sep='\t',select=c("userId","sex","age", phes_ID))
+    Neale_pheno_ID <- outcomes_to_run$Neale_pheno_ID[i]
+    phes_ID <- gsub("_irnt", "", Neale_pheno_ID)
+
+    male_pheno_file <- path_pheno_data[which(endsWith(path_pheno_data, paste0("/phesant/", Neale_pheno_ID, "_male.txt")))]
+    female_pheno_file <- path_pheno_data[which(endsWith(path_pheno_data, paste0("/phesant/", Neale_pheno_ID, "_female.txt")))]
+    male_pheno_data <- fread(male_pheno_file, header=TRUE, select=c("IID","sex","age", phes_ID))
+    female_pheno_data <- fread(female_pheno_file, header=TRUE, select=c("IID","sex","age", phes_ID))
+
+    joint_data <- rbind(male_pheno_data, female_pheno_data)
 
     if(i==1){
-      full_df <- tsv_data
-    } else full_df <- merge(full_df, tsv_data[,c(1, 4)])
+      full_df <- joint_data
+    } else full_df <- merge(full_df, joint_data[,c(1, 4)], all = TRUE)
 
+    print(i)
   }
 
-  IDs <- as.integer(full_df$userId)
 
-
-  # This option takes too long
-  # related_IDs <- ukb_gen_samples_to_remove(relatives, ukb_with_data = IDs)
-  # unrelated_data <- full_df[-which(full_df$userId %in% related_IDs ),]
-
-  ##fam file in same order as sample QC (sqc) file
-  sqc <- ukb_gen_sqc_names(sqc, col_names_only = FALSE)
-
-  sqc$ID <- fam[,1]
-  unrelated_IDs <- sqc[which(sqc$used_in_pca_calculation==1), "ID"]
-  unrelated_data <- full_df[which(full_df$userId %in% unrelated_IDs ),]
-
-  calc_PC_data <- unrelated_data[,-c(1:3)]
+  calc_PC_data <- full_df[,-c(1:3)]
 
   cor_matrix <- cor(calc_PC_data, use = "pairwise.complete.obs")
 
   return(cor_matrix)
+
+
 }
 
-calc_PC_traits <- function(exposure_info_list, sqc, fam, relatives){
+calc_PC_traits <- function(outcomes_to_run, path_pheno_data){
 
-  cor_matrix <- calc_corr_mat_traits (exposure_info_list, sqc, fam, relatives)
+  cor_matrix <- calc_corr_mat_traits (outcomes_to_run, path_pheno_data)
 
   res.pca <- prcomp((cor_matrix), scale = TRUE)
   # to visualize the PC results
@@ -1264,6 +1222,30 @@ calc_num_tests_by_PCs <- function(prcomp_result, threshold){
 
   num_tests <- which(summary(prcomp_result)$importance[3,] > threshold)[1]
   return(num_tests[[1]])
+}
+
+compute_pc_trait_corr <- function(Neale_pheno_ID, pheno_data){
+
+  full_data <- rbind(pheno_data[[1]], pheno_data[[2]])
+  PCs <- colnames(full_data)[which(startsWith(colnames(full_data), "PC_"))]
+  result <- numeric()
+  for (PC in PCs)
+  {
+
+    cor_joint <- cor(full_data[[Neale_pheno_ID]], full_data[[PC]])
+    output_row <- cbind(Neale_pheno_ID, PC, cor_joint)
+    for(sex_data in names(pheno_data)){
+
+      dat <- pheno_data[[sex_data]]
+      cor_sex <- cor(dat[[Neale_pheno_ID]], dat[[PC]])
+      output_row <- cbind(output_row, cor_sex)
+    }
+
+    result <- rbind(result, output_row)
+  }
+
+  colnames(result) <- c("Neale_pheno_ID", "PC", "cor_both_sexes", "cor_male", "cor_female")
+  return(result)
 }
 
 write_data_prep <- function(traits, traits_to_run, out1, out2){
@@ -2887,18 +2869,10 @@ find_AM_sig_exposure_info <- function(household_MR_summary_AM, exposure_info, nu
 
 
   AM_sig_traits <- household_MR_summary_AM %>% filter(IVW_meta_pval < 0.05/num_tests_by_PCs) %>% pull(exposure_ID) %>% unique()
-  exposure_info_sub <- list()
-  j <- 1
-  for(i in 1:length(exposure_info)){
-    exposure_info_i <- exposure_info[[i]]
-    exposure_ID <- exposure_info_i %>% filter(Value=="trait_ID") %>% pull(Info)
 
-    if(exposure_ID %in% AM_sig_traits){
-      exposure_info_sub[[j]] <- exposure_info_i
-      j <- j+1
-    }
-  }
-  return(exposure_info_sub)
+  outcomes_to_run_sub <- outcomes_to_run[which(outcomes_to_run$Neale_pheno_ID %in% AM_sig_traits),]
+
+  return(outcomes_to_run_sub)
 
 }
 

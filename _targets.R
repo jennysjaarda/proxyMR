@@ -374,7 +374,7 @@ list(
       path_phesant
       path_outcome_dirs
       prep_pheno_data(traits_corr2_filled, outcomes_to_run$Neale_pheno_ID,
-                data_sqc, data_fam, data_relatives)
+                      data_sqc, data_fam, data_relatives)
     }, pattern = map(outcomes_to_run), iteration = "list"
   ),
 
@@ -397,12 +397,18 @@ list(
 
   tar_target(
     corr_mat_traits,
-    calc_corr_mat_traits(exposure_info, data_sqc, data_fam, data_relatives)
+    calc_corr_mat_traits(outcomes_to_run, path_pheno_data)
+  ),
+
+  tar_target(
+    PC_trait_corr,
+    calc_pc_trait_corr(outcomes_to_run$Neale_pheno_ID, pheno_data),
+    pattern = map(outcomes_to_run, pheno_data), iteration = "list"
   ),
 
   tar_target(
     PC_traits,
-    calc_PC_traits(exposure_info, data_sqc, data_fam, data_relatives)
+    calc_PC_traits(outcomes_to_run, path_pheno_data)
   ),
 
   tar_target(
@@ -550,13 +556,13 @@ list(
 
   tar_target(
     ## after AM MR results is reduced to only those significant based on `num_tests_by_PCs`, reduce further for testing heterogeneity between sexes and amongst bins to reduce number of tests.
-    exposure_info_AM_sig,
-    find_AM_sig_exposure_info(household_MR_summary_AM, exposure_info, num_tests_by_PCs)
+    outcomes_to_run_AM_sig,
+    find_AM_sig_exposure_info(household_MR_summary_AM, outcomes_to_run, num_tests_by_PCs)
   ),
 
   tar_target(
     PC_traits_AM_sig,
-    calc_PC_traits(exposure_info_AM_sig, data_sqc, data_fam, data_relatives)
+    calc_PC_traits(outcomes_to_run_AM_sig, path_pheno_data)
   ),
 
   tar_target(
@@ -670,13 +676,13 @@ list(
       path_outcome_stats
       pull_z_summ_stats(MV_z_corr_filter)
     },
-    map(MV_z)
+    map(MV_z_corr_filter)
   ),
 
   tar_target(
     z_summ_stats_pruned,
-    prune_z_summ_stats(MV_z, z_summ_stats, prune_threshold),
-    map(MV_z, z_summ_stats)
+    prune_z_summ_stats(MV_z_corr_filter, z_summ_stats, prune_threshold),
+    map(MV_z_corr_filter, z_summ_stats)
   ),
 
   tar_target(
@@ -749,13 +755,6 @@ list(
     unzip_bgenie(path_bgenie_pcs),
     pattern = map(path_bgenie_pcs), format = "file"
   ),
-
-  tar_target(
-    PC_trait_corr,
-    compute_pc_trait_corr(sqc_munge, hh_pairs_filter, outcomes_to_run$Neale_pheno_ID, pheno_data),
-    pattern = map(outcomes_to_run, pheno_data)
-  ),
-
 
 
 
