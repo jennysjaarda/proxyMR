@@ -1224,7 +1224,7 @@ calc_num_tests_by_PCs <- function(prcomp_result, threshold){
   return(num_tests[[1]])
 }
 
-compute_pc_trait_corr <- function(Neale_pheno_ID, pheno_data){
+calc_pc_trait_corr <- function(Neale_pheno_ID, pheno_data){
 
   full_data <- rbind(pheno_data[[1]], pheno_data[[2]])
   PCs <- colnames(full_data)[which(startsWith(colnames(full_data), "PC_"))]
