@@ -82,7 +82,7 @@ Our current filtering matches closely the v2 filtering. If we tried to mimic the
 - Removed some redundant phenotypes:
   - Left-side body traits (highly correlated with right-side) were removed
   - All 'qualifications' data (corresponding to field [6138](https://biobank.ctsu.ox.ac.uk/showcase/field.cgi?id=6138)) because data is roughly captured with continuous variables (such as years of education).
-- See [phenotype selection](phenotpye_selection.html) document for complete summary of selection and remaining phenotypes. 
+- See [phenotype selection](phenotype_selection.html) document for complete summary of selection and remaining phenotypes. 
 
 ## Two-trait MR filtering. 
 
