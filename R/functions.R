@@ -1256,8 +1256,9 @@ calc_corr_impact_by_PCs <- function(traits_corr, PCs_corr, PC_trait_corr){
   result <- numeric()
 
   Neale_pheno_ID <- PC_trait_corr$Neale_pheno_ID[1]
+  phes_ID <- gsub("_irnt", "", Neale_pheno_ID)
 
-  trait_couple_r2 <- as.numeric(traits_corr[which(traits_corr$ID==Neale_pheno_ID),"r2"])
+  trait_couple_r2 <- as.numeric(traits_corr[which(traits_corr$ID==phes_ID),"r2"])
   trait_couple_r <- sqrt(trait_couples_r2)
 
   PCs <- PCs_corr$description
