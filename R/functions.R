@@ -1232,7 +1232,8 @@ calc_pc_trait_corr <- function(Neale_pheno_ID, pheno_data){
   for (PC in PCs)
   {
 
-    cor_joint <- cor(full_data[[Neale_pheno_ID]], full_data[[PC]])
+    phes_ID <- gsub("_irnt", "", Neale_pheno_ID)
+    cor_joint <- cor(full_data[[phes_ID]], full_data[[PC]])
     output_row <- cbind(Neale_pheno_ID, PC, cor_joint)
     for(sex_data in names(pheno_data)){
 
