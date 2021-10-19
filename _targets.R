@@ -668,7 +668,7 @@ list(
     map(MV_z)
   ),
 
-  # filter to only z's that have correlation < 0.7 (play with this a bit).
+  # filter to only z's that have correlation < 0.8 (play with this a bit).
 
   tar_target(
     z_summ_stats,
