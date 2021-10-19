@@ -763,6 +763,13 @@ list(
   ),
 
 
+  tar_target(
+    corr_impact_by_coords,
+    calc_corr_impact_by_coords(outcomes_to_run, traits_corr, corr_mat_traits),
+    pattern = map(PC_trait_corr)
+  ),
+
+
   ### markdown docs
 
   tar_render(rmd_index, "analysis/index.Rmd"),

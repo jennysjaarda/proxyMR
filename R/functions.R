@@ -1281,6 +1281,42 @@ calc_corr_impact_by_PCs <- function(traits_corr, PCs_corr, PC_trait_corr){
 
 }
 
+calc_corr_impact_by_coords <- function(outcomes_to_run, traits_corr, corr_mat_traits){
+
+  result <- numeric()
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    Neale_pheno_ID <- outcomes_to_run$Neale_pheno_ID[i]
+    phes_ID <- gsub("_irnt", "", Neale_pheno_ID)
+    trait_couple_r2 <- as.numeric(traits_corr[which(traits_corr$ID==phes_ID),"r2"])
+    trait_couple_r <- sqrt(trait_couple_r2)
+
+    trait_NC_r <- corr_mat_traits[phes_ID, "129"]
+    trait_EC_r <- corr_mat_traits[phes_ID, "130"]
+
+    NC_couple_r2 <- as.numeric(traits_corr[which(traits_corr$ID=="129"),"r2"])
+    EC_couple_r2 <- as.numeric(traits_corr[which(traits_corr$ID=="130"),"r2"])
+
+    NC_couple_r <- sqrt(NC_couple_r2)
+    EC_couple_r <- sqrt(EC_couple_r2)
+
+    correlation_due_to_confounding_NC <- trait_NC_r^2 *NC_couple_r
+    correlation_due_to_confounding_EC <- trait_EC_r^2 *EC_couple_r
+
+    temp_row_NC <- cbind(Neale_pheno_ID, "129", trait_couple_r, NC_couple_r, trait_NC_r, correlation_due_to_confounding_NC)
+    temp_row_EC <- cbind(Neale_pheno_ID, "130", trait_couple_r, EC_couple_r, trait_EC_r, correlation_due_to_confounding_EC)
+
+    result_temp <- rbind(temp_row_NC, temp_row_EC)
+    result <- rbind(result, result_temp)
+  }
+
+  colnames(result) <- c("Neale_pheno_ID", "coordinate", "trait_couple_corr", "coordinate_couple_corr", "trait_coordiante_corr", "corr_due_to_confounding")
+  result <- result %>% as_tibble() %>% type_convert() %>% mutate_at(c("Neale_pheno_ID"), as.character)
+
+
+}
+
 write_data_prep <- function(traits, traits_to_run, out1, out2){
 
   for(i in 1:dim(traits_to_run)[1]){
