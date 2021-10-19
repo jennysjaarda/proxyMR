@@ -2898,7 +2898,7 @@ pull_AM_MRs_household_MR_summary <- function(household_MR_summary){
   return(output)
 }
 
-find_AM_sig_exposure_info <- function(household_MR_summary_AM, exposure_info, num_tests_by_PCs){
+find_AM_sig_exposure_info <- function(household_MR_summary_AM, outcomes_to_run, num_tests_by_PCs){
 
 
   AM_sig_traits <- household_MR_summary_AM %>% filter(IVW_meta_pval < 0.05/num_tests_by_PCs) %>% pull(exposure_ID) %>% unique()
