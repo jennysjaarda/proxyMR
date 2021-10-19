@@ -3784,7 +3784,7 @@ prune_z_summ_stats <- function(MV_z, z_summ_stats, prune_threshold){
     outcome_ID <- MV_z$outcome_ID[i]
     exposure_sex <- MV_z$exposure_sex[i]
 
-    z_summ_stats_i <- z_summ_stats[[1]]
+    z_summ_stats_i <- z_summ_stats[[i]]
     cat(paste0("Pruning summary statistics for MV MR for  `", exposure_ID, "` as exposure and `", outcome_ID, "` as outcome in ", exposure_sex, "s as exposure sex.\n"))
 
     # extract all SNPs
