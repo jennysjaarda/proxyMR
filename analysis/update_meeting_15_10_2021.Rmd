@@ -227,6 +227,15 @@ plot
 
 ```
 
+The table below gives the data in the plot above:
+
+- `outcome_description` corresponds to the trait. 
+- `PC` is the genetic PC. 
+- `trait_couple_corr` is the correlation of `outcome_description` in couples. 
+- `PC_couple_corr` is the correlation of `PC` in couples. 
+- `trait_PC_corr` is the correlation of `outcome_description` with `PC`.
+-  `corr_due_to_confounding` corresponds to the formula: `cor(X,PC)^2*cor(PC_i,PC_p)`.
+
 ```{r PC_traits_confounding, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
 
 ## merge the list of dataframes 
@@ -258,6 +267,15 @@ plot
 
 ```
 
+
+The table below gives the data in the plot above:
+
+- `outcome_description` corresponds to the trait. 
+- `coordinate` is the coordiante (North: 129 or East: 130). 
+- `trait_couple_corr` is the correlation of `outcome_description` in couples. 
+- `coordinate_couple_corr` is the correlation of `coordinate` in couples. 
+- `trait_coordinate_corr` is the correlation of `outcome_description` with `coordinate`.
+-  `corr_due_to_confounding` corresponds to the formula: `cor(X,coord)^2*cor(coord_i,coord_p)`.
 
 ```{r coordin_traits_confounding, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
 
