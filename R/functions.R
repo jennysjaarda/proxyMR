@@ -3473,8 +3473,8 @@ create_proxy_sex_comparison_fig_ind <- function(data, var, count){
   num_result <- dim(data)[1]/2
 
 
-  vars_to_select <- paste0(var, c("_beta", "_sex_het_p"))
-  sex_het_p_var <- paste0(var, "_sex_het_p")
+  vars_to_select <- paste0(var, c("_beta", "_sex_het_pval"))
+  sex_het_p_var <- paste0(var, "_sex_het_pval")
   beta_var <- paste0(var, "_beta")
 
   fig_data <- data %>% dplyr::select("exposure_ID", "outcome_ID", "exposure_sex", vars_to_select) %>%
