@@ -1,0 +1,53 @@
+---
+title: "update_meeting_28_10_2021"
+author: "jennysjaarda"
+date: "2021-10-20"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+
+options(scipen=999)
+source("code/settings.R")
+source("R/functions.R")
+library(targets)
+library(dplyr)
+library(DT)
+library(knitr)
+library(ggplot2)
+library(kableExtra)
+
+```
+
+```{r load_targets, include = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+tar_load(household_MR_summary)
+tar_load(PCs_corr)
+tar_load(PC_trait_corr)
+tar_load(corr_impact_by_PCs)
+tar_load(corr_impact_by_coords)
+tar_load(proxyMR_MR_paths_summary_yiyp_adj)
+tar_load(MV_z_corr_filter)
+tar_load(traits_corr2_filled)
+tar_load(proxyMR_prod_comparison_fig_yiyp_adj)
+tar_load(proxyMR_prod_comparison_figure)
+
+```
+
+# Progress update.
+
+## Compairing paths from $X_i \rightarrow Y_p$.
+
+Without adjustment.
+
+``````{r proxyMR_figure1, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600}
+proxyMR_prod_comparison_figure
+```
+
+With adjustment.
+
+``````{r proxyMR_figure2, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600}
+proxyMR_prod_comparison_fig_yiyp_adj
+```
+
