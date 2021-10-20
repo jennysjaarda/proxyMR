@@ -706,6 +706,16 @@ list(
   ),
 
   tar_target(
+    proxyMR_prod_comparison_fig_yiyp_adj,
+    create_proxy_prod_comparison_fig(proxyMR_comparison_summary_yiyp_adj)
+  ),
+
+  tar_target(
+    proxyMR_sex_comparison_fig_yiyp_adj,
+    create_proxy_sex_comparison_fig(proxyMR_comparison_summary_yiyp_adj)
+  ),
+
+  tar_target(
     PC_gwas_input,
     prep_PC_GWAS(data_id_age, data_id_sex, sqc_munge, data_UKBB_sample)
   ),
