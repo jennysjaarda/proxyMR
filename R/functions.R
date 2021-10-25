@@ -3445,8 +3445,8 @@ create_proxy_prod_comparison_fig_ind <- function(data, exposure_sex, x, y, overl
 
   fig <- ggplot(fig_data, aes(x=x_plot, y=y_plot, label=exposure_description, label2=outcome_description, label3=exposure_sex, color=overlay_var)) +
     geom_point(alpha = 3/4) +
-    geom_smooth(mapping = aes(x = x_plot, y = y_plot),inherit.aes = FALSE, method=lm, se=FALSE, color = custom_col[4], fullrange=TRUE) +
-    geom_smooth(data = overlay_data, mapping = aes(x = x_plot, y = y_plot),inherit.aes = FALSE, method=lm, se=FALSE, color = custom_col[2], fullrange=TRUE) +
+    geom_smooth(mapping = aes(x = x_plot, y = y_plot),inherit.aes = FALSE, method=lm, formula=y~0+x, se=FALSE, color = custom_col[4], fullrange=TRUE) +
+    geom_smooth(data = overlay_data, mapping = aes(x = x_plot, y = y_plot),inherit.aes = FALSE, method=lm, formula=y~0+x, se=FALSE, color = custom_col[2], fullrange=TRUE) +
 
     theme_half_open(12) +
     scale_fill_manual(values = custom_col) +
