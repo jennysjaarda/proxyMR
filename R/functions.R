@@ -1279,6 +1279,15 @@ calc_corr_impact_by_PCs <- function(traits_corr, PCs_corr, PC_trait_corr){
 
   result <- result %>% as_tibble() %>% type_convert() %>% mutate_at(c("Neale_pheno_ID"), as.character)
 
+  # sum up along PCs
+  # remove home location and birth place coordinates
+
+  temp <- corr_impact_by_PCs %>% group_by(Neale_pheno_ID) %>% mutate(corr_due_to_confounding_all = sum(corr_due_to_confounding)) %>%
+    filter(Neale_pheno_ID != "130_irnt") %>% filter(Neale_pheno_ID != "129_irnt") %>%
+    filter(Neale_pheno_ID != "22702_irnt") %>% filter(Neale_pheno_ID != "22704_irnt")
+
+  return(temp)
+
 }
 
 calc_corr_impact_by_coords <- function(outcomes_to_run, traits_corr, corr_mat_traits){
@@ -1314,7 +1323,14 @@ calc_corr_impact_by_coords <- function(outcomes_to_run, traits_corr, corr_mat_tr
   colnames(result) <- c("Neale_pheno_ID", "coordinate", "trait_couple_corr", "coordinate_couple_corr", "trait_coordiante_corr", "corr_due_to_confounding")
   result <- result %>% as_tibble() %>% type_convert() %>% mutate_at(c("Neale_pheno_ID"), as.character)
 
+  # sum up along PCs
+  # remove home location and birth place coordinates
 
+  temp <- corr_impact_by_coords %>% group_by(Neale_pheno_ID) %>% mutate(corr_due_to_confounding_all = sum(corr_due_to_confounding)) %>%
+    filter(Neale_pheno_ID != "130_irnt") %>% filter(Neale_pheno_ID != "129_irnt") %>%
+    filter(Neale_pheno_ID != "22702_irnt") %>% filter(Neale_pheno_ID != "22704_irnt")
+
+  return(temp)
 }
 
 write_data_prep <- function(traits, traits_to_run, out1, out2){
