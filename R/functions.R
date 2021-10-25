@@ -1282,7 +1282,7 @@ calc_corr_impact_by_PCs <- function(traits_corr, PCs_corr, PC_trait_corr){
   # sum up along PCs
   # remove home location and birth place coordinates
 
-  temp <- corr_impact_by_PCs %>% group_by(Neale_pheno_ID) %>% mutate(corr_due_to_confounding_all = sum(corr_due_to_confounding)) %>%
+  temp <- result %>% group_by(Neale_pheno_ID) %>% mutate(corr_due_to_confounding_all = sum(corr_due_to_confounding)) %>%
     filter(Neale_pheno_ID != "130_irnt") %>% filter(Neale_pheno_ID != "129_irnt") %>%
     filter(Neale_pheno_ID != "22702_irnt") %>% filter(Neale_pheno_ID != "22704_irnt")
 
@@ -1326,7 +1326,7 @@ calc_corr_impact_by_coords <- function(outcomes_to_run, traits_corr, corr_mat_tr
   # sum up along PCs
   # remove home location and birth place coordinates
 
-  temp <- corr_impact_by_coords %>% group_by(Neale_pheno_ID) %>% mutate(corr_due_to_confounding_all = sum(corr_due_to_confounding)) %>%
+  temp <- result %>% group_by(Neale_pheno_ID) %>% mutate(corr_due_to_confounding_all = sum(corr_due_to_confounding)) %>%
     filter(Neale_pheno_ID != "130_irnt") %>% filter(Neale_pheno_ID != "129_irnt") %>%
     filter(Neale_pheno_ID != "22702_irnt") %>% filter(Neale_pheno_ID != "22704_irnt")
 
