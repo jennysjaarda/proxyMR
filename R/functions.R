@@ -3427,6 +3427,7 @@ create_proxy_prod_comparison_fig_ind <- function(data, exposure_sex, x, y, overl
 
   if(x == "gam_beta" | x == "gam_meta_beta"){x_label <- "\u03B3"}
   if(x == "rho_beta" | x == "rho_meta_beta"){x_label <- "\u03C1"}
+  if(x == "gam_rho_beta" | x == "gam_rho_meta_beta"){x_label <- "\u03B3 + \u03C1"}
 
   if(y == "omega_beta" | y == "omega_meta_beta"){y_label <- "\u03C9"}
   if(y == "rho_beta" | y == "rho_meta_beta"){y_label <- "\u03C1"}
