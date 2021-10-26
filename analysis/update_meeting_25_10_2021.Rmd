@@ -1,0 +1,312 @@
+---
+title: "Update Meeting: 25-10-2021"
+author: "jennysjaarda"
+date: "2021-10-20"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+
+options(scipen=999)
+source("code/settings.R")
+source("R/functions.R")
+library(targets)
+library(dplyr)
+library(DT)
+library(knitr)
+library(ggplot2)
+library(kableExtra)
+library(cowplot)
+
+```
+
+```{r load_targets, include = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+tar_load(household_MR_summary)
+tar_load(PCs_corr)
+tar_load(PC_trait_corr)
+tar_load(corr_impact_by_PCs)
+tar_load(corr_impact_by_coords)
+tar_load(proxyMR_MR_paths_summary_yiyp_adj)
+tar_load(proxyMR_comparison_summary_yiyp_adj)
+tar_load(MV_z_corr_filter)
+tar_load(traits_corr2_filled)
+tar_load(proxyMR_prod_comparison_fig_yiyp_adj)
+tar_load(proxyMR_prod_comparison_fig)
+
+```
+
+# Progress update.
+
+## Impact of geography.
+
+Wanted to assess impact of geography on couple trait correlation. Investigated this by using both genetic PCs and birth coordinates. 
+
+### PC impact. 
+
+Tested the following:
+
+- cor(PC_i,PC_p) for each PC (i.e. within couple PC correlation).
+- cor(X,PC) for all PCs.
+
+Next, I calculated the correlation due to counfounding as `cor(X,PC)^2*cor(PC_i,PC_p)` values, and plotted them against the raw `cor(X_i,X_p)` values.
+
+```{r PC_trait_plot, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+
+plot_data <- corr_impact_by_PCs %>% dplyr::select(Neale_pheno_ID, trait_couple_corr, corr_due_to_confounding_all) %>% unique()
+plot <- ggplot2::ggplot(data = plot_data, ggplot2::aes(x = trait_couple_corr,
+                                                       y = corr_due_to_confounding_all)) +
+  geom_point(alpha = 3/4) +
+  
+  geom_smooth(mapping = aes(x = trait_couple_corr, y = corr_due_to_confounding_all), method = "lm", se=FALSE, formula = y~x+0, fullrange=TRUE, color = custom_col[4]) +
+  theme_minimal() +
+  ggplot2::labs(x = paste0("Couple trait correlation"),
+                y = paste("Couple correlation due to confounding"))
+
+plot 
+
+```
+
+The table below gives the data in the plot above:
+
+- `outcome_description` corresponds to the trait. 
+- `trait_couple_corr` is the correlation of `outcome_description` in couples. 
+-  `corr_due_to_confounding_all` corresponds to the formula: `cor(X,PC)^2*cor(PC_i,PC_p)`, summed across all PCs.
+
+```{r PC_traits_confounding, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+
+corr_impact_by_PCs.DT <- replace_Neale_ID(plot_data, traits_corr2_filled, "Neale_pheno_ID", "outcome_description") %>% ungroup()
+format_round_cols <- colnames(dplyr::select_if(corr_impact_by_PCs.DT, is.numeric))
+DT::datatable(corr_impact_by_PCs.DT, width = "100%")  %>% formatRound(columns=format_round_cols, digits = 3)
+
+```
+
+### Coordiante impact.
+
+Performed the same analysis as above but replacing PCs with North and East birth co-ordinates (data field [129](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=129) and [130](https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=130), respectively). 
+
+
+```{r coord_trait_plot, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+
+plot_data <- corr_impact_by_coords %>% dplyr::select(Neale_pheno_ID, trait_couple_corr, corr_due_to_confounding_all) %>% unique()
+plot <- ggplot2::ggplot(data = plot_data, ggplot2::aes(x = trait_couple_corr,
+                                                       y = corr_due_to_confounding_all)) +
+  geom_point(alpha = 3/4) +
+  
+  geom_smooth(mapping = aes(x = trait_couple_corr, y = corr_due_to_confounding_all), method = "lm", se=FALSE, formula = y~x+0, fullrange=TRUE, color = custom_col[4]) +
+  theme_minimal() +
+  ggplot2::labs(x = paste0("Couple trait correlation"),
+                y = paste("Couple correlation due to confounding"))
+
+plot 
+
+```
+
+
+The table below gives the data in the plot above:
+
+- `outcome_description` corresponds to the trait. 
+- `trait_couple_corr` is the correlation of `outcome_description` in couples. 
+-  `corr_due_to_confounding_all` corresponds to the formula: `cor(X,PC)^2*cor(PC_i,PC_p)`, summed across both coorindates.
+
+```{r coord_traits_confounding, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+
+corr_impact_by_coords.DT <- replace_Neale_ID(plot_data, traits_corr2_filled, "Neale_pheno_ID", "outcome_description") %>% ungroup()
+format_round_cols <- colnames(dplyr::select_if(corr_impact_by_coords.DT, is.numeric))
+DT::datatable(corr_impact_by_coords.DT, width = "100%")  %>% formatRound(columns=format_round_cols, digits = 3)
+
+```
+
+## Compairing paths from $X_i \rightarrow Y_p$.
+
+We performed two analyses to compare $\rho$, $\gamma$ and $\omega$:
+
+- No adjustment in $Y_i \rightarrow Y_p$ MR. 
+- Adjustment for effects on $X_i$ in $Y_i \rightarrow Y_p$ MR,  MVMR model as follows: $Y_p \sim Y_i + X_i$ (IVs were a combination of all $X$ and $Y$ IVs, pruned at standard parameters using 1000G European data).
+
+
+```{r YiYp_adj_model, echo = FALSE}
+library(knitr)
+knitr::include_graphics("assets/two_trait_model_yiyp_adj.png", error = FALSE)
+```
+
+Broad overview of results are shown in the figure below.  
+
+- Without adjustment.
+
+```{r proxyMR_figure_no_adj, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600}
+proxyMR_prod_comparison_fig
+```
+
+- With adjustment.
+
+```{r proxyMR_figure_adj, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600}
+proxyMR_prod_comparison_fig_yiyp_adj
+```
+
+Going forward, we will just use the adjusted results. 
+
+### Exploring the difference between $\rho$ and $\gamma$.
+
+In general, $\rho$ is significantly larger that $\gamma$, meaning that $X_i \rightarrow Y_p$ favors paths where assortative mating is through $X$ rather than $Y$. This makes a lot of biological and intuitive sense. In other words, exposures are passed from index to partner, rather than outcomes. 
+
+A summary of the linear model of $\rho$ vs $\gamma$, forced through the intercept, is below. 
+
+```{r proxyMR_summary_rho_vs_gam, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+
+data <- proxyMR_comparison_summary_yiyp_adj
+exposure_sex <- "meta"
+
+fig_data <- data[which(data[["exposure_sex"]]=="male"),]
+ 
+x_start <- "gam"
+y_start <- "rho"
+overlay_var_start <- "gam_vs_rho_BF_sig"
+overlay_var = paste0(overlay_var_start, "_meta")
+
+x = paste0(x_start, "_beta")
+y = paste0(y_start, "_beta")
+
+count <- 0
+
+fig_data <- fig_data %>% rename(x := !!x) %>% rename(y := !!y) %>% rename(overlay_var := !!overlay_var) %>%
+    mutate(x_plot = case_when(x < 0 ~ abs(x), TRUE ~ x)) %>%
+    mutate(y_plot = case_when(x < 0 ~ -1*y, TRUE ~ y))
+
+summary(lm(y ~ x + 0, data = fig_data))
+
+```
+
+The corresponding figure is below. The blue line includes only BF-significant $\rho$ and $\gamma$, where the green line includes all points (analagous to the linear model above).
+
+```{r proxyMR_fig_rho_vs_gam, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600, message = FALSE, warning = FALSE}
+
+plot <- create_proxy_prod_comparison_fig_ind(data, exposure_sex, x, y, overlay_var, count)
+
+plot[[1]]
+
+```
+
+### Exploring the difference between $\omega$ and [$\rho$ and $\gamma$].
+
+A few observations: 
+
+- In general, $\omega$ is significantly larger than both $\rho$ and $\gamma$, as shown in the figures below. 
+- On the other hand, when we sum $\rho$ and $\gamma$, $\omega$ is in general lower than the sum. 
+- There are a number of instances where $\omega$ is significantly **smaller** than the sum &rightarrow not as interesting? *But what does this mean?* That we didn't have power in the $\omega$ (i.e diagonal) MR to capture the relationship that is likely only going through the either $\rho$ or $\gamma$ (or a sum of the two)? 
+- There are a few cases where $\omega$ is significantly **larger** than the sum. See below for details. 
+
+```{r proxyMR_fig_omega_vs_gam, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600, message = FALSE, warning = FALSE}
+data <- proxyMR_comparison_summary_yiyp_adj
+exposure_sex <- "meta"
+
+fig_data <- data[which(data[["exposure_sex"]]=="male"),]
+ 
+x_start <- "gam"
+y_start <- "omega"
+overlay_var_start <- "omega_vs_gam_BF_sig"
+overlay_var = paste0(overlay_var_start, "_meta")
+
+
+x = paste0(x_start, "_beta")
+y = paste0(y_start, "_beta")
+
+count <- 0
+
+plot <- create_proxy_prod_comparison_fig_ind(data, exposure_sex, x, y, overlay_var, count)
+
+plot[[1]]
+
+```
+
+```{r proxyMR_fig_omega_vs_rho, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600, message = FALSE, warning = FALSE}
+data <- proxyMR_comparison_summary_yiyp_adj
+exposure_sex <- "meta"
+
+fig_data <- data[which(data[["exposure_sex"]]=="male"),]
+ 
+x_start <- "rho"
+y_start <- "omega"
+overlay_var_start <- "omega_vs_rho_BF_sig"
+overlay_var = paste0(overlay_var_start, "_meta")
+
+
+x = paste0(x_start, "_beta")
+y = paste0(y_start, "_beta")
+
+count <- 0
+
+plot <- create_proxy_prod_comparison_fig_ind(data, exposure_sex, x, y, overlay_var, count)
+
+plot[[1]]
+
+```
+
+```{r proxyMR_fig_omega_vs_gam_rho, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600, message = FALSE, warning = FALSE}
+data <- proxyMR_comparison_summary_yiyp_adj
+exposure_sex <- "meta"
+
+fig_data <- data[which(data[["exposure_sex"]]=="male"),]
+ 
+x_start <- "gam_rho"
+y_start <- "omega"
+overlay_var_start <- "omega_vs_gam_rho_BF_sig"
+overlay_var = paste0(overlay_var_start, "_meta")
+
+
+x = paste0(x_start, "_beta")
+y = paste0(y_start, "_beta")
+
+count <- 0
+
+plot <- create_proxy_prod_comparison_fig_ind(data, exposure_sex, x, y, overlay_var, count)
+
+plot[[1]]
+
+ fig_data <- fig_data %>% rename(x := !!x) %>% rename(y := !!y) %>% rename(overlay_var := !!overlay_var) %>%
+    mutate(x_plot = case_when(x < 0 ~ abs(x), TRUE ~ x)) %>%
+    mutate(y_plot = case_when(x < 0 ~ -1*y, TRUE ~ y))
+
+
+ summary(lm(y ~ x + 0, data = fig_data))
+ 
+```
+
+A summary of the cases where $\omega$ is significantly larger or smaller than the sum of $\rho$ and $\gamma$ are shown in the two tables below (taking absolute values of each).    
+
+```{r proxyMR_summary_omega_vs_gam_rho, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600, message = FALSE, warning = FALSE}
+
+omega_larger.DT <- proxyMR_comparison_summary_yiyp_adj %>% filter(omega_vs_gam_rho_BF_sig_meta) %>% filter(abs(omega_meta_beta) > abs(gam_rho_meta_beta)) %>% dplyr::select(exposure_description, outcome_description, gam_rho_meta_beta, omega_meta_beta) %>% unique() 
+format_round_cols <- colnames(dplyr::select_if(omega_larger.DT, is.numeric))
+DT::datatable(omega_larger.DT, width = "100%")  %>% formatRound(columns=format_round_cols, digits = 3)
+
+omega_smaller.DT <- proxyMR_comparison_summary_yiyp_adj %>% filter(omega_vs_gam_rho_BF_sig_meta) %>% filter(abs(gam_rho_meta_beta) > abs(omega_meta_beta)) %>% dplyr::select(exposure_description, outcome_description, gam_rho_meta_beta, omega_meta_beta) %>% unique() 
+format_round_cols <- colnames(dplyr::select_if(omega_smaller.DT, is.numeric))
+DT::datatable(omega_smaller.DT, width = "100%")  %>% formatRound(columns=format_round_cols, digits = 3)
+
+#fig_data %>% filter(omega_meta_beta < 0 & gam_rho_meta_beta > 0) %>% dplyr::select(x,y, exposure_description, outcome_description, overlay_var)
+
+```
+
+## Next steps. 
+
+- In the $Y_i \rightarrow Y_p$ MR, rather than performing a MVMR ($Y_p \sim Y_i + X_i$), try in a two step process as follows: 
+    - Calculate the effect of $Y_p$ without effects of $X_i$ on $Y_p$ as: $Y_{resid} = Y_p - \omega*X_I$.
+    - Run MR with the residualized $Y$ as: $Y_{resid} \sim Y_i$ 
+
+**Question**: What is the corresponding SEs on $Y_{resid}$?
+
+- Check for cases of reverse causation in the same-person MR. 
+- Remove SNPs were the effect is significantly larger on the outcome than the exposure. 
+- In the results including both sexes, meta-analyze at the SNP-level rather than the MR level (note that right now the two horizontal, same person MRs in the DAG above are different because they are sex specific. I then meta-analyze $\omega$, $\gamma$ and $\rho$ as the *final* step).
+- Calculate the variance of $\rho + \gamma$ as: $2 * cor(\rho, \gamma) * SE_{\gamma} * SE{\rho}$, i.e. include the extra-term of 2*correlation. 
+    
+# PolyMR.
+
+- Finished discussion points. 
+- Waiting on Jonathan to add bibtex file before adding my references. 
+- Haven't done a summary on CATE - who was going to do that? 
+- *Question:* Why is there often an inflection point around the (0,0) point? Is this an effect of standardization?
+
+
