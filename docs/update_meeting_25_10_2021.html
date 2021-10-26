@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="jennysjaarda" />
+
+<meta name="date" content="2021-10-20" />
+
+<title>Update Meeting: 25-10-2021</title>
+
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.5.3/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.18.1/datatables.js"></script>
+<link href="site_libs/dt-core-1.10.20/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.10.20/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.10.20/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.1.1/css/crosstalk.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.1.1/js/crosstalk.min.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">proxyMR</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="setup.html">Setup</a>
+</li>
+<li>
+  <a href="meetings.html">Update meetings</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jennysjaarda/proxyMR">
+    <span class="fa fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Update Meeting: 25-10-2021</h1>
+<h4 class="author">jennysjaarda</h4>
+<h4 class="date">2021-10-20</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report"
+  data-toggle="collapse" data-target="#workflowr-report">
+  
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</button>
+</p>
+
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+  <li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+  <li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
+</li>
+  <li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+  <p>
+<strong>Last updated:</strong> 2021-10-26
+</p>
+  <p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
+</p>
+  <p>
+<strong>Knit directory:</strong> <code>proxyMR/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+  <p>
+  
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.2). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+  <div class="panel-group" id="workflowr-checks">
+  <div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div class="panel-body">
+  
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+  
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it's best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20210602code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20210602)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20210602code" class="panel-collapse collapse">
+<div class="panel-body">
+  
+<p>The command <code>set.seed(20210602)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+  
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+  
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+  
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtree48b6256f23b0f8799ebd6355ac8e8176e643f926targetblank48b6256a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/jennysjaarda/proxyMR/tree/48b6256f23b0f8799ebd6355ac8e8176e643f926" target="_blank">48b6256</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtree48b6256f23b0f8799ebd6355ac8e8176e643f926targetblank48b6256a" class="panel-collapse collapse">
+<div class="panel-body">
+  
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
+</p>
+
+<p>
+The results in this page were generated with repository version <a href="https://github.com/jennysjaarda/proxyMR/tree/48b6256f23b0f8799ebd6355ac8e8176e643f926" target="_blank">48b6256</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+</p>
+
+<p>
+Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    _targets/
+    Ignored:    analysis/_site.yml_cp
+    Ignored:    analysis/bgenie_GWAS/
+    Ignored:    analysis/data_setup/
+    Ignored:    analysis/download_Neale_list.csv
+    Ignored:    analysis/meetings2.html
+    Ignored:    analysis/process_Neale.out
+    Ignored:    analysis/traitMR/
+    Ignored:    data/Neale_SGG_directory_12_07_2021.csv
+    Ignored:    data/Neale_SGG_directory_15_07_2021.csv
+    Ignored:    data/PHESANT_file_directory_05_10_2021.txt
+    Ignored:    data/UKBB_pheno_directory_05_10_2021.csv
+    Ignored:    data/processed/
+    Ignored:    data/raw/
+    Ignored:    output/figures/
+    Ignored:    output/tables/traitMR/
+    Ignored:    proxyMR_comparison.RData
+    Ignored:    proxyMR_figure_data.RData
+    Ignored:    proxymr_100_clustermq.out
+    Ignored:    proxymr_101_clustermq.out
+    Ignored:    proxymr_102_clustermq.out
+    Ignored:    proxymr_103_clustermq.out
+    Ignored:    proxymr_104_clustermq.out
+    Ignored:    proxymr_105_clustermq.out
+    Ignored:    proxymr_106_clustermq.out
+    Ignored:    proxymr_107_clustermq.out
+    Ignored:    proxymr_108_clustermq.out
+    Ignored:    proxymr_109_clustermq.out
+    Ignored:    proxymr_10_clustermq.out
+    Ignored:    proxymr_110_clustermq.out
+    Ignored:    proxymr_111_clustermq.out
+    Ignored:    proxymr_112_clustermq.out
+    Ignored:    proxymr_113_clustermq.out
+    Ignored:    proxymr_114_clustermq.out
+    Ignored:    proxymr_115_clustermq.out
+    Ignored:    proxymr_116_clustermq.out
+    Ignored:    proxymr_117_clustermq.out
+    Ignored:    proxymr_118_clustermq.out
+    Ignored:    proxymr_119_clustermq.out
+    Ignored:    proxymr_11_clustermq.out
+    Ignored:    proxymr_120_clustermq.out
+    Ignored:    proxymr_121_clustermq.out
+    Ignored:    proxymr_122_clustermq.out
+    Ignored:    proxymr_123_clustermq.out
+    Ignored:    proxymr_124_clustermq.out
+    Ignored:    proxymr_125_clustermq.out
+    Ignored:    proxymr_126_clustermq.out
+    Ignored:    proxymr_127_clustermq.out
+    Ignored:    proxymr_128_clustermq.out
+    Ignored:    proxymr_129_clustermq.out
+    Ignored:    proxymr_12_clustermq.out
+    Ignored:    proxymr_130_clustermq.out
+    Ignored:    proxymr_131_clustermq.out
+    Ignored:    proxymr_132_clustermq.out
+    Ignored:    proxymr_133_clustermq.out
+    Ignored:    proxymr_134_clustermq.out
+    Ignored:    proxymr_135_clustermq.out
+    Ignored:    proxymr_136_clustermq.out
+    Ignored:    proxymr_137_clustermq.out
+    Ignored:    proxymr_138_clustermq.out
+    Ignored:    proxymr_139_clustermq.out
+    Ignored:    proxymr_13_clustermq.out
+    Ignored:    proxymr_140_clustermq.out
+    Ignored:    proxymr_14_clustermq.out
+    Ignored:    proxymr_15_clustermq.out
+    Ignored:    proxymr_16_clustermq.out
+    Ignored:    proxymr_17_clustermq.out
+    Ignored:    proxymr_18_clustermq.out
+    Ignored:    proxymr_19_clustermq.out
+    Ignored:    proxymr_1_clustermq.out
+    Ignored:    proxymr_20_clustermq.out
+    Ignored:    proxymr_21_clustermq.out
+    Ignored:    proxymr_22_clustermq.out
+    Ignored:    proxymr_23_clustermq.out
+    Ignored:    proxymr_24_clustermq.out
+    Ignored:    proxymr_25_clustermq.out
+    Ignored:    proxymr_26_clustermq.out
+    Ignored:    proxymr_27_clustermq.out
+    Ignored:    proxymr_28_clustermq.out
+    Ignored:    proxymr_29_clustermq.out
+    Ignored:    proxymr_2_clustermq.out
+    Ignored:    proxymr_30_clustermq.out
+    Ignored:    proxymr_31_clustermq.out
+    Ignored:    proxymr_32_clustermq.out
+    Ignored:    proxymr_33_clustermq.out
+    Ignored:    proxymr_34_clustermq.out
+    Ignored:    proxymr_35_clustermq.out
+    Ignored:    proxymr_36_clustermq.out
+    Ignored:    proxymr_37_clustermq.out
+    Ignored:    proxymr_38_clustermq.out
+    Ignored:    proxymr_39_clustermq.out
+    Ignored:    proxymr_3_clustermq.out
+    Ignored:    proxymr_40_clustermq.out
+    Ignored:    proxymr_41_clustermq.out
+    Ignored:    proxymr_42_clustermq.out
+    Ignored:    proxymr_43_clustermq.out
+    Ignored:    proxymr_44_clustermq.out
+    Ignored:    proxymr_45_clustermq.out
+    Ignored:    proxymr_46_clustermq.out
+    Ignored:    proxymr_47_clustermq.out
+    Ignored:    proxymr_48_clustermq.out
+    Ignored:    proxymr_49_clustermq.out
+    Ignored:    proxymr_4_clustermq.out
+    Ignored:    proxymr_50_clustermq.out
+    Ignored:    proxymr_51_clustermq.out
+    Ignored:    proxymr_52_clustermq.out
+    Ignored:    proxymr_53_clustermq.out
+    Ignored:    proxymr_54_clustermq.out
+    Ignored:    proxymr_55_clustermq.out
+    Ignored:    proxymr_56_clustermq.out
+    Ignored:    proxymr_57_clustermq.out
+    Ignored:    proxymr_58_clustermq.out
+    Ignored:    proxymr_59_clustermq.out
+    Ignored:    proxymr_5_clustermq.out
+    Ignored:    proxymr_60_clustermq.out
+    Ignored:    proxymr_61_clustermq.out
+    Ignored:    proxymr_62_clustermq.out
+    Ignored:    proxymr_63_clustermq.out
+    Ignored:    proxymr_64_clustermq.out
+    Ignored:    proxymr_65_clustermq.out
+    Ignored:    proxymr_66_clustermq.out
+    Ignored:    proxymr_67_clustermq.out
+    Ignored:    proxymr_68_clustermq.out
+    Ignored:    proxymr_69_clustermq.out
+    Ignored:    proxymr_6_clustermq.out
+    Ignored:    proxymr_70_clustermq.out
+    Ignored:    proxymr_71_clustermq.out
+    Ignored:    proxymr_72_clustermq.out
+    Ignored:    proxymr_73_clustermq.out
+    Ignored:    proxymr_74_clustermq.out
+    Ignored:    proxymr_75_clustermq.out
+    Ignored:    proxymr_76_clustermq.out
+    Ignored:    proxymr_77_clustermq.out
+    Ignored:    proxymr_78_clustermq.out
+    Ignored:    proxymr_79_clustermq.out
+    Ignored:    proxymr_7_clustermq.out
+    Ignored:    proxymr_80_clustermq.out
+    Ignored:    proxymr_81_clustermq.out
+    Ignored:    proxymr_82_clustermq.out
+    Ignored:    proxymr_83_clustermq.out
+    Ignored:    proxymr_84_clustermq.out
+    Ignored:    proxymr_85_clustermq.out
+    Ignored:    proxymr_86_clustermq.out
+    Ignored:    proxymr_87_clustermq.out
+    Ignored:    proxymr_88_clustermq.out
+    Ignored:    proxymr_89_clustermq.out
+    Ignored:    proxymr_8_clustermq.out
+    Ignored:    proxymr_90_clustermq.out
+    Ignored:    proxymr_91_clustermq.out
+    Ignored:    proxymr_92_clustermq.out
+    Ignored:    proxymr_93_clustermq.out
+    Ignored:    proxymr_94_clustermq.out
+    Ignored:    proxymr_95_clustermq.out
+    Ignored:    proxymr_96_clustermq.out
+    Ignored:    proxymr_97_clustermq.out
+    Ignored:    proxymr_98_clustermq.out
+    Ignored:    proxymr_99_clustermq.out
+    Ignored:    proxymr_9_clustermq.out
+    Ignored:    renv/library/
+    Ignored:    renv/staging/
+
+Untracked files:
+    Untracked:  Rplots.pdf
+    Untracked:  analysis/meetings2.Rmd
+
+Unstaged changes:
+    Modified:   analysis/AM_MR_summary.Rmd
+    Modified:   analysis/couple_selection.Rmd
+    Modified:   output/tables/define_Neale_categories.csv
+    Modified:   output/tables/define_Neale_categories_filled.csv
+    Modified:   renv.lock
+
+</code></pre>
+
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+  
+<p>
+These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/update_meeting_25_10_2021.Rmd</code>) and HTML (<code>docs/update_meeting_25_10_2021.html</code>) files. If you've configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/jennysjaarda/proxyMR/blob/48b6256f23b0f8799ebd6355ac8e8176e643f926/analysis/update_meeting_25_10_2021.Rmd" target="_blank">48b6256</a>
+</td>
+<td>
+Jenny Sjaarda
+</td>
+<td>
+2021-10-26
+</td>
+<td>
+wflow_rename(&quot;analysis/update_meeting_28_10_2021.Rmd&quot;, &quot;analysis/update_meeting_25_10_2021.Rmd&quot;)
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<hr>
+</div>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+<div id="progress-update." class="section level1">
+<h1><span class="header-section-number">1</span> Progress update.</h1>
+<div id="impact-of-geography." class="section level2">
+<h2><span class="header-section-number">1.1</span> Impact of geography.</h2>
+<p>Wanted to assess impact of geography on couple trait correlation. Investigated this by using both genetic PCs and birth coordinates.</p>
+<div id="pc-impact." class="section level3">
+<h3><span class="header-section-number">1.1.1</span> PC impact.</h3>
+<p>Tested the following:</p>
+<ul>
+<li>cor(PC_i,PC_p) for each PC (i.e. within couple PC correlation).</li>
+<li>cor(X,PC) for all PCs.</li>
+</ul>
+<p>Next, I calculated the correlation due to counfounding as <code>cor(X,PC)^2*cor(PC_i,PC_p)</code> values, and plotted them against the raw <code>cor(X_i,X_p)</code> values.</p>
+<p><img src="figure/update_meeting_25_10_2021.Rmd/PC_trait_plot-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>The table below gives the data in the plot above:</p>
+<ul>
+<li><code>outcome_description</code> corresponds to the trait.</li>
+<li><code>trait_couple_corr</code> is the correlation of <code>outcome_description</code> in couples.</li>
+<li><code>corr_due_to_confounding_all</code> corresponds to the formula: <code>cor(X,PC)^2*cor(PC_i,PC_p)</code>, summed across all PCs.</li>
+</ul>
+<div id="htmlwidget-3b7a1c78308eb781be0a" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3b7a1c78308eb781be0a">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100","101","102","103","104","105","106"],["Time spend outdoors in summer","Time spent outdoors in winter","Time spent watching television (TV)","Time spent using computer","Drive faster than motorway speed limit","Length of mobile phone use","Sleep duration","Morning/evening person (chronotype)","Nap during day","QRS duration","Current tobacco smoking","Past tobacco smoking","Number of treatments/medications taken","Alcohol usually taken with meals","Comparative height size at age 10","Worrier / anxious feelings","Sitting height","Fluid intelligence score","Mean time to correctly identify matches","Smoking status: Never","Smoking status: Previous","Smoking status: Current","Number of fluid intelligence questions attempted within time limit","Forced expiratory volume in 1-second (FEV1), Best measure","Forced vital capacity (FVC), Best measure","Forced expiratory volume in 1-second (FEV1), predicted","Forced expiratory volume in 1-second (FEV1), predicted percentage","Ever smoked","Frequency of depressed mood in last 2 weeks","Frequency of tiredness / lethargy in last 2 weeks","Body mass index (BMI)","Lifetime number of sexual partners","Overall health rating","Age hayfever or allergic rhinitis diagnosed by doctor","Plays computer games","Tobacco smoking: Never smoked","Body fat percentage","Whole body fat mass","Whole body fat-free mass","Whole body water mass","Body mass index (BMI)","Basal metabolic rate","Impedance of whole body","Impedance of leg (right)","Impedance of arm (right)","Leg fat percentage (right)","Leg fat mass (right)","Leg fat-free mass (right)","Leg predicted mass (right)","Arm fat percentage (right)","Arm fat mass (right)","Arm fat-free mass (right)","Arm predicted mass (right)","Trunk fat mass","Trunk fat-free mass","Trunk predicted mass","Taking other prescription medications","Age high blood pressure diagnosed","Age diabetes diagnosed","Started insulin within one year diagnosis of diabetes","White blood cell (leukocyte) count","Red blood cell (erythrocyte) count","Haemoglobin concentration","Mean corpuscular volume","Mean corpuscular haemoglobin","Mean corpuscular haemoglobin concentration","Red blood cell (erythrocyte) distribution width","Lymphocyte count","Neutrophill count","Basophill count","Reticulocyte percentage","Reticulocyte count","Mean reticulocyte volume","Mean sphered cell volume","Immature reticulocyte fraction","High light scatter reticulocyte percentage","High light scatter reticulocyte count","Forced vital capacity (FVC)","Forced expiratory volume in 1-second (FEV1)","Time to complete round","Duration to first press of snap-button in each round","Systolic blood pressure, automated reading","Duration screen displayed","Hand grip strength (right)","Hip circumference","Standing height","Current employment status: Unable to work because of sickness or disability","Reason for glasses/contact lenses: For short-sightedness, i.e. only or mainly for distance viewing such as driving, cinema etc (called 'myopia')","Medication for pain relief, constipation, heartburn: Aspirin","Leisure/social activities: Sports club or gym","Leisure/social activities: None of the above","Leisure/social activities: Religious group","Types of physical activity in last 4 weeks: Walking for pleasure (not as a means of transport)","Types of physical activity in last 4 weeks: None of the above","Types of physical activity in last 4 weeks: Other exercises (eg: swimming, cycling, keep fit, bowling)","Types of physical activity in last 4 weeks: Strenuous sports","Average total household income before tax","Job involves mainly walking or standing","Job involves heavy manual or physical work","Age completed full time education","Number of days/week walked 10+ minutes","Duration of walks","Number of days/week of moderate physical activity 10+ minutes","Number of days/week of vigorous physical activity 10+ minutes","Usual walking pace","Frequency of stair climbing in last 4 weeks"],[0.208212438709918,0.106899618160478,0.366500973557755,0.112150419307127,0.143701910059426,0.255566828062014,0.112364438632524,0.119161971124373,0.101670768538904,0.125835242716803,0.250628765482663,0.197483609700431,0.180577464189796,0.665807731578661,0.117368394969656,0.102908173357556,0.301136692378884,0.19874799757525,0.117274124246992,0.203684523128766,0.179683785070689,0.231000244519819,0.101070591862302,0.160790958599483,0.256147943854234,0.398782632486041,0.11422374442837,0.131706997292051,0.105369483724113,0.121830295924403,0.236771651558057,0.451850938634572,0.151203116053615,0.162760725599043,0.19195939285336,0.218514233875072,0.293834474318869,0.183136389106009,0.541857750051027,0.540690311360681,0.235637142957566,0.493563801298043,0.382572654077242,0.110775575209509,0.477733812798393,0.513295132502737,0.215507352677039,0.499497748575558,0.505903940381299,0.324910825841193,0.172655833046535,0.553519949232614,0.556456447942572,0.242742348765232,0.555920058254861,0.558395085217367,0.116154642221923,0.213276666650879,0.375007331935594,0.316040643511321,0.152223340431713,0.186232648134533,0.307809270489686,0.145680915242914,0.129149128897634,0.453605784888532,0.104657451709999,0.12020935439876,0.118520126170457,0.470772498223846,0.178722000896507,0.150150149718834,0.200023953130698,0.289580353959212,0.195714156512899,0.163503231226757,0.146639161044501,0.233956577873095,0.148250770968151,0.127978261517575,0.116486840334751,0.133495560442161,0.160837768815649,0.424469661640252,0.190675965110456,0.376527500299493,0.108081124221079,0.326959731681369,0.115035574433655,0.321610482330295,0.31912173651638,0.612456997426667,0.30453053711473,0.104410665385307,0.274019842997062,0.175364011302267,0.883787771520691,0.148640032122745,0.136244936065903,0.32650314603709,0.187218439340602,0.169990050270495,0.111822811879164,0.156058756046859,0.100796420935929,0.405515671853154],[0.000381088136631743,0.000159045371628165,0.00136240180763681,0.00164158846113864,0.000597512473001409,0.000228951296313633,0.000342777316235376,0.000336925376356237,0.000189074678435152,0.000813015901156224,0.00098495342738086,0.000114037871070729,0.000433969201685464,0.00587650035995535,0.000660203567212159,8.13521669193015e-05,0.000911953099737689,0.00107860797666618,0.000253499635378737,0.000369015211362663,5.32483525632772e-05,0.000899591836594612,0.000137788391100749,0.000540604864599397,0.000667952672805793,0.000345701487151218,0.000765794241201344,9.75580389183148e-05,0.000307865224164768,0.000519812183261468,0.000664570211557404,0.000464417097980758,0.000725634406899594,0.00107692179914688,0.000177312684621238,0.000128251635754614,0.00104454889862274,0.000508796843363245,0.000885453340356226,0.000885310501466476,0.000659176544599055,0.000622944131431049,0.000613611766508916,0.00108667363085317,0.000421219126364625,0.000964872691796836,0.000525599007585844,0.000693712500817842,0.000684612039176027,0.000963191702871869,0.000501932074745024,0.000671919729447943,0.000656536460346758,0.00043227713880623,0.00110207446344642,0.00109251223221797,0.00024000650900917,0.000281514156418213,0.00059262929425066,0.000407550947863957,0.000429301500348278,0.00105241500630495,0.000108430446165982,0.00153266526337658,0.00195235653527736,0.000475276884195982,0.000205554928469015,0.000447818895068838,0.000235090979343611,0.00803390630599486,0.000295229045189589,0.000190678814867326,0.000398899509686531,0.000821716369649005,0.00160706263356287,0.000617304526311438,0.000367691839399516,0.000645794034722581,0.00058725442130782,0.000376600607313136,0.000345728002930251,0.000282823466022749,0.000720206200060158,0.0002646597479319,0.00041373512719965,0.00239326697523534,0.000984352812943614,0.00263509154859168,0.000164791510049973,0.000150732048331348,0.000168432989726447,0.000596147156580965,0.000830729368347554,0.00119291394501943,0.000202250833288438,8.25182620651152e-05,0.00209911274198474,0.00126313697377594,0.000985559644450377,0.00372978415679754,0.000332570298028642,0.000279943076146786,0.000102331726952778,8.01550958047834e-05,0.000681330367264304,0.000328707589845309]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>outcome_description<\/th>\n      <th>trait_couple_corr<\/th>\n      <th>corr_due_to_confounding_all<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"targets":2,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 3, 3, \",\", \".\");\n  }"},{"targets":3,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 3, 3, \",\", \".\");\n  }"},{"className":"dt-right","targets":[2,3]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":["options.columnDefs.0.render","options.columnDefs.1.render"],"jsHooks":[]}</script>
+</div>
+<div id="coordiante-impact." class="section level3">
+<h3><span class="header-section-number">1.1.2</span> Coordiante impact.</h3>
+<p>Performed the same analysis as above but replacing PCs with North and East birth co-ordinates (data field <a href="https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=129">129</a> and <a href="https://biobank.ctsu.ox.ac.uk/crystal/field.cgi?id=130">130</a>, respectively).</p>
+<p><img src="figure/update_meeting_25_10_2021.Rmd/coord_trait_plot-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>The table below gives the data in the plot above:</p>
+<ul>
+<li><code>outcome_description</code> corresponds to the trait.</li>
+<li><code>trait_couple_corr</code> is the correlation of <code>outcome_description</code> in couples.</li>
+<li><code>corr_due_to_confounding_all</code> corresponds to the formula: <code>cor(X,PC)^2*cor(PC_i,PC_p)</code>, summed across both coorindates.</li>
+</ul>
+<div id="htmlwidget-b6e5928f32e9385bc3f4" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-b6e5928f32e9385bc3f4">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100","101","102","103","104","105","106"],["Time spend outdoors in summer","Time spent outdoors in winter","Time spent watching television (TV)","Time spent using computer","Drive faster than motorway speed limit","Length of mobile phone use","Sleep duration","Morning/evening person (chronotype)","Nap during day","QRS duration","Current tobacco smoking","Past tobacco smoking","Number of treatments/medications taken","Alcohol usually taken with meals","Comparative height size at age 10","Worrier / anxious feelings","Sitting height","Fluid intelligence score","Mean time to correctly identify matches","Smoking status: Never","Smoking status: Previous","Smoking status: Current","Number of fluid intelligence questions attempted within time limit","Forced expiratory volume in 1-second (FEV1), Best measure","Forced vital capacity (FVC), Best measure","Forced expiratory volume in 1-second (FEV1), predicted","Forced expiratory volume in 1-second (FEV1), predicted percentage","Ever smoked","Frequency of depressed mood in last 2 weeks","Frequency of tiredness / lethargy in last 2 weeks","Body mass index (BMI)","Lifetime number of sexual partners","Overall health rating","Age hayfever or allergic rhinitis diagnosed by doctor","Plays computer games","Tobacco smoking: Never smoked","Body fat percentage","Whole body fat mass","Whole body fat-free mass","Whole body water mass","Body mass index (BMI)","Basal metabolic rate","Impedance of whole body","Impedance of leg (right)","Impedance of arm (right)","Leg fat percentage (right)","Leg fat mass (right)","Leg fat-free mass (right)","Leg predicted mass (right)","Arm fat percentage (right)","Arm fat mass (right)","Arm fat-free mass (right)","Arm predicted mass (right)","Trunk fat mass","Trunk fat-free mass","Trunk predicted mass","Taking other prescription medications","Age high blood pressure diagnosed","Age diabetes diagnosed","Started insulin within one year diagnosis of diabetes","White blood cell (leukocyte) count","Red blood cell (erythrocyte) count","Haemoglobin concentration","Mean corpuscular volume","Mean corpuscular haemoglobin","Mean corpuscular haemoglobin concentration","Red blood cell (erythrocyte) distribution width","Lymphocyte count","Neutrophill count","Basophill count","Reticulocyte percentage","Reticulocyte count","Mean reticulocyte volume","Mean sphered cell volume","Immature reticulocyte fraction","High light scatter reticulocyte percentage","High light scatter reticulocyte count","Forced vital capacity (FVC)","Forced expiratory volume in 1-second (FEV1)","Time to complete round","Duration to first press of snap-button in each round","Systolic blood pressure, automated reading","Duration screen displayed","Hand grip strength (right)","Hip circumference","Standing height","Current employment status: Unable to work because of sickness or disability","Reason for glasses/contact lenses: For short-sightedness, i.e. only or mainly for distance viewing such as driving, cinema etc (called 'myopia')","Medication for pain relief, constipation, heartburn: Aspirin","Leisure/social activities: Sports club or gym","Leisure/social activities: None of the above","Leisure/social activities: Religious group","Types of physical activity in last 4 weeks: Walking for pleasure (not as a means of transport)","Types of physical activity in last 4 weeks: None of the above","Types of physical activity in last 4 weeks: Other exercises (eg: swimming, cycling, keep fit, bowling)","Types of physical activity in last 4 weeks: Strenuous sports","Average total household income before tax","Job involves mainly walking or standing","Job involves heavy manual or physical work","Age completed full time education","Number of days/week walked 10+ minutes","Duration of walks","Number of days/week of moderate physical activity 10+ minutes","Number of days/week of vigorous physical activity 10+ minutes","Usual walking pace","Frequency of stair climbing in last 4 weeks"],[0.208212438709918,0.106899618160478,0.366500973557755,0.112150419307127,0.143701910059426,0.255566828062014,0.112364438632524,0.119161971124373,0.101670768538904,0.125835242716803,0.250628765482663,0.197483609700431,0.180577464189796,0.665807731578661,0.117368394969656,0.102908173357556,0.301136692378884,0.19874799757525,0.117274124246992,0.203684523128766,0.179683785070689,0.231000244519819,0.101070591862302,0.160790958599483,0.256147943854234,0.398782632486041,0.11422374442837,0.131706997292051,0.105369483724113,0.121830295924403,0.236771651558057,0.451850938634572,0.151203116053615,0.162760725599043,0.19195939285336,0.218514233875072,0.293834474318869,0.183136389106009,0.541857750051027,0.540690311360681,0.235637142957566,0.493563801298043,0.382572654077242,0.110775575209509,0.477733812798393,0.513295132502737,0.215507352677039,0.499497748575558,0.505903940381299,0.324910825841193,0.172655833046535,0.553519949232614,0.556456447942572,0.242742348765232,0.555920058254861,0.558395085217367,0.116154642221923,0.213276666650879,0.375007331935594,0.316040643511321,0.152223340431713,0.186232648134533,0.307809270489686,0.145680915242914,0.129149128897634,0.453605784888532,0.104657451709999,0.12020935439876,0.118520126170457,0.470772498223846,0.178722000896507,0.150150149718834,0.200023953130698,0.289580353959212,0.195714156512899,0.163503231226757,0.146639161044501,0.233956577873095,0.148250770968151,0.127978261517575,0.116486840334751,0.133495560442161,0.160837768815649,0.424469661640252,0.190675965110456,0.376527500299493,0.108081124221079,0.326959731681369,0.115035574433655,0.321610482330295,0.31912173651638,0.612456997426667,0.30453053711473,0.104410665385307,0.274019842997062,0.175364011302267,0.883787771520691,0.148640032122745,0.136244936065903,0.32650314603709,0.187218439340602,0.169990050270495,0.111822811879164,0.156058756046859,0.100796420935929,0.405515671853154],[0.001927521048043,0.000484955184539692,0.00382097985649648,0.00578219901533787,0.00272011689371525,0.00117527664502475,5.78822765830311e-05,3.84007485054545e-05,0.000173342644964104,0.000597560147984514,0.000553314067144093,0.000146629333357407,0.0021989485854295,0.0108676665384354,0.000318793909006003,0.000225162247311664,0.00191457415119959,0.00115369712307498,0.00052803773063649,1.02539344609936e-05,0.000149044363836975,0.000422776988534806,0.000167514965557292,0.000782311013431954,0.000799768520818151,0.000966890697078913,0.000487058138367688,0.000464190328806942,5.66821570450188e-05,0.000170334098953415,0.00169731445539838,0.00249603848807841,0.000629111591980059,0.00315407404863805,6.34292526297716e-05,5.09194069775798e-07,0.00241111182447789,0.00130967012778414,0.00132484532944568,0.00134626320230595,0.00172374587230305,0.000870942363634487,0.000427746508925722,0.00141912263169534,0.000153406696797438,0.00230782452893116,0.00135226983684094,0.00109559194663805,0.00108875208786076,0.00179414858139038,0.00100515156262571,0.000847742218965293,0.000829932164550834,0.00109956411079258,0.00167400718076766,0.00169404072464066,0.000818770190353358,5.88192920009925e-05,0.000158129504252218,0.000350892636639673,7.96350889348792e-05,0.000915916522056672,5.86632311483325e-05,0.000691842729940788,0.00175044289795734,0.00131357473603141,7.40514225671152e-05,0.000149373456932616,5.92444724121672e-05,0.0211543114234532,0.000213787031353965,5.75295017638085e-05,6.22901961272109e-05,0.000191968896184882,0.00372539223675357,0.00135173038156248,0.000943358292566493,0.000941123088106039,0.00107463927536171,0.000560793671644868,0.000651801319930376,0.00103989917121997,0.00193382176249328,3.36080887649741e-05,0.000171165808608118,0.00448987131947984,0.001304157001954,0.0087091732258393,0.000666101442053023,1.54950348694819e-05,8.52316284982154e-05,0.000121882659649196,0.000508835016729272,0.00128954541738118,0.000386021322296673,0.000386896941649973,0.00430806762204881,0.00282215681520926,0.00122135307035724,0.00827499717810706,0.000577767035035469,0.00099998405804908,1.69385808635473e-05,7.36245469472779e-05,0.00148378319922764,0.00140225811412954]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>outcome_description<\/th>\n      <th>trait_couple_corr<\/th>\n      <th>corr_due_to_confounding_all<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"targets":2,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 3, 3, \",\", \".\");\n  }"},{"targets":3,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 3, 3, \",\", \".\");\n  }"},{"className":"dt-right","targets":[2,3]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":["options.columnDefs.0.render","options.columnDefs.1.render"],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="compairing-paths-from-x_i-rightarrow-y_p." class="section level2">
+<h2><span class="header-section-number">1.2</span> Compairing paths from <span class="math">\(X_i \rightarrow Y_p\)</span>.</h2>
+<p>We performed two analyses to compare <span class="math">\(\rho\)</span>, <span class="math">\(\gamma\)</span> and <span class="math">\(\omega\)</span>:</p>
+<ul>
+<li>No adjustment in <span class="math">\(Y_i \rightarrow Y_p\)</span> MR.</li>
+<li>Adjustment for effects on <span class="math">\(X_i\)</span> in <span class="math">\(Y_i \rightarrow Y_p\)</span> MR, MVMR model as follows: <span class="math">\(Y_p \sim Y_i + X_i\)</span> (IVs were a combination of all <span class="math">\(X\)</span> and <span class="math">\(Y\)</span> IVs, pruned at standard parameters using 1000G European data).</li>
+</ul>
+<p><img src="assets/two_trait_model_yiyp_adj.png" style="display: block; margin: auto;" /></p>
+<p>
+  <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig"
+  data-toggle="collapse" data-target="#fig-two_trait_model_yiyp_adj">
+  
+Past versions of two_trait_model_yiyp_adj.png
+</button>
+  </p>
+
+<div id="fig-two_trait_model_yiyp_adj" class="collapse">
+  <div class="table-responsive">
+  <table class="table table-condensed table-hover">
+  <thead>
+  <tr>
+  <th>
+Version
+</th>
+  <th>
+Author
+</th>
+  <th>
+Date
+</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+  <td>
+<a href="https://github.com/jennysjaarda/proxyMR/blob/529020ff80300880fe93b93913dba7934bc26400/docs/assets/two_trait_model_yiyp_adj.png" target="_blank">529020f</a>
+</td>
+  <td>
+jennysjaarda
+</td>
+  <td>
+2021-09-24
+</td>
+  </tr>
+  </tbody>
+  </table>
+  </div>
+  </div>
+  
+
+<p>Broad overview of results are shown in the figure below.</p>
+<ul>
+<li>Without adjustment.</li>
+</ul>
+<p><img src="figure/update_meeting_25_10_2021.Rmd/proxyMR_figure_no_adj-1.png" width="200%" style="display: block; margin: auto;" /></p>
+<ul>
+<li>With adjustment.</li>
+</ul>
+<p><img src="figure/update_meeting_25_10_2021.Rmd/proxyMR_figure_adj-1.png" width="200%" style="display: block; margin: auto;" /></p>
+<p>Going forward, we will just use the adjusted results.</p>
+<div id="exploring-the-difference-between-rho-and-gamma." class="section level3">
+<h3><span class="header-section-number">1.2.1</span> Exploring the difference between <span class="math">\(\rho\)</span> and <span class="math">\(\gamma\)</span>.</h3>
+<p>In general, <span class="math">\(\rho\)</span> is significantly larger that <span class="math">\(\gamma\)</span>, meaning that <span class="math">\(X_i \rightarrow Y_p\)</span> favors paths where assortative mating is through <span class="math">\(X\)</span> rather than <span class="math">\(Y\)</span>. This makes a lot of biological and intuitive sense. In other words, exposures are passed from index to partner, rather than outcomes.</p>
+<p>A summary of the linear model of <span class="math">\(\rho\)</span> vs <span class="math">\(\gamma\)</span>, forced through the intercept, is below.</p>
+<pre><code>
+Call:
+lm(formula = y ~ x + 0, data = fig_data)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.38531 -0.02515  0.00292  0.03829  0.54599 
+
+Coefficients:
+  Estimate Std. Error t value            Pr(&gt;|t|)    
+x  0.60512    0.01442   41.96 &lt;0.0000000000000002 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+Residual standard error: 0.07834 on 987 degrees of freedom
+Multiple R-squared:  0.6408,    Adjusted R-squared:  0.6404 
+F-statistic:  1761 on 1 and 987 DF,  p-value: &lt; 0.00000000000000022</code></pre>
+<p>The corresponding figure is below. The blue line includes only BF-significant <span class="math">\(\rho\)</span> and <span class="math">\(\gamma\)</span>, where the green line includes all points (analagous to the linear model above).</p>
+<p><img src="figure/update_meeting_25_10_2021.Rmd/proxyMR_fig_rho_vs_gam-1.png" width="200%" style="display: block; margin: auto;" /></p>
+</div>
+<div id="exploring-the-difference-between-omega-and-rho-and-gamma." class="section level3">
+<h3><span class="header-section-number">1.2.2</span> Exploring the difference between <span class="math">\(\omega\)</span> and [<span class="math">\(\rho\)</span> and <span class="math">\(\gamma\)</span>].</h3>
+<p>A few observations:</p>
+<ul>
+<li>In general, <span class="math">\(\omega\)</span> is significantly larger than both <span class="math">\(\rho\)</span> and <span class="math">\(\gamma\)</span>, as shown in the figures below.</li>
+<li>On the other hand, when we sum <span class="math">\(\rho\)</span> and <span class="math">\(\gamma\)</span>, <span class="math">\(\omega\)</span> is in general lower than the sum.</li>
+<li>There are a number of instances where <span class="math">\(\omega\)</span> is significantly <strong>smaller</strong> than the sum &amp;rightarrow not as interesting? <em>But what does this mean?</em> That we didn't have power in the <span class="math">\(\omega\)</span> (i.e diagonal) MR to capture the relationship that is likely only going through the either <span class="math">\(\rho\)</span> or <span class="math">\(\gamma\)</span> (or a sum of the two)?</li>
+<li>There are a few cases where <span class="math">\(\omega\)</span> is significantly <strong>larger</strong> than the sum. See below for details.</li>
+</ul>
+<p><img src="figure/update_meeting_25_10_2021.Rmd/proxyMR_fig_omega_vs_gam-1.png" width="200%" style="display: block; margin: auto;" /></p>
+<p><img src="figure/update_meeting_25_10_2021.Rmd/proxyMR_fig_omega_vs_rho-1.png" width="200%" style="display: block; margin: auto;" /></p>
+<p><img src="figure/update_meeting_25_10_2021.Rmd/proxyMR_fig_omega_vs_gam_rho-1.png" width="200%" style="display: block; margin: auto;" /></p>
+<pre><code>
+Call:
+lm(formula = y ~ x + 0, data = fig_data)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.65813 -0.03940 -0.00337  0.03210  1.99081 
+
+Coefficients:
+  Estimate Std. Error t value            Pr(&gt;|t|)    
+x  0.64639    0.01175   55.03 &lt;0.0000000000000002 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+Residual standard error: 0.1064 on 987 degrees of freedom
+Multiple R-squared:  0.7542,    Adjusted R-squared:  0.754 
+F-statistic:  3029 on 1 and 987 DF,  p-value: &lt; 0.00000000000000022</code></pre>
+<p>A summary of the cases where <span class="math">\(\omega\)</span> is significantly larger or smaller than the sum of <span class="math">\(\rho\)</span> and <span class="math">\(\gamma\)</span> are shown in the two tables below (taking absolute values of each).</p>
+<p><div id="htmlwidget-c1cd454a7878270fca5a" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-c1cd454a7878270fca5a">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31"],["Number of treatments/medications taken","Fluid intelligence score","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Age hayfever or allergic rhinitis diagnosed by doctor","Body fat percentage","Whole body fat mass","Whole body fat mass","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Impedance of whole body","Impedance of arm (right)","Impedance of arm (right)","Impedance of arm (right)","Impedance of arm (right)","Leg fat percentage (right)","Leg fat percentage (right)","Leg fat percentage (right)","Leg fat mass (right)","Leg fat mass (right)","Arm fat percentage (right)","Arm fat percentage (right)","Arm fat mass (right)","Trunk fat mass","Trunk fat mass"],["Time spent using computer","Types of physical activity in last 4 weeks: Strenuous sports","Time spent using computer","Drive faster than motorway speed limit","Fluid intelligence score","Neutrophill count","Duration screen displayed","Leisure/social activities: Sports club or gym","Time spent using computer","Time spent using computer","Time spent using computer","Leisure/social activities: Sports club or gym","Time spent using computer","Fluid intelligence score","Duration screen displayed","Leisure/social activities: Sports club or gym","Body fat percentage","Body fat percentage","Leg fat percentage (right)","Arm fat percentage (right)","Trunk fat mass","Time spent using computer","Leisure/social activities: Sports club or gym","Types of physical activity in last 4 weeks: Strenuous sports","Time spent using computer","Leisure/social activities: Sports club or gym","Time spent using computer","Leisure/social activities: Sports club or gym","Leisure/social activities: Sports club or gym","Time spent using computer","Leisure/social activities: Sports club or gym"],[-0.0360953551,0.0397961896,-0.0060251916,-0.00727905,-0.0751373777,0.0385705334,0.0146703461,-0.0208728884,0.0068746183,-0.0084454982,-0.0042965358,-0.0281050886,-0.005392213,-0.0745788123,0.0145540834,-0.0233532401,-0.0185568845,0.0061736499,-0.0266173752,-0.0131151433,-0.017997312,-0.0225126653,-0.0450856566,-0.0515194624,-0.0057409617,-0.0326960396,-0.0034749644,-0.0248728443,-0.0224965106,0.0003718235,-0.0232003666],[-0.3096525583,0.1714474733,-0.0883285281,-0.0641787195,-0.1862304118,0.0995589062,0.1227027848,-0.0894374776,0.1200675381,-0.1074694948,-0.0899897084,-0.0964466089,-0.0927219226,-0.183311296,0.114192881,-0.0878077005,-0.0701784582,-0.09052752,-0.092718256,-0.0947660928,-0.0886439405,-0.1214538369,-0.1230310503,-0.124973761,-0.0861785692,-0.1004279195,-0.0852329703,-0.0934410562,-0.0850879617,-0.0764593245,-0.0826968982]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>exposure_description<\/th>\n      <th>outcome_description<\/th>\n      <th>gam_rho_meta_beta<\/th>\n      <th>omega_meta_beta<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"targets":3,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 3, 3, \",\", \".\");\n  }"},{"targets":4,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 3, 3, \",\", \".\");\n  }"},{"className":"dt-right","targets":[3,4]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":["options.columnDefs.0.render","options.columnDefs.1.render"],"jsHooks":[]}</script><div id="htmlwidget-3ac1fe11af4c1d44fbfa" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3ac1fe11af4c1d44fbfa">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100","101","102","103","104","105","106","107","108","109","110","111","112","113","114","115","116","117","118","119","120","121","122","123","124","125","126","127","128","129","130","131","132","133","134","135","136","137","138","139","140","141","142","143","144","145","146","147","148","149","150","151","152","153","154","155","156","157","158","159","160","161","162","163","164","165","166","167","168","169","170","171","172","173","174","175","176","177","178","179","180","181","182","183","184","185","186","187","188","189","190","191","192","193","194","195"],["Time spent watching television (TV)","Alcohol usually taken with meals","Comparative height size at age 10","Comparative height size at age 10","Comparative height size at age 10","Comparative height size at age 10","Comparative height size at age 10","Comparative height size at age 10","Comparative height size at age 10","Comparative height size at age 10","Comparative height size at age 10","Comparative height size at age 10","Comparative height size at age 10","Comparative height size at age 10","Comparative height size at age 10","Comparative height size at age 10","Sitting height","Sitting height","Sitting height","Sitting height","Sitting height","Sitting height","Sitting height","Sitting height","Forced vital capacity (FVC), Best measure","Forced expiratory volume in 1-second (FEV1), predicted","Forced expiratory volume in 1-second (FEV1), predicted","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Whole body fat mass","Whole body fat mass","Whole body fat mass","Whole body fat mass","Whole body fat mass","Whole body fat mass","Whole body fat mass","Whole body fat mass","Whole body fat mass","Whole body fat mass","Whole body fat-free mass","Whole body fat-free mass","Whole body fat-free mass","Whole body fat-free mass","Whole body fat-free mass","Whole body fat-free mass","Whole body fat-free mass","Whole body water mass","Whole body water mass","Whole body water mass","Whole body water mass","Whole body water mass","Whole body water mass","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Body mass index (BMI)","Basal metabolic rate","Basal metabolic rate","Basal metabolic rate","Basal metabolic rate","Basal metabolic rate","Basal metabolic rate","Impedance of whole body","Impedance of whole body","Impedance of whole body","Impedance of whole body","Impedance of whole body","Impedance of whole body","Impedance of whole body","Impedance of whole body","Impedance of whole body","Impedance of leg (right)","Impedance of leg (right)","Impedance of leg (right)","Impedance of leg (right)","Impedance of leg (right)","Impedance of leg (right)","Impedance of leg (right)","Impedance of leg (right)","Impedance of leg (right)","Impedance of leg (right)","Impedance of leg (right)","Leg fat percentage (right)","Leg fat percentage (right)","Leg fat percentage (right)","Leg fat percentage (right)","Leg fat mass (right)","Leg fat mass (right)","Leg fat mass (right)","Leg fat mass (right)","Leg fat mass (right)","Leg fat mass (right)","Leg fat mass (right)","Leg fat mass (right)","Leg fat mass (right)","Leg fat-free mass (right)","Leg fat-free mass (right)","Leg fat-free mass (right)","Leg fat-free mass (right)","Leg fat-free mass (right)","Leg fat-free mass (right)","Leg fat-free mass (right)","Leg fat-free mass (right)","Leg fat-free mass (right)","Leg fat-free mass (right)","Leg predicted mass (right)","Leg predicted mass (right)","Leg predicted mass (right)","Leg predicted mass (right)","Leg predicted mass (right)","Leg predicted mass (right)","Leg predicted mass (right)","Leg predicted mass (right)","Leg predicted mass (right)","Leg predicted mass (right)","Arm fat percentage (right)","Arm fat percentage (right)","Arm fat percentage (right)","Arm fat percentage (right)","Arm fat percentage (right)","Arm fat mass (right)","Arm fat mass (right)","Arm fat mass (right)","Arm fat mass (right)","Arm fat mass (right)","Arm fat mass (right)","Arm fat mass (right)","Arm fat mass (right)","Arm fat mass (right)","Arm fat mass (right)","Arm fat mass (right)","Arm fat-free mass (right)","Arm fat-free mass (right)","Arm fat-free mass (right)","Arm fat-free mass (right)","Arm fat-free mass (right)","Arm fat-free mass (right)","Arm predicted mass (right)","Arm predicted mass (right)","Arm predicted mass (right)","Arm predicted mass (right)","Arm predicted mass (right)","Arm predicted mass (right)","Arm predicted mass (right)","Trunk fat mass","Trunk fat mass","Trunk fat mass","Trunk fat mass","Trunk fat mass","Trunk fat mass","Trunk fat mass","Trunk fat mass","Trunk fat mass","Trunk fat-free mass","Trunk fat-free mass","Trunk fat-free mass","Trunk fat-free mass","Trunk predicted mass","Trunk predicted mass","Trunk predicted mass","Trunk predicted mass","Forced vital capacity (FVC)","Forced vital capacity (FVC)","Forced vital capacity (FVC)","Forced vital capacity (FVC)","Hip circumference","Hip circumference","Hip circumference","Hip circumference","Hip circumference","Hip circumference","Hip circumference","Hip circumference","Hip circumference","Hip circumference","Hip circumference","Standing height","Standing height","Standing height","Standing height","Standing height"],["Average total household income before tax","Average total household income before tax","Sitting height","Forced expiratory volume in 1-second (FEV1), predicted","Whole body fat-free mass","Whole body water mass","Basal metabolic rate","Leg fat-free mass (right)","Leg predicted mass (right)","Arm fat-free mass (right)","Arm predicted mass (right)","Trunk fat mass","Trunk fat-free mass","Trunk predicted mass","Hip circumference","Standing height","Whole body fat-free mass","Whole body water mass","Basal metabolic rate","Arm fat-free mass (right)","Arm predicted mass (right)","Trunk fat-free mass","Trunk predicted mass","Hip circumference","Standing height","Basal metabolic rate","Hip circumference","Whole body fat-free mass","Whole body water mass","Basal metabolic rate","Impedance of leg (right)","Leg fat-free mass (right)","Leg predicted mass (right)","Arm fat-free mass (right)","Arm predicted mass (right)","Trunk fat-free mass","Trunk predicted mass","Whole body fat-free mass","Whole body water mass","Basal metabolic rate","Leg fat percentage (right)","Leg fat-free mass (right)","Leg predicted mass (right)","Arm fat-free mass (right)","Arm predicted mass (right)","Trunk fat-free mass","Trunk predicted mass","Whole body fat mass","Impedance of whole body","Leg fat mass (right)","Arm fat mass (right)","Trunk fat mass","Hip circumference","Standing height","Whole body fat mass","Leg fat mass (right)","Arm fat mass (right)","Trunk fat mass","Hip circumference","Standing height","Whole body fat-free mass","Whole body water mass","Basal metabolic rate","Impedance of leg (right)","Leg fat-free mass (right)","Leg predicted mass (right)","Arm fat-free mass (right)","Arm predicted mass (right)","Trunk fat-free mass","Trunk predicted mass","Whole body fat mass","Leg fat mass (right)","Arm fat mass (right)","Trunk fat mass","Hip circumference","Standing height","Body mass index (BMI)","Whole body fat-free mass","Whole body water mass","Body mass index (BMI)","Basal metabolic rate","Leg fat-free mass (right)","Leg predicted mass (right)","Arm fat-free mass (right)","Arm predicted mass (right)","Body mass index (BMI)","Whole body fat-free mass","Whole body water mass","Body mass index (BMI)","Basal metabolic rate","Leg fat-free mass (right)","Leg predicted mass (right)","Arm fat-free mass (right)","Arm predicted mass (right)","Trunk fat-free mass","Trunk predicted mass","Basal metabolic rate","Leg fat-free mass (right)","Leg predicted mass (right)","Hip circumference","Whole body fat-free mass","Whole body water mass","Basal metabolic rate","Leg fat-free mass (right)","Leg predicted mass (right)","Arm fat-free mass (right)","Arm predicted mass (right)","Trunk fat-free mass","Trunk predicted mass","Sitting height","Body mass index (BMI)","Whole body fat mass","Body mass index (BMI)","Impedance of leg (right)","Leg fat mass (right)","Arm fat mass (right)","Trunk fat mass","Hip circumference","Standing height","Sitting height","Body mass index (BMI)","Whole body fat mass","Body mass index (BMI)","Impedance of leg (right)","Leg fat mass (right)","Arm fat mass (right)","Trunk fat mass","Hip circumference","Standing height","Whole body fat-free mass","Whole body water mass","Basal metabolic rate","Leg fat-free mass (right)","Leg predicted mass (right)","Whole body fat-free mass","Whole body water mass","Basal metabolic rate","Impedance of leg (right)","Leg fat percentage (right)","Leg fat-free mass (right)","Leg predicted mass (right)","Arm fat-free mass (right)","Arm predicted mass (right)","Trunk fat-free mass","Trunk predicted mass","Sitting height","Whole body fat mass","Leg fat mass (right)","Arm fat mass (right)","Hip circumference","Standing height","Sitting height","Whole body fat mass","Leg fat mass (right)","Arm fat mass (right)","Trunk fat mass","Hip circumference","Standing height","Whole body fat-free mass","Whole body water mass","Leg fat percentage (right)","Leg fat-free mass (right)","Leg predicted mass (right)","Arm fat percentage (right)","Trunk fat-free mass","Trunk predicted mass","Standing height","Whole body fat mass","Leg fat mass (right)","Arm fat mass (right)","Hip circumference","Whole body fat mass","Leg fat mass (right)","Arm fat mass (right)","Hip circumference","Whole body fat-free mass","Whole body water mass","Basal metabolic rate","Standing height","Body fat percentage","Whole body fat-free mass","Whole body water mass","Leg fat percentage (right)","Leg fat mass (right)","Leg fat-free mass (right)","Leg predicted mass (right)","Arm fat percentage (right)","Trunk fat-free mass","Trunk predicted mass","Standing height","Whole body fat-free mass","Whole body water mass","Basal metabolic rate","Trunk fat mass","Hip circumference"],[-0.9475829946,2.3046145648,0.4291762658,0.5497818366,0.3993635312,0.4000462637,0.3972936444,0.3565360355,0.356990424,0.3632022167,0.3584828668,0.243454025,0.4040277653,0.4031393748,0.2314073557,0.9284393607,0.1843122836,0.1854207695,0.1810886128,0.1686429407,0.1660910183,0.195357673,0.1951225799,0.093591565,0.3824247059,0.2404147353,0.125248803,0.2673204093,0.2649136366,0.2871789416,-0.184236703,0.2785094424,0.2801381995,0.2670960197,0.2629408855,0.2257800898,0.2241801958,0.278807796,0.2735169313,0.2909832633,0.4051234388,0.290660601,0.2914533892,0.2696475099,0.2598794436,0.2442817144,0.2420709605,0.1752947593,-0.1083507531,0.1705010947,0.1800742719,0.1631050119,0.1937968979,0.3741418765,0.1758148422,0.1732562587,0.1828059999,0.1621730448,0.1936470161,0.3676845598,0.2681056988,0.2654721029,0.2880842292,-0.1809179297,0.2785855896,0.2802983026,0.2670220712,0.2627994158,0.2274797204,0.225694669,0.1984271251,0.1976560922,0.2083946898,0.1787899446,0.210803043,0.3657986302,-0.1699526155,-0.1982291862,-0.1990467333,-0.1761159671,-0.1729650212,-0.179459561,-0.1806369524,-0.1905805972,-0.1878659721,-0.1707193496,-0.1916628386,-0.1919698237,-0.1770447377,-0.16928777,-0.2006901566,-0.2024960605,-0.1636592566,-0.1620794391,-0.1700479834,-0.1698858486,0.2142754428,0.1817110505,0.1821613514,0.2851993217,0.2976433806,0.2920050401,0.3149845733,0.3033345804,0.304015807,0.2939067332,0.2868494365,0.2600001322,0.25753856,0.2138078883,0.1847787407,0.2139184433,0.1869830463,-0.1358042542,0.2029259522,0.2254487556,0.1938113378,0.2117276843,0.3477942923,0.2196776024,0.1829146119,0.215850758,0.1854021711,-0.1366346232,0.205338383,0.2243937443,0.1962496368,0.2092125723,0.3509882641,0.1902690319,0.1889831783,0.2229183854,0.2192220195,0.2196909307,0.2802595509,0.2749116538,0.2932022376,-0.1550000859,0.3682005418,0.295467804,0.297677011,0.2635230504,0.2557812582,0.2419496009,0.239489907,0.2369760706,0.1821770731,0.1885030328,0.1851164745,0.1964489129,0.3850442896,0.2319228441,0.1842051469,0.1887558526,0.1856419451,0.1673558073,0.1944730556,0.3846837969,0.2570675511,0.2523642358,0.3913583082,0.2724607549,0.2716047072,0.402772722,0.2257719591,0.2240704006,0.184399768,0.1421827972,0.139412541,0.1436557996,0.1674418762,0.1439560267,0.1406404435,0.1453007581,0.1714047967,0.1977429606,0.1975346976,0.1840407416,0.4068217265,0.2628449739,0.2762817828,0.2701683128,0.259870053,0.3949169084,0.2784761162,0.2805793166,0.293507473,0.2548914431,0.2511243734,0.1891907211,0.1710041921,0.1715744814,0.1732856949,0.0950153205,0.09200045],[-0.6387174735,0.8614713679,0.2678346897,0.2353777768,0.2245798028,0.2238421095,0.2107241648,0.1909663325,0.1909632301,0.2070778258,0.2061627619,0.0756446749,0.2433304316,0.2436142574,0.1003643203,0.3753713947,0.1203980007,0.1194079214,0.1120610812,0.1070014238,0.1071786404,0.1290145437,0.1285144471,0.0440073214,0.2469701492,0.151154252,0.0627051544,0.1104371282,0.1107010785,0.1331476336,-0.0758163548,0.1161269988,0.1152132423,0.1271040027,0.1278053549,0.0832625165,0.0821836016,0.1417738578,0.1402394047,0.1633026521,0.2224202936,0.1357412255,0.134429211,0.1574262018,0.1578530813,0.1205626705,0.118890495,0.0791940395,-0.0481962247,0.0677080152,0.0690682825,0.0876874636,0.0886849102,0.2147573609,0.080594979,0.0692888514,0.0712099154,0.0886194003,0.0912054024,0.212031513,0.1171131705,0.1167063479,0.1386806942,-0.0764344732,0.1222455768,0.1208731078,0.1333563197,0.1352127364,0.0898993364,0.0894131276,0.0891792614,0.0768319404,0.0784433575,0.0968980709,0.0961601459,0.2028889978,-0.0892732054,-0.0574971624,-0.0575746406,-0.0881608389,-0.0633675029,-0.0629728142,-0.0629657726,-0.0600470658,-0.0620311618,-0.0891030151,-0.0674368663,-0.0674168676,-0.0873095346,-0.074437442,-0.0756957779,-0.0755401864,-0.0667677389,-0.0681004469,-0.0599155499,-0.0576086896,0.1257164795,0.0947582632,0.0937065529,0.1724403776,0.1389449221,0.1383162273,0.161308167,0.1343305472,0.1325575512,0.1538172364,0.1543241511,0.1170098764,0.1156385316,0.1381708496,0.0597961045,0.0969477725,0.0581818204,-0.0582225626,0.0853487044,0.090066685,0.1039970202,0.1061643051,0.1900513355,0.1420231041,0.0609253852,0.0989659928,0.0585023001,-0.057241624,0.0862899445,0.0902598225,0.1064375092,0.107182744,0.1947255484,0.1007540121,0.0999339279,0.1243237518,0.1050914597,0.1047447889,0.1431702043,0.143576683,0.163277945,-0.065901061,0.2101155214,0.1391945596,0.1382629021,0.1605968637,0.1611446287,0.1227578901,0.1218040291,0.155265592,0.0931966159,0.0799469786,0.0793286698,0.0997084936,0.215503682,0.1535143981,0.0916529508,0.0795445086,0.0798684254,0.0980525267,0.100409727,0.2126748495,0.1614025892,0.1603862732,0.1991859392,0.1531478809,0.1524931418,0.1762777273,0.1433940059,0.142229217,0.0773041457,0.0771103739,0.0615307412,0.0648359566,0.0858325982,0.076687448,0.0614572264,0.0649339808,0.0874318901,0.1116417609,0.1122726094,0.0979139572,0.2569693908,0.1414580857,0.1596287569,0.1597557784,0.1363812788,0.1744119303,0.1545882282,0.1541774481,0.1289765541,0.144943243,0.1438160455,0.0984773199,0.1214677631,0.1213976176,0.1133992612,0.0405403852,0.0513110131]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>exposure_description<\/th>\n      <th>outcome_description<\/th>\n      <th>gam_rho_meta_beta<\/th>\n      <th>omega_meta_beta<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"targets":3,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 3, 3, \",\", \".\");\n  }"},{"targets":4,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 3, 3, \",\", \".\");\n  }"},{"className":"dt-right","targets":[3,4]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":["options.columnDefs.0.render","options.columnDefs.1.render"],"jsHooks":[]}</script></p>
+</div>
+</div>
+<div id="next-steps." class="section level2">
+<h2><span class="header-section-number">1.3</span> Next steps.</h2>
+<ul>
+<li>In the <span class="math">\(Y_i \rightarrow Y_p\)</span> MR, rather than performing a MVMR (<span class="math">\(Y_p \sim Y_i + X_i\)</span>), try in a two step process as follows:
+<ul>
+<li>Calculate the effect of <span class="math">\(Y_p\)</span> without effects of <span class="math">\(X_i\)</span> on <span class="math">\(Y_p\)</span> as: <span class="math">\(Y_{resid} = Y_p - \omega*X_I\)</span>.</li>
+<li>Run MR with the residualized <span class="math">\(Y\)</span> as: <span class="math">\(Y_{resid} \sim Y_i\)</span></li>
+</ul></li>
+</ul>
+<p><strong>Question</strong>: What is the corresponding SEs on <span class="math">\(Y_{resid}\)</span>?</p>
+<ul>
+<li>Check for cases of reverse causation in the same-person MR.</li>
+<li>Remove SNPs were the effect is significantly larger on the outcome than the exposure.</li>
+<li>In the results including both sexes, meta-analyze at the SNP-level rather than the MR level (note that right now the two horizontal, same person MRs in the DAG above are different because they are sex specific. I then meta-analyze <span class="math">\(\omega\)</span>, <span class="math">\(\gamma\)</span> and <span class="math">\(\rho\)</span> as the <em>final</em> step).</li>
+<li>Calculate the variance of <span class="math">\(\rho + \gamma\)</span> as: <span class="math">\(2 * cor(\rho, \gamma) * SE_{\gamma} * SE{\rho}\)</span>, i.e. include the extra-term of 2*correlation.</li>
+</ul>
+</div>
+</div>
+<div id="polymr." class="section level1">
+<h1><span class="header-section-number">2</span> PolyMR.</h1>
+<ul>
+<li>Finished discussion points.</li>
+<li>Waiting on Jonathan to add bibtex file before adding my references.</li>
+<li>Haven't done a summary on CATE - who was going to do that?</li>
+<li><em>Question:</em> Why is there often an inflection point around the (0,0) point? Is this an effect of standardization?</li>
+</ul>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo"
+  data-toggle="collapse" data-target="#workflowr-sessioninfo"
+  style = "display: block;">
+  
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+
+<div id="workflowr-sessioninfo" class="collapse">
+
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.1.0 (2021-05-18)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: CentOS Linux 7 (Core)
+
+Matrix products: default
+BLAS:   /data/sgg2/jenny/bin/R-4.1.0/lib64/R/lib/libRblas.so
+LAPACK: /data/sgg2/jenny/bin/R-4.1.0/lib64/R/lib/libRlapack.so
+
+locale:
+[1] en_CA.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices datasets  utils     methods   base     
+
+other attached packages:
+ [1] cowplot_1.1.1      kableExtra_1.3.4   knitr_1.33         DT_0.18.1         
+ [5] forcats_0.5.1      stringr_1.4.0      dplyr_1.0.7        purrr_0.3.4       
+ [9] readr_1.4.0        tidyr_1.1.3        tibble_3.1.2       ggplot2_3.3.4     
+[13] tidyverse_1.3.1    targets_0.5.0.9001 workflowr_1.6.2   
+
+loaded via a namespace (and not attached):
+ [1] nlme_3.1-152      fs_1.5.0          lubridate_1.7.10  webshot_0.5.2    
+ [5] httr_1.4.2        rprojroot_2.0.2   tools_4.1.0       backports_1.2.1  
+ [9] bslib_0.3.0       utf8_1.2.1        R6_2.5.0          DBI_1.1.1        
+[13] mgcv_1.8-35       colorspace_2.0-1  withr_2.4.2       tidyselect_1.1.1 
+[17] processx_3.5.2    compiler_4.1.0    git2r_0.28.0      cli_2.5.0        
+[21] rvest_1.0.0       xml2_1.3.2        labeling_0.4.2    sass_0.4.0       
+[25] scales_1.1.1      callr_3.7.0       systemfonts_1.0.2 digest_0.6.27    
+[29] rmarkdown_2.11.2  svglite_2.0.0     pkgconfig_2.0.3   htmltools_0.5.2  
+[33] dbplyr_2.1.1      fastmap_1.1.0     highr_0.9         htmlwidgets_1.5.3
+[37] rlang_0.4.11      readxl_1.3.1      rstudioapi_0.13   jquerylib_0.1.4  
+[41] generics_0.1.0    farver_2.1.0      jsonlite_1.7.2    crosstalk_1.1.1  
+[45] magrittr_2.0.1    Matrix_1.3-3      Rcpp_1.0.6        munsell_0.5.0    
+[49] fansi_0.5.0       lifecycle_1.0.0   stringi_1.6.2     whisker_0.4      
+[53] yaml_2.2.1        grid_4.1.0        promises_1.2.0.1  crayon_1.4.1     
+[57] lattice_0.20-44   haven_2.4.1       splines_4.1.0     hms_1.1.0        
+[61] ps_1.6.0          pillar_1.6.1      igraph_1.2.6      codetools_0.2-18 
+[65] reprex_2.0.0      glue_1.4.2        evaluate_0.14     data.table_1.14.0
+[69] renv_0.13.2-62    modelr_0.1.8      vctrs_0.3.8       httpuv_1.6.1     
+[73] cellranger_1.1.0  gtable_0.3.0      assertthat_0.2.1  xfun_0.24        
+[77] broom_0.7.7       later_1.2.0       viridisLite_0.4.0 ellipsis_0.3.2   </code></pre>
+</div>
+
+
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
