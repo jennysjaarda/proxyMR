@@ -2744,12 +2744,17 @@ run_household_MVMR <- function(exposure_info, outcomes_to_run){
   cat(paste0("\nRunning MVMR analyses for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
 
   result <- numeric()
+
+  exposure_ID_prev <- ""
+  outcome_ID_prev <- ""
+
   for(i in 1:dim(outcomes_to_run)[1]){
 
     outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
     MR_complete_i <- list()
 
     for(exposure_sex in c("male", "female")){
+
 
       #######################################
       ## Standard GWAS results with Y IVs ###
@@ -2780,17 +2785,20 @@ run_household_MVMR <- function(exposure_info, outcomes_to_run){
 
       ## Prune the XIV and YIVs based on associations with Xi
 
-      snps <- c(xi_YIV_GWAS_results_both$SNP, xi_XIV_GWAS_results_both$SNP)
-      chr <- c(xi_YIV_GWAS_results_both$chr, xi_XIV_GWAS_results_both$chr)
-      pvals <- c(xi_YIV_GWAS_results_both$pval, xi_XIV_GWAS_results_both$pval)
+      if(exposure_ID!=exposure_ID_prev | outcome_ID!=outcome_ID_prev){
+
+        snps <- c(xi_YIV_GWAS_results_both$SNP, xi_XIV_GWAS_results_both$SNP)
+        chr <- c(xi_YIV_GWAS_results_both$chr, xi_XIV_GWAS_results_both$chr)
+        pvals <- c(xi_YIV_GWAS_results_both$pval, xi_XIV_GWAS_results_both$pval)
 
 
-      to_prune_mat <- tibble(SNP = snps,
-                             chr = chr,
-                             pval = pvals) %>% unique()
+        to_prune_mat <- tibble(SNP = snps,
+                               chr = chr,
+                               pval = pvals) %>% unique()
 
-      pruned_mat <- IV_clump(to_prune_mat, prune_threshold)
+        pruned_mat <- IV_clump(to_prune_mat, prune_threshold)
 
+      }
 
       #####################################################
       ## Household GWAS results with X and Y IVs for Xp ###
@@ -2836,7 +2844,7 @@ run_household_MVMR <- function(exposure_info, outcomes_to_run){
       yp_GWAS <- rbind(yp_YIV_GWAS_results, yp_XIV_GWAS_results)
       yp_GWAS_sub <- yp_GWAS %>% dplyr::select(SNP, geno_index_beta, geno_index_se, allele1) %>% rename(beta_yp = geno_index_beta,  se_yp = geno_index_se, effect_allele_yp = allele1)
 
-      mv_data <-  full_join(mv_X_data, yp_GWAS_sub, by = "SNP")
+      mv_data <- full_join(mv_X_data, yp_GWAS_sub, by = "SNP") %>% unique()
 
       # the GWAS data with effects on Xi and Yi should all be aligned because they come from Neale database and same effect alleles were used across all GWAS.
       # double check that alleles are aligned for x and y in mv_data. Y data is effect on Yp (run in house) and is possible that alleles aren't aligned
@@ -2869,6 +2877,9 @@ run_household_MVMR <- function(exposure_info, outcomes_to_run){
       names(description) <- c("exposure_ID", "outcome_ID", "exposure_sex")
 
       out_temp <- as.data.frame(t(c(description, temp_row)))
+
+      exposure_ID_prev <- exposure_ID
+      outcome_ID_prev <- outcome_ID
 
       result <- rbind(result, out_temp)
 
