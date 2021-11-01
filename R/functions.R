@@ -2736,6 +2736,155 @@ run_household_MR_comprehensive <- function(exposure_info, outcomes_to_run, house
 
 }
 
+run_household_MVMR <- function(exposure_info, outcomes_to_run){
+
+  output_list <- list()
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+
+  cat(paste0("\nRunning MVMR analyses for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+  result <- numeric()
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
+    MR_complete_i <- list()
+
+    for(exposure_sex in c("male", "female")){
+
+      #######################################
+      ## Standard GWAS results with Y IVs ###
+      #######################################
+
+      GWAS_file_yIVs_1 <- paste0("analysis/traitMR/standard_GWAS/", exposure_ID, "/", exposure_ID, "_vs_", outcome_ID, "_GWAS.csv")
+      xi_YIV_GWAS_results <- fread(GWAS_file_yIVs_1, data.table = F) %>% filter(sex == !!exposure_sex)
+      xi_YIV_GWAS_results_both <- fread(GWAS_file_yIVs_1, data.table = F) %>% filter(sex == "both_sexes")
+      ## this will pull the standard GWAS results for phenotype `exposure_ID` for IVs from `outcome_ID`, i.e. the effect of G on Xi for only Y IVs.
+
+      GWAS_file_yIVs_2 <- paste0("analysis/traitMR/standard_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", outcome_ID, "_GWAS.csv")
+      yi_YIV_GWAS_results <- fread(GWAS_file_yIVs_2, data.table = F) %>% filter(sex == !!exposure_sex)
+      ## this will pull the standard GWAS results for phenotype `exposure_ID` for IVs from `outcome_ID`, i.e. the effect of G on Yi for only Y IVs.
+
+      #######################################
+      ## Standard GWAS results with X IVs ###
+      #######################################
+
+      GWAS_file_xIVs_1 <- paste0("analysis/traitMR/standard_GWAS/", exposure_ID, "/", exposure_ID, "_vs_", exposure_ID, "_GWAS.csv")
+      xi_XIV_GWAS_results <- fread(GWAS_file_xIVs_1, data.table = F) %>% filter(sex == !!exposure_sex)
+      xi_XIV_GWAS_results_both <- fread(GWAS_file_xIVs_1, data.table = F) %>% filter(sex == "both_sexes")
+      ## this will pull the standard GWAS results for phenotype `exposure_ID` for IVs from `exposure_ID`, i.e. the effect of G on Xi for only X IVs.
+
+      GWAS_file_XIVs_2 <- paste0("analysis/traitMR/standard_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
+      yi_XIV_GWAS_results <- fread(GWAS_file_XIVs_2, data.table = F) %>% filter(sex == !!exposure_sex)
+      ## this will pull the standard GWAS results for phenotype `outcome_ID` for IVs from `exposure_ID`, i.e. the effect of G on Yi for only X IVs.
+
+
+      ## Prune the XIV and YIVs based on associations with Xi
+
+      snps <- c(xi_YIV_GWAS_results_both$SNP, xi_XIV_GWAS_results_both$SNP)
+      chr <- c(xi_YIV_GWAS_results_both$chr, xi_XIV_GWAS_results_both$chr)
+      pvals <- c(xi_YIV_GWAS_results_both$pval, xi_XIV_GWAS_results_both$pval)
+
+
+      to_prune_mat <- tibble(SNP = snps,
+                             chr = chr,
+                             pval = pvals) %>% unique()
+
+      pruned_mat <- IV_clump(to_prune_mat, prune_threshold)
+
+
+      #####################################################
+      ## Household GWAS results with X and Y IVs for Xp ###
+      #####################################################
+
+      hh_GWAS_file_yIVs_1 <- paste0("analysis/traitMR/household_GWAS/", exposure_ID, "/", exposure_ID, "_vs_", outcome_ID, "_GWAS.csv")
+      xp_YIV_GWAS_results <- fread(hh_GWAS_file_yIVs_1, data.table = F) %>% filter(exposure_sex==!!exposure_sex & bin == "all" & grouping_var == "time_together_even_bins")
+      ## this will pull the household GWAS results for phenotype `outcome_ID` for IVs from `outcome_ID`, i.e. the effect of G on Xp for only Y IVs.
+
+      hh_GWAS_file_xIVs_1 <- paste0("analysis/traitMR/household_GWAS/", exposure_ID, "/", exposure_ID, "_vs_", exposure_ID, "_GWAS.csv")
+      xp_XIV_GWAS_results <- fread(hh_GWAS_file_xIVs_1, data.table = F) %>% filter(exposure_sex==!!exposure_sex & bin == "all" & grouping_var == "time_together_even_bins")
+      ## this will pull the household GWAS results for phenotype `outcome_ID` for IVs from `exposure_ID`, i.e. the effect of G on Xp for only X IVs.
+
+      yi_GWAS <- rbind(yi_YIV_GWAS_results, yi_XIV_GWAS_results)
+      xi_GWAS <- rbind(xi_YIV_GWAS_results, xi_XIV_GWAS_results)
+      xp_GWAS <- rbind(xp_YIV_GWAS_results, xp_XIV_GWAS_results)
+
+      ## join the xi and yi data together
+      standard_GWAS_data <- full_join(yi_GWAS, xi_GWAS, by = "SNP", suffix = c("_yi","_xi")) %>% dplyr::select(-exposure_ID_xi, -exposure_ID_yi) %>% unique()
+
+      ## join the xi and yi data with the xp data
+      xp_GWAS_sub <- xp_GWAS %>% dplyr::select(SNP, geno_index_beta, geno_index_se, allele1) %>% rename(beta_xp = geno_index_beta,  se_xp = geno_index_se, effect_allele_xp = allele1)
+      mv_X_data <- full_join(standard_GWAS_data, xp_GWAS_sub, by = "SNP") %>% unique()
+
+      # the GWAS data with effects on Xi and Yi should all be aligned because they come from Neale database and same effect alleles were used across all GWAS.
+      # double check that alleles are aligned for x and y in mv_data. Y data is effect on Yp (run in house) and is possible that alleles aren't aligned
+      mv_X_data <- mv_X_data %>% mutate(beta_xp_align = case_when(effect_allele_xp == effect_allele_yi ~ beta_xp,
+                                                                  TRUE ~ -1*beta_xp))
+
+
+      #####################################################
+      ## Household GWAS results with X and Y IVs for Yp ###
+      #####################################################
+
+      hh_GWAS_file_yIVs_2 <- paste0("analysis/traitMR/household_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", outcome_ID, "_GWAS.csv")
+      yp_YIV_GWAS_results <- fread(hh_GWAS_file_yIVs_2, data.table = F) %>% filter(exposure_sex==!!exposure_sex & bin == "all" & grouping_var == "time_together_even_bins")
+      ## this will pull the household GWAS results for phenotype `outcome_ID` for IVs from `outcome_ID`, i.e. the effect of G on Yp for only Y IVs.
+
+      hh_GWAS_file_xIVs_2 <- paste0("analysis/traitMR/household_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
+      yp_XIV_GWAS_results <- fread(hh_GWAS_file_xIVs_2, data.table = F) %>% filter(exposure_sex==!!exposure_sex & bin == "all" & grouping_var == "time_together_even_bins")
+      ## this will pull the household GWAS results for phenotype `outcome_ID` for IVs from `exposure_ID`, i.e. the effect of G on Yp for only X IVs.
+
+      yp_GWAS <- rbind(yp_YIV_GWAS_results, yp_XIV_GWAS_results)
+      yp_GWAS_sub <- yp_GWAS %>% dplyr::select(SNP, geno_index_beta, geno_index_se, allele1) %>% rename(beta_yp = geno_index_beta,  se_yp = geno_index_se, effect_allele_yp = allele1)
+
+      mv_data <-  full_join(mv_X_data, yp_GWAS_sub, by = "SNP")
+
+      # the GWAS data with effects on Xi and Yi should all be aligned because they come from Neale database and same effect alleles were used across all GWAS.
+      # double check that alleles are aligned for x and y in mv_data. Y data is effect on Yp (run in house) and is possible that alleles aren't aligned
+      mv_data <- mv_data %>% mutate(beta_yp_align = case_when(effect_allele_yp == effect_allele_yi ~ beta_yp,
+                                                              TRUE ~ -1*beta_yp))
+
+      ####### THIS IS WHERE I AM #####
+
+
+      mv_data_pruned <- mv_data %>% filter(SNP %in% pruned_mat$SNP)
+      mv_data_format <- mr_mvinput(bx = cbind(mv_data_pruned[["beta_yi"]], mv_data_pruned[["beta_xi"]], mv_data_pruned[["beta_xp_align"]]), bxse = cbind(mv_data_pruned[["se_yi"]], mv_data_pruned[["se_xi"]], mv_data_pruned[["se_xp"]]),
+                                   by = mv_data_pruned[["beta_yp_align"]], byse = mv_data_pruned[["se_yp"]])
+
+
+
+      mv_result <- mr_mvivw(mv_data_format) # see `str(mv_result)` to know how to access the results
+      betas <- mv_result@Estimate
+      ses <- mv_result@StdError
+      pvalues <- mv_result@Pvalue
+      mv_yi <- c(betas[1], ses[1], pvalues[1])
+      names(mv_yi) <- paste0("yi", c("_beta", "_se", "_pval"))
+      mv_xi <- c(betas[2], ses[2], pvalues[2])
+      names(mv_xi) <- paste0("xi", c("_beta", "_se", "_pval"))
+      mv_xp <- c(betas[3], ses[3], pvalues[3])
+      names(mv_xp) <- paste0("xp", c("_beta", "_se", "_pval"))
+
+
+      temp_row <- c(mv_yi, mv_xi, mv_xp)
+      description <- c(exposure_ID, outcome_ID, exposure_sex)
+      names(description) <- c("exposure_ID", "outcome_ID", "exposure_sex")
+
+      out_temp <- as.data.frame(t(c(description, temp_row)))
+
+      result <- rbind(result, out_temp)
+
+    }
+
+  }
+
+  result_out <- result %>%
+    as_tibble() %>% type_convert() %>%
+    mutate_at(c("exposure_ID", "outcome_ID"), as.character)
+
+  return(result_out)
+
+}
+
+
 summarize_sex_specific_results  <- function(d,se){
 
   if(any(is.na(d)) | any(is.na(se))){
@@ -3186,8 +3335,8 @@ adj_yiyp_xIVs <- function(exposure_info, household_harmonised_data, household_MR
                                                               TRUE ~ -1*beta_yp))
 
       mv_data_pruned <- mv_data %>% filter(SNP %in% pruned_mat$SNP)
-      mv_data_format <- mr_mvinput(bx = cbind(mv_data[["beta_yi"]], mv_data[["beta_xi"]]), bxse = cbind(mv_data[["se_yi"]], mv_data[["se_xi"]]),
-                                   by = mv_data[["beta_yp"]], byse = mv_data[["se_yp"]])
+      mv_data_format <- mr_mvinput(bx = cbind(mv_data_pruned[["beta_yi"]], mv_data_pruned[["beta_xi"]]), bxse = cbind(mv_data_pruned[["se_yi"]], mv_data_pruned[["se_xi"]]),
+                                   by = mv_data_pruned[["beta_yp_align"]], byse = mv_data_pruned[["se_yp"]])
 
 
 
