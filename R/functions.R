@@ -3143,7 +3143,8 @@ find_sig_standard_MR_summary <- function(standard_MR_summary){
 find_non_corr_household_MR_summary <- function(household_MR_summary){
 
   # filter to only pairs that have correlation < 0.8
-  output <- household_MR_summary[which(household_MR_summary$corr_traits<0.8),]
+  output <- household_MR_summary[which(abs(household_MR_summary$corr_traits)<0.8),]
+
   return(output)
 }
 
