@@ -33,9 +33,9 @@ Decided to run MVMR as follows: $Y_p \sim X_i + Y_i + X_p$, using instruments fo
 
 A summary of the MVMR results are below, filtered to only traits with abs(correlation) < 0.8, and then BF significant with $X_i$.
 
-The columns `IVW_meta_beta` and `IVW_meta_pval` correspond to the meta-analyzed across sexes univariate results from the $Y_p ~ X_i$ MR. The subsequent columns correspond to the MVMR MR results. 
+The column `corr_traits` corresponds to the raw correlation between traits in the biobank. The columns `IVW_meta_beta` and `IVW_meta_pval` correspond to the meta-analyzed across sexes univariate results from the $Y_p ~ X_i$ MR. The subsequent columns correspond to the MVMR MR results. 
 
-```{r MVMR_summary, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+```{r MVMR_summary, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE}
 
 household_MVMR_summary.DT <- household_MVMR_summary %>% filter(same_trait==FALSE) %>% filter(abs(corr_traits) < 0.8) 
 
@@ -44,9 +44,9 @@ household_MVMR_BF.DT <- household_MVMR_summary.DT %>% filter(xi_meta_pval < 0.05
 
 
 household_MR_summary_sub <- household_MR_summary %>% dplyr::select(exposure_ID, outcome_ID, IVW_meta_beta, IVW_meta_pval) %>% unique()
-MVMR_uniMR_comparison.DT <- inner_join(household_MR_summary_sub, household_MVMR_BF.DT)
+MVMR_uniMR_comparison.DT <- inner_join(household_MR_summary_sub, household_MVMR_BF.DT)  %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, corr_traits, everything())
 format_round_cols <- colnames(dplyr::select_if(MVMR_uniMR_comparison.DT, is.numeric))
 
-DT::datatable(MVMR_uniMR_comparison.DT, width = "100%") %>% formatRound(columns=format_round_cols, digits = 3) %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, corr_traits, everything())
+DT::datatable(MVMR_uniMR_comparison.DT, width = "100%") %>% formatRound(columns=format_round_cols, digits = 3)
 
 ```
