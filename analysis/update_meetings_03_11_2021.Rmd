@@ -1,0 +1,52 @@
+---
+title: "Update Meeting: 03-11-2021"
+author: "Jenny Sjaarda"
+date: "2021-11-01"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+
+options(scipen=999)
+source("code/settings.R")
+source("R/functions.R")
+library(targets)
+library(dplyr)
+library(DT)
+library(knitr)
+library(ggplot2)
+library(kableExtra)
+
+```
+
+```{r load_targets, include = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+tar_load(household_MVMR_summary)
+tar_load(household_MR_summary)
+
+```
+
+# Progress update
+
+Decided to run MVMR as follows: $Y_p \sim X_i + Y_i + X_p$, using instruments for ${X_i, Y_i, X_p}$. In this MR, the coefficient for $X_i$ would represent the *direct* $X_i \rightarrow Y_p$ causal effect and hopefully this would be close to zero in most cases. Running simply the $Y_p \sim X_i$ MR (with only $X_i$ instruments), would give you the $X_i \rightarrow Y_p$ *total* effect. Then we can compare the direct and total effect results. 
+
+A summary of the MVMR results are below, filtered to only traits with abs(correlation) < 0.8, and then BF significant with $X_i$.
+
+The columns `IVW_meta_beta` and `IVW_meta_pval` correspond to the meta-analyzed across sexes univariate results from the $Y_p ~ X_i$ MR. The subsequent columns correspond to the MVMR MR results. 
+
+```{r MVMR_summary, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+
+household_MVMR_summary.DT <- household_MVMR_summary %>% filter(same_trait==FALSE) %>% filter(abs(corr_traits) < 0.8) 
+
+num_tests <- dim(household_MVMR_summary.DT)[1]
+household_MVMR_BF.DT <- household_MVMR_summary.DT %>% filter(xi_meta_pval < 0.05/num_tests) %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, corr_traits, yi_meta_beta, yi_meta_pval, xi_meta_beta, xi_meta_pval, xp_meta_beta, xp_meta_pval) %>% unique()
+
+
+household_MR_summary_sub <- household_MR_summary %>% dplyr::select(exposure_ID, outcome_ID, IVW_meta_beta, IVW_meta_pval) %>% unique()
+MVMR_uniMR_comparison.DT <- inner_join(household_MR_summary_sub, household_MVMR_BF.DT)
+format_round_cols <- colnames(dplyr::select_if(MVMR_uniMR_comparison.DT, is.numeric))
+
+DT::datatable(MVMR_uniMR_comparison.DT, width = "100%") %>% formatRound(columns=format_round_cols, digits = 3) %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, corr_traits, everything())
+
+```
