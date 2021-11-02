@@ -542,16 +542,16 @@ list(
   ),
 
   tar_target(
-    household_MVMR_meta,
-    summarize_household_MVMR(household_MVMR, traits_corr2_filled, corr_mat_traits),
-    pattern = map(household_MVMR)
-  ),
-
-  tar_target(
     ## summarize into one table, ignore leave-1-out analyses for now, meta-analyze across sexes and calculate heterogeneity statistic between sexes.
     household_MR_summary,
     summarize_household_MR_comprehensive(household_MR, corr_mat_traits),
     pattern = map(household_MR)
+  ),
+
+  tar_target(
+    household_MVMR_summary,
+    summarize_household_MVMR(household_MVMR, traits_corr2_filled, corr_mat_traits),
+    pattern = map(household_MVMR)
   ),
 
   tar_target(
