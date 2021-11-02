@@ -532,13 +532,19 @@ list(
   ),
 
   tar_target(
-    household_MVMR, ## `household_MR` is run in full sample only, not binned by age / time-together categories.
+    household_MVMR, # to run model: $Y_p \sim X_i + Y_i + X_p$
     {
       path_household_GWAS
       path_outcome_stats
       run_household_MVMR(exposure_info, outcomes_to_run)
     },
     pattern = map(exposure_info), iteration = "list"
+  ),
+
+  tar_target(
+    household_MVMR_meta,
+    summarize_household_MVMR(household_MVMR, traits_corr2_filled, corr_mat_traits),
+    pattern = map(household_MVMR)
   ),
 
   tar_target(

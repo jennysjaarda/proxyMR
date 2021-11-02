@@ -2983,6 +2983,58 @@ summarize_household_MR_comprehensive <- function(household_MR, corr_mat_traits){
 
 }
 
+summarize_household_MVMR <- function(household_MVMR, traits_corr2_filled, corr_mat_traits){
+
+  outcome_traits <- traits_corr2_filled[which(traits_corr2_filled[["Neale_file_sex"]]=="both"),]
+  exposure_ID <- household_MVMR[["exposure_ID"]][1]
+  exposure_description <- as.character(outcome_traits[which(outcome_traits[["Neale_pheno_ID"]]==exposure_ID), "description"])
+
+  cat(paste0("Summarizing and meta-analyzing household MMVR results across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+  meta_list <- list()
+  for(var in c("yi", "xi", "xp")){
+
+    meta_temp <- household_MVMR %>% dplyr::select(exposure_ID, outcome_ID, starts_with(var)) %>% rename_all(~stringr::str_replace(., paste0("^", var, "_"),"")) %>%
+      dplyr::group_by(exposure_ID, outcome_ID) %>%
+      # note can't easily use the `z.test_p` function because it isn't set up for vector of beta and se's, but rather one argument for each
+      dplyr::group_by(exposure_ID, outcome_ID) %>% group_modify(~ summarize_sex_specific_results(.x$beta, .x$se))
+
+    colnames(meta_temp)[-c(1:2)] <- paste0(var, "_", colnames(meta_temp)[-c(1:2)])
+    meta_list[[var]] <- meta_temp
+
+  }
+
+  meta_result <- reduce(meta_list, full_join)
+
+  summarized_result <- full_join(household_MVMR, meta_result)
+  summarized_result$exposure_description <- NA
+  summarized_result$outcome_description <- NA
+  summarized_result$corr_traits <- NA
+
+  for(i in 1:dim(summarized_result)[1]){
+    outcome_ID <- household_MVMR[["outcome_ID"]][i]
+    exposure_IDX <- exposure_ID
+    outcome_IDX <- outcome_ID
+    if(endsWith(exposure_ID, "_irnt")) {
+      exposure_IDX <- gsub("_irnt", "", exposure_ID)
+    }
+    if(endsWith(outcome_ID, "_irnt")) {
+      outcome_IDX <- gsub("_irnt", "", outcome_ID)
+    }
+    corr_traits <- corr_mat_traits[exposure_IDX, outcome_IDX]
+    summarized_result$corr_traits[i] <- corr_traits
+
+    outcome_description <- as.character(outcome_traits[which(outcome_traits[["Neale_pheno_ID"]]==outcome_ID), "description"])
+    summarized_result$exposure_description[i] <- exposure_description
+    summarized_result$outcome_description[i] <- outcome_description
+
+  }
+
+  summarized_result <- summarized_result  %>% mutate(same_trait = ifelse(exposure_ID==outcome_ID, TRUE, FALSE)) %>% select(exposure_ID, outcome_ID, exposure_description, outcome_description, same_trait, everything())
+  return(summarized_result)
+
+}
+
 run_standard_MR_comprehensive <- function(exposure_info, outcomes_to_run, standard_harmonised_data, MR_method_list){
 
   output_list <- list()
