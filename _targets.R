@@ -446,6 +446,8 @@ list(
     pattern = map(summ_stats)
   ),
 
+  ## household MR prep
+
   tar_target(
     path_household_GWAS,
     {
@@ -473,6 +475,43 @@ list(
     household_harmonised_data_meta, # explore meta-analyzing the SNP/trait associations before the MR
     meta_harmonised_household_data(exposure_info, outcomes_to_run, household_harmonised_data),
     pattern = map(exposure_info, household_harmonised_data), iteration = "list"
+  ),
+
+  ## standard MR prep
+
+  tar_target(
+    outcome_stats,
+    extract_Neale_outcome(outcome_ID = outcomes_to_run$Neale_pheno_ID,
+                          both_sexes_file = outcomes_to_run$both_sexes_original_Neale_file, male_file = outcomes_to_run$male_original_Neale_file,
+                          female_file = outcomes_to_run$female_original_Neale_file, variant_IV_data),
+    pattern = map(outcomes_to_run), iteration = "list"
+  ),
+
+  tar_target(
+    path_outcome_stats,
+    {
+      path_outcome_dirs
+      write_outcome_stats(outcomes_to_run$Neale_pheno_ID, outcome_stats, exposures_to_run, summ_stats)
+    },
+    pattern = map(outcomes_to_run, outcome_stats), format = "file"
+  ),
+
+  tar_target(
+    standard_harmonised_data,
+    {
+      path_outcome_stats
+      harmonise_standard_data(exposure_info, summ_stats, outcomes_to_run, traits_corr2_filled)
+    },
+    pattern = map(exposure_info, summ_stats), iteration = "list"
+  ),
+
+  tar_target(
+    standard_harmonised_data_meta,
+    {
+      path_outcome_stats
+      meta_harmonised_standard_data(exposure_info, outcomes_to_run, standard_harmonised_data)
+    },
+    pattern = map(exposure_info, standard_harmonised_data), iteration = "list"
   ),
 
   ## MR
@@ -584,32 +623,6 @@ list(
   tar_target(
     num_tests_by_PCs_AM_sig,
     calc_num_tests_by_PCs(PC_traits_AM_sig, 0.995)
-  ),
-
-  tar_target(
-    outcome_stats,
-    extract_Neale_outcome(outcome_ID = outcomes_to_run$Neale_pheno_ID,
-                          both_sexes_file = outcomes_to_run$both_sexes_original_Neale_file, male_file = outcomes_to_run$male_original_Neale_file,
-                          female_file = outcomes_to_run$female_original_Neale_file, variant_IV_data),
-    pattern = map(outcomes_to_run), iteration = "list"
-  ),
-
-  tar_target(
-    path_outcome_stats,
-    {
-      path_outcome_dirs
-      write_outcome_stats(outcomes_to_run$Neale_pheno_ID, outcome_stats, exposures_to_run, summ_stats)
-    },
-    pattern = map(outcomes_to_run, outcome_stats), format = "file"
-  ),
-
-  tar_target(
-    standard_harmonised_data,
-    {
-      path_outcome_stats
-      harmonise_standard_data(exposure_info, summ_stats, outcomes_to_run, traits_corr2_filled)
-    },
-    pattern = map(exposure_info, summ_stats), iteration = "list"
   ),
 
   tar_target(

@@ -2364,6 +2364,82 @@ harmonise_standard_data <- function(exposure_info, summ_stats, outcomes_to_run, 
 
 }
 
+meta_harmonised_standard_data <- function(exposure_info, outcomes_to_run, standard_harmonised_data){
+
+
+  output_list <- list()
+  output_files <- numeric()
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+
+  pheno_dir <- paste0("analysis/traitMR")
+  cat(paste0("\nMeta-analyzing harmonised standard data across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    standard_harmonised_data_i <- standard_harmonised_data[[i]]
+    standard_harmonised_data_M <- standard_harmonised_data_i[[paste0("exp_", "male", "_harmonised_data")]]
+    standard_harmonised_data_F <- standard_harmonised_data_i[[paste0("exp_", "female", "_harmonised_data")]]
+    standard_harmonised_data_join <- rbind(standard_harmonised_data_M, standard_harmonised_data_F)
+
+    exposure_ID <- standard_harmonised_data_join$exposure_ID[1]
+    outcome_ID <- standard_harmonised_data_join$outcome_ID[1]
+    exposure_description <- standard_harmonised_data_join$exposure_description[1]
+    outcome_description <- standard_harmonised_data_join$outcome_description[1]
+
+
+    for(data_type in c("exposure", "outcome")){
+
+      temp <- standard_harmonised_data_join %>% rename_all(~stringr::str_replace(., paste0(".", data_type),".data_type"))
+      meta_temp <- temp %>% group_by(SNP, effect_allele.data_type, other_allele.data_type, outcome) %>% group_modify(~ summarize_sex_specific_results(.x$beta.data_type, .x$se.data_type))
+      meta_temp_n <- temp %>% mutate(samplesize.data_type_adj = case_when(is.na(beta.data_type) | is.na(se.data_type) ~ 0L,
+                                                                          TRUE ~ samplesize.data_type)) %>% group_by(SNP) %>%
+        summarise(samplesize.data_type_meta = sum(samplesize.data_type_adj))
+
+      meta_temp_eaf <- temp %>% group_by(SNP) %>% mutate(samplesize.data_type_meta = sum(samplesize.data_type)) %>% ungroup() %>%
+        mutate(eaf.data_type_weighted = eaf.data_type*(samplesize.data_type/samplesize.data_type_meta)) %>% group_by(SNP) %>% summarise(eaf.data_type_meta = sum(eaf.data_type_weighted))
+      meta_temp_join <- list(meta_temp, meta_temp_n, meta_temp_eaf) %>% reduce(left_join)
+
+      if(data_type=="exposure"){
+        meta_temp_join <- meta_temp_join %>% ungroup() %>% dplyr::select(-outcome) %>% unique()
+      }
+      format_dat <- format_data(meta_temp_join, type=data_type,
+                                snp_col = "SNP",
+                                beta_col = paste0("meta_beta"),
+                                se_col = paste0("meta_se"),
+                                effect_allele_col = "effect_allele.data_type",
+                                other_allele_col = "other_allele.data_type",
+                                pval_col = paste0("meta_pval"),
+                                eaf_col = "eaf.data_type_meta",
+                                phenotype_col = "outcome",
+                                samplesize_col = "samplesize.data_type_meta"
+      )
+
+      assign(paste0(data_type, "_dat"), format_dat)
+
+    }
+
+    harmonise_dat <- harmonise_data(
+      exposure_dat = exposure_dat,
+      outcome_dat = outcome_dat, action=1
+    )
+
+    harmonise_dat <- steiger_filtering(harmonise_dat)
+
+    harmonise_dat$exposure_ID <- exposure_ID
+    harmonise_dat$outcome_ID <- outcome_ID
+
+    harmonise_dat$exposure_description <- exposure_description
+    harmonise_dat$outcome_description <- outcome_description
+
+    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data_meta")]] <- harmonise_dat
+    cat(paste0("Finished meta-analyzing harmonised household data for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+
+  }
+
+  return(output_list)
+
+}
+
 
 binned_household_MR_ind <- function(exposure_info, outcome_ID, household_harmonised_data, grouping_var, MR_method_list) {
 
