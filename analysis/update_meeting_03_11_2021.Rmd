@@ -43,10 +43,54 @@ num_tests <- dim(household_MVMR_summary.DT)[1]
 household_MVMR_BF.DT <- household_MVMR_summary.DT %>% filter(xi_meta_pval < 0.05/num_tests) %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, corr_traits, yi_meta_beta, yi_meta_pval, xi_meta_beta, xi_meta_pval, xp_meta_beta, xp_meta_pval) %>% unique()
 
 
-household_MR_summary_sub <- household_MR_summary %>% dplyr::select(exposure_ID, outcome_ID, IVW_meta_beta, IVW_meta_pval) %>% unique()
+household_MR_summary_sub <- household_MR_summary %>% dplyr::select(exposure_ID, outcome_ID, IVW_meta_beta, IVW_meta_se, IVW_meta_pval) %>% unique()
 MVMR_uniMR_comparison.DT <- inner_join(household_MR_summary_sub, household_MVMR_BF.DT)  %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, corr_traits, everything())
 format_round_cols <- colnames(dplyr::select_if(MVMR_uniMR_comparison.DT, is.numeric))
 
 DT::datatable(MVMR_uniMR_comparison.DT, width = "100%") %>% formatRound(columns=format_round_cols, digits = 3)
+
+```
+
+```{r direct_vs_indirect_effects_plot, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE}
+
+plot_data <-  inner_join(household_MR_summary_sub, household_MVMR_summary.DT)  %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, corr_traits, IVW_meta_beta, IVW_meta_se, yi_meta_beta, yi_meta_se, xi_meta_beta, xi_meta_se, xp_meta_beta, xp_meta_se) %>% unique()
+
+#bquote('x axis'~(Å^2))
+#expression(Sepal~Length[cm])
+
+#Indirect~effect~of~X[i]~on~Y[p]~(from~univariate~MR)
+#xlab <- bquote('Indirect effect of x_i on y_p (from univariate MR)'~(Å^2))
+
+
+plot <-
+  ggplot2::ggplot(data = plot_data, ggplot2::aes(x = IVW_meta_beta,
+                                                 y = xi_meta_beta)) +
+  geom_point(alpha = 3 / 4) +
+  geom_smooth(
+    mapping = aes(x = IVW_meta_beta, y = xi_meta_beta),
+    method = "lm",
+    se = FALSE,
+    formula = y ~ x + 0,
+    fullrange = TRUE,
+    color = custom_col[4]
+  ) +
+  ggplot2::geom_errorbar(
+    ggplot2::aes(ymin = xi_meta_beta - xi_meta_se, ymax = xi_meta_beta + xi_meta_se),
+    colour = "grey",
+    width = 0
+  ) +
+  ggplot2::geom_errorbarh(
+    ggplot2::aes(xmin = IVW_meta_beta - IVW_meta_se, xmax = IVW_meta_beta + IVW_meta_se),
+    colour = "grey",
+    height = 0
+  ) +
+  theme_minimal() +
+  ggplot2::labs(
+    x = expression(Indirect~effect~of~X[i]~on~Y[p]~(from~univariate~MR)),
+    y = expression(Direct~effect~of~X[i]~on~Y[p]~(from~MVMR))
+  ) + 
+  geom_abline(slope=1, intercept=0)
+
+plot 
 
 ```
