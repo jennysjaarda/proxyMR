@@ -513,7 +513,7 @@ list(
 
   tar_target(
     standard_harmonised_data_meta_reverse_filter,
-    filter_reverse_SNPs_standard_data(exposure_info, outcomes_to_run, standard_harmonised_data_meta),
+    filter_reverse_SNPs_standard_data(exposure_info, outcomes_to_run, standard_harmonised_data_meta, reverse_MR_threshold),
     pattern = map(exposure_info, standard_harmonised_data_meta), iteration = "list"
   ),
 

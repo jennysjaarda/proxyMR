@@ -34,7 +34,7 @@ prune_threshold <- 0.001
 GRS_thresholds <- c(0.1,0.01,0.001)
 num_household_bins <- 5
 z_prune_threshold <- 0.8
-
+reverse_MR_threshold <- 0.001
 
 num_IVs_threshold <- 5
 household_correlation_threshold <-0.1
