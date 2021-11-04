@@ -2306,7 +2306,7 @@ harmonise_standard_data_ind <- function(exposure_info, summ_stats, traits_corr2_
                                effect_allele_col = "effect_allele",
                                other_allele_col = "other_allele",
                                pval_col = paste0("pval"),
-                               eaf_col = "eaf",
+                               eaf_col = "alt_AF",
                                phenotype_col = "phenotype",
                                samplesize_col = "samplesize"
     )
@@ -2438,6 +2438,48 @@ meta_harmonised_standard_data <- function(exposure_info, outcomes_to_run, standa
 
   return(output_list)
 
+}
+
+filter_reverse_SNPs_standard_data <- function(exposure_info, outcomes_to_run, standard_harmonised_data_meta, reverse_MR_threshold){
+
+  output_list <- list()
+  output_files <- numeric()
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+
+  pheno_dir <- paste0("analysis/traitMR")
+  cat(paste0("\nFiltering SNPs meta-anlayzed harmonised standard data for evidence of reverse causality across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+  reverse_t_threshold  =  stats::qnorm(reverse_MR_threshold)
+
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    dat <- standard_harmonised_data_meta[[i]]
+    snps_before_filter <- dim(dat)[1]
+    outcome_ID <- dat$outcome_ID[1]
+    dat_filter <- dat %>%
+      mutate(z_score.exposure = beta.exposure / se.exposure) %>%
+      mutate(z_score.outcome = beta.outcome / se.outcome) %>%
+      mutate(std_beta.exposure = z_score.exposure / sqrt(samplesize.exposure)) %>%
+      mutate(std_beta.outcome = z_score.outcome / sqrt(samplesize.outcome)) %>%
+      mutate(std_se.exposure = 1 / sqrt(samplesize.exposure)) %>%
+      mutate(std_se.outcome = 1 / sqrt(samplesize.outcome)) %>%
+      mutate(std_t_stat = (abs(std_beta.exposure) - abs(std_beta.outcome)) /
+               sqrt(std_se.exposure^2 + std_se.outcome^2)) %>%
+      # mutate(t_stat = (abs(beta.exposure) - abs(beta.outcome)) /
+      #        sqrt(se.exposure^2 + se.outcome^2)) %>%
+      filter(std_t_stat > reverse_t_threshold)
+
+    snps_after_filter <- dim(dat_filter)[1]
+    dat_filter$snps_before_filter <- snps_before_filter
+    dat_filter$snps_after_filter <- snps_after_filter
+
+    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data_meta_filter")]] <- dat_filter
+    cat(paste0("Finished meta-analyzing harmonised household data for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+
+  }
+
+  return(output_list)
 }
 
 
@@ -2927,7 +2969,6 @@ run_household_MVMR <- function(exposure_info, outcomes_to_run){
       mv_data <- mv_data %>% mutate(beta_yp_align = case_when(effect_allele_yp == effect_allele_yi ~ beta_yp,
                                                               TRUE ~ -1*beta_yp))
 
-      ####### THIS IS WHERE I AM #####
 
 
       mv_data_pruned <- mv_data %>% filter(SNP %in% pruned_mat$SNP)
