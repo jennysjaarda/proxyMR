@@ -2432,7 +2432,7 @@ meta_harmonised_standard_data <- function(exposure_info, outcomes_to_run, standa
     harmonise_dat$outcome_description <- outcome_description
 
     output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data_meta")]] <- harmonise_dat
-    cat(paste0("Finished meta-analyzing harmonised household data for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+    cat(paste0("Finished meta-analyzing harmonised standard data for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
 
   }
 
@@ -2447,7 +2447,7 @@ filter_reverse_SNPs_standard_data <- function(exposure_info, outcomes_to_run, st
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
 
   pheno_dir <- paste0("analysis/traitMR")
-  cat(paste0("\nFiltering SNPs meta-anlayzed harmonised standard data for evidence of reverse causality across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+  cat(paste0("\nFiltering meta-anlayzed, harmonised standard SNP data for evidence of reverse causality across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
 
   reverse_t_threshold  =  stats::qnorm(reverse_MR_threshold)
 
@@ -2475,8 +2475,57 @@ filter_reverse_SNPs_standard_data <- function(exposure_info, outcomes_to_run, st
     dat_filter$snps_after_filter <- snps_after_filter
 
     output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data_meta_filter")]] <- dat_filter
-    cat(paste0("Finished meta-analyzing harmonised household data for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+    cat(paste0("Finished filtering meta-analyzed harmonised standard data for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
 
+  }
+
+  return(output_list)
+}
+
+check_num_SNPS_removed_reverse_filter <- function(exposure_info, outcomes_to_run, standard_harmonised_data_meta_reverse_filter){
+
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+
+  snps_before_filter <- numeric()
+  snps_after_filter <- numeric()
+  outcome_ID <- numeric()
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    dat <- standard_harmonised_data_meta_reverse_filter[[i]]
+    snps_before_filter <- c(snps_before_filter, dat$snps_before_filter[1])
+    snps_after_filter <- c(snps_after_filter, dat$snps_after_filter[1])
+    outcome_ID <- c(outcome_ID, dat$outcome_ID[1])
+
+  }
+
+  output <- tibble(
+    exposure_ID = exposure_ID,
+    outcome_ID = outcome_ID,
+    num_snps_before_rev_MR_filter = snps_before_filter,
+    num_snps_after_rev_MR_filter = snps_after_filter
+  )
+
+  return(output)
+
+}
+
+filter_reverse_SNPs_household_data <- function(exposure_info, outcomes_to_run, household_harmonised_data_meta, standard_harmonised_data_meta_reverse_filter){
+
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+  output_list <- list()
+  cat(paste0("\nFiltering meta-anlayzed, harmonised household SNP data for evidence of reverse causality across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    dat <- household_harmonised_data_meta[[i]]
+    outcome_ID <- dat$outcome_ID[1]
+
+    snps_to_keep <- standard_harmonised_data_meta_reverse_filter[[i]]$SNP
+    dat_filt <- dat[which(dat$SNP %in% snps_to_keep),]
+
+    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data_meta_filter")]] <- dat_filt
+    cat(paste0("Finished filtering meta-analyzed harmonised household data for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
   }
 
   return(output_list)

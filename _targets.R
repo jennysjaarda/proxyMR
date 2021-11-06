@@ -517,6 +517,18 @@ list(
     pattern = map(exposure_info, standard_harmonised_data_meta), iteration = "list"
   ),
 
+  tar_target(
+    num_SNPs_lost_reverse_filter,
+    check_num_SNPS_removed_reverse_filter(exposure_info, outcomes_to_run, standard_harmonised_data_meta_reverse_filter),
+    pattern = map(exposure_info, standard_harmonised_data_meta_reverse_filter)
+  ),
+
+  ###### NEED TO RUN! THEN run the MR on these filtered set of SNPs. Run the above target as well just to see how many SNPs are lost to filtering.
+  tar_target(
+    household_harmonised_data_meta_reverse_filter, # explore meta-analyzing the SNP/trait associations before the MR
+    filter_reverse_SNPs_household_data(exposure_info, outcomes_to_run, household_harmonised_data_meta, standard_harmonised_data_meta_reverse_filter),
+    pattern = map(exposure_info, household_harmonised_data_meta, standard_harmonised_data_meta_reverse_filter), iteration = "list"
+  ),
 
   ## MR
 
