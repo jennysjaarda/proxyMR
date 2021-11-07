@@ -512,7 +512,7 @@ list(
   ),
 
   tar_target(
-    standard_harmonised_data_meta_reverse_filter,
+    standard_harmonised_data_meta_reverse_filter, # filter SNPs for evidence of reverse causation using Ninon's filtering method.
     filter_reverse_SNPs_standard_data(exposure_info, outcomes_to_run, standard_harmonised_data_meta, reverse_MR_threshold),
     pattern = map(exposure_info, standard_harmonised_data_meta), iteration = "list"
   ),
@@ -523,9 +523,9 @@ list(
     pattern = map(exposure_info, standard_harmonised_data_meta_reverse_filter)
   ),
 
-  ###### NEED TO RUN! THEN run the MR on these filtered set of SNPs. Run the above target as well just to see how many SNPs are lost to filtering.
+
   tar_target(
-    household_harmonised_data_meta_reverse_filter, # explore meta-analyzing the SNP/trait associations before the MR
+    household_harmonised_data_meta_reverse_filter, # using same set of filtered SNPs from `standard_harmonised_data_meta_reverse_filter`, filter household data.
     filter_reverse_SNPs_household_data(exposure_info, outcomes_to_run, household_harmonised_data_meta, standard_harmonised_data_meta_reverse_filter),
     pattern = map(exposure_info, household_harmonised_data_meta, standard_harmonised_data_meta_reverse_filter), iteration = "list"
   ),
@@ -541,16 +541,24 @@ list(
     pattern = map(outcomes_to_run), iteration = "list"
   ),
 
+
+  ### NEED TO FIRST FILTER HARMONISED DATA RESULTS
   tar_target(
-    household_MR_binned, # MR results are given binned in full sample and binned by time-together and mean age
+    household_MR_binned_sex_specific, # MR results are given binned in full sample and binned by time-together and mean age
     run_binned_household_MR(exposure_info, outcomes_to_run, household_harmonised_data, grouping_var, MR_method_list = MR_method_list),
     pattern = map(exposure_info, household_harmonised_data), iteration = "list"
   ),
 
   tar_target(
     household_MR_binned_meta, # meta-analyze binned results by sex
-    meta_binned_household_MR(exposure_info, outcomes_to_run, household_MR_binned),
+    meta_binned_household_MR(exposure_info, outcomes_to_run, household_MR_binned_sex_specific),
     pattern = map(exposure_info, household_MR_binned), iteration = "list"
+  ),
+
+  tar_target(
+    household_MR_binned_joint, # MR results run in data meta-analyzed at SNP-level. Compare with meta-analyzed MR above to see impact of meta-analyzing MRs vs. meta-analyzing SNPs.
+    run_binned_household_MR_joint(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, grouping_var, MR_method_list = MR_method_list),
+    pattern = map(exposure_info, household_harmonised_data_meta_reverse_filter), iteration = "list"
   ),
 
   tar_target(

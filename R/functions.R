@@ -2594,6 +2594,58 @@ binned_household_MR_ind <- function(exposure_info, outcome_ID, household_harmoni
 
 }
 
+binned_household_MR_ind_joint <- function(exposure_info, outcome_ID, household_harmonised_data, grouping_var, MR_method_list) {
+
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+  exposure_description <- exposure_info %>% filter(Value=="description") %>% pull(Info)
+
+  pheno_dir <- paste0("analysis/traitMR/")
+
+  household_harmonised_data_group <- household_harmonised_data %>% filter(grouping_var == !!grouping_var)
+
+  household_intervals <- levels(as.factor(household_harmonised_data_group$bin))
+  household_intervals_num <- strex::str_first_number(household_intervals)
+  household_intervals_num[which(is.na(household_intervals_num))] <- 1e3
+
+  full_MR_summary <-  numeric()
+  bin_summary <- numeric()
+
+  for(bin in household_intervals[order(household_intervals_num)]){
+
+    harmonise_sub <- household_harmonised_data_group[which(household_harmonised_data_group[["bin"]]==bin),]
+
+    n_bin <- max(harmonise_sub$samplesize.outcome )
+    n_exposure <- max(harmonise_sub$samplesize.exposure )
+
+    original_MR <- mr(harmonise_sub, method=MR_method_list)
+
+    if(dim(original_MR)[1]!=0){
+      MR_res <- include_MR_NA(original_MR)
+      MR_ivw_row <- which(MR_res[,"method"]=="Inverse variance weighted")
+      MR_wald_row <- which(MR_res[,"method"]=="Wald ratio")
+
+      bin_result <- c(grouping_var, bin, exposure_ID, outcome_ID, n_exposure, n_bin, MR_res[MR_ivw_row,"nsnp"], MR_res[MR_ivw_row,"b"],MR_res[MR_ivw_row,"se"], MR_res[MR_ivw_row,"pval"])
+    } else bin_result <- c(grouping_var, bin, exposure_ID, outcome_ID, n_exposure, n_bin, NA, NA,NA, NA)
+
+    bin_summary <- rbind(bin_summary, bin_result)
+
+
+  }
+
+
+    colnames(bin_summary) <- c("grouping_var", "bin","exposure_ID", "outcome_ID","n_exposure", "n_outcome", "nsnp", "IVW_beta", "IVW_se", "IVW_pval")
+
+
+  output <- bin_summary
+
+  numeric_cols <- c("n_exposure", "n_outcome", "nsnp", "IVW_beta", "IVW_se", "IVW_pval")
+  output <- as_tibble(output) %>% mutate_at(numeric_cols, as.numeric )
+  return(output)
+
+
+}
+
+
 # `run_household_MR_binned` runs the MR in individual bins (by age or time_together) and returns a table with results for each bin.
 run_binned_household_MR <- function(exposure_info, outcomes_to_run, household_harmonised_data, grouping_var, MR_method_list = MR_method_list){
 
@@ -2620,6 +2672,43 @@ run_binned_household_MR <- function(exposure_info, outcomes_to_run, household_ha
       # run for each group
 
       group_MR_result <- binned_household_MR_ind(exposure_info, outcome_ID, household_harmonised_data_i, group, MR_method_list)
+      household_MR_result <- rbind(household_MR_result, group_MR_result)
+    }
+
+    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_MR")]] <- household_MR_result
+
+    cat(paste0("Finished MR for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+  }
+
+  return(output_list)
+
+}
+
+run_binned_household_MR_joint <- function(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, grouping_var, MR_method_list = MR_method_list){
+
+  output_list <- list()
+  output_files <- numeric()
+
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+
+  pheno_dir <- paste0("analysis/traitMR")
+  cat(paste0("\nCalculating household MR in meta-analyzed SNPs in age and time-together bins for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+  household_MR_result <- numeric()
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    household_MR_result <- numeric()
+    outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
+
+    household_harmonised_data_i <- household_harmonised_data_meta_reverse_filter[[i]]
+    for(group in grouping_var){
+
+      cat(paste0("\nRunning MR in bins of household pairs for group `", group, "`...\n"))
+
+      # run for each group
+
+      group_MR_result <- binned_household_MR_ind_joint(exposure_info, outcome_ID, household_harmonised_data_i, group, MR_method_list)
       household_MR_result <- rbind(household_MR_result, group_MR_result)
     }
 
