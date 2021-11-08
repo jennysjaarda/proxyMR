@@ -3501,27 +3501,25 @@ replace_Neale_ID <- function(data, traits_corr2_filled, data_Neale_ID_col, outpu
 
 }
 
-find_sig_standard_MR_summary <- function(standard_MR_summary){
+find_sig_standard_MR_summary <- function(household_MR_summary_joint){
 
-  denom <- dim(standard_MR_summary)[1]/2 #divide by 2 because each meta result is there twice (one row/sex)
-  sig_only <- standard_MR_summary %>% filter(IVW_meta_pval < 0.05/denom)
+  denom <- dim(household_MR_summary_joint)[1] #divide by 2 because each meta result is there twice (one row/sex)
+  sig_only <- standard_MR_summary %>% filter(IVW_pval < 0.05/denom)
   return(sig_only)
 }
 
-find_non_corr_household_MR_summary <- function(household_MR_summary){
+find_non_corr_household_MR_summary <- function(household_MR_summary_joint, corr_trait_threshold){
 
   # filter to only pairs that have correlation < 0.8
-  output <- household_MR_summary[which(abs(household_MR_summary$corr_traits)<0.8),]
+  output <- household_MR_summary_joint[which(abs(household_MR_summary_joint$corr_traits)<corr_trait_threshold),]
 
   return(output)
 }
 
-find_sig_household_MR_summary <- function(household_MR_summary){
+find_sig_household_MR_summary <- function(household_MR_summary_corr_filter){
 
-  denom <- dim(household_MR_summary)[1]/2 #divide by 2 because each meta result is there twice (one row/sex)
-  num_traits <- sqrt(denom)
-  num_tests <- num_traits^2 - num_traits # don't count the traits that are there tw
-  sig_only <- household_MR_summary %>% filter(IVW_meta_pval < 0.05/num_tests)
+  denom <- dim(household_MR_summary_corr_filter)[1] #divide by 2 because each meta result is there twice (one row/sex)
+  sig_only <- household_MR_summary_corr_filter %>% filter(IVW_pval < 0.05/denom)
   return(sig_only)
 }
 
@@ -3534,7 +3532,7 @@ pull_AM_MRs_household_MR_summary <- function(household_MR_summary){
 find_AM_sig_exposure_info <- function(household_MR_summary_AM, outcomes_to_run, num_tests_by_PCs){
 
 
-  AM_sig_traits <- household_MR_summary_AM %>% filter(IVW_meta_pval < 0.05/num_tests_by_PCs) %>% pull(exposure_ID) %>% unique()
+  AM_sig_traits <- household_MR_summary_AM %>% filter(IVW_pval < 0.05/num_tests_by_PCs) %>% pull(exposure_ID) %>% unique()
 
   outcomes_to_run_sub <- outcomes_to_run[which(outcomes_to_run$Neale_pheno_ID %in% AM_sig_traits),]
 

@@ -633,7 +633,7 @@ list(
 
   tar_target(
     household_MR_summary_corr_filter,
-    find_non_corr_household_MR_summary(household_MR_summary)
+    find_non_corr_household_MR_summary(household_MR_summary_joint, corr_trait_threshold)
   ),
 
   tar_target(
@@ -644,7 +644,7 @@ list(
   tar_target(
     ## filter to only MR between same traits.
     household_MR_summary_AM,
-    pull_AM_MRs_household_MR_summary(household_MR_summary)
+    pull_AM_MRs_household_MR_summary(household_MR_summary_joint)
   ),
 
   tar_target(
@@ -691,11 +691,11 @@ list(
 
   tar_target(
     standard_MR_summary_BF_sig,
-    find_sig_standard_MR_summary(standard_MR_summary)
+    find_sig_standard_MR_summary(standard_MR_summary_joint)
   ),
 
   tar_target(
-    proxyMR_comparison,
+    proxyMR_comparison, ## RERUN wtih newly meta-analyzed results.
     run_proxyMR_comparison(exposure_info, household_MR_summary_BF_sig, household_MR_summary, standard_MR_summary, household_MR_summary_AM),
     map(exposure_info, household_MR_summary, standard_MR_summary), iteration = "list"
   ),
