@@ -685,7 +685,7 @@ list(
   tar_target(
     ## summarize into one table, ignore leave-1-out analyses for now, meta-analyze across sexes and calculate heterogeneity statistic between sexes.
     standard_MR_summary_joint,
-    summarize_standard_MR_comprehensive(standard_MR_joint),
+    summarize_standard_MR_comprehensive_joint(standard_MR_joint),
     pattern = map(standard_MR_joint)
   ),
 
