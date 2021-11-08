@@ -3271,6 +3271,35 @@ summarize_household_MR_comprehensive <- function(household_MR, corr_mat_traits){
 
 }
 
+summarize_household_MR_comprehensive_joint <- function(household_MR_joint, corr_mat_traits){
+
+  exposure_ID <- household_MR_joint[[1]][["MR_summary"]][,"exposure_ID"][[1]]
+  cat(paste0("Summarizing and meta-analyzing household MR results across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+  result <- numeric()
+  for(i in 1:length(household_MR_joint)){
+    outcome_ID <- household_MR_joint[[i]][["MR_summary"]][,"outcome_ID"][[1]]
+    exposure_IDX <- exposure_ID
+    outcome_IDX <- outcome_ID
+    if(endsWith(exposure_ID, "_irnt")) {
+      exposure_IDX <- gsub("_irnt", "", exposure_ID)
+    }
+    if(endsWith(outcome_ID, "_irnt")) {
+      outcome_IDX <- gsub("_irnt", "", outcome_ID)
+    }
+    corr_traits <- corr_mat_traits[exposure_IDX, outcome_IDX]
+    result_i <- household_MR_joint[[i]][["MR_summary"]]
+    result_i$corr_traits <- corr_traits
+    result <- rbind(result, result_i)
+
+  }
+
+  result <- as_tibble(result) %>% type_convert() %>% mutate_at(c("exposure_ID", "outcome_ID", "exposure_sex", "outcome_sex"), as.character)
+
+  return(result)
+
+}
+
 summarize_household_MVMR <- function(household_MVMR, traits_corr2_filled, corr_mat_traits){
 
   outcome_traits <- traits_corr2_filled[which(traits_corr2_filled[["Neale_file_sex"]]=="both"),]
@@ -3434,6 +3463,27 @@ summarize_standard_MR_comprehensive <- function(standard_MR){
   summarized_result <- full_join(result, meta_result)
 
   return(summarized_result)
+
+}
+
+
+summarize_standard_MR_comprehensive_joint <- function(standard_MR_joint){
+
+  exposure_ID <- standard_MR_joint[[1]][["exp_male_MR_complete"]][["MR_summary"]][,"exposure_ID"][[1]]
+  cat(paste0("Summarizing and meta-analyzing standard MR results across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+  result <- numeric()
+  for(i in 1:length(standard_MR_joint)){
+    if(!length(standard_MR_joint[[i]])==0){
+       result_i <- standard_MR_joint[[i]][["MR_summary"]]
+      result <- rbind(result, result_i)
+    }
+  }
+
+  result <- as_tibble(result) %>% type_convert() %>% mutate_at(c("exposure_ID", "outcome_ID", "exposure_sex", "outcome_sex"), as.character)
+
+
+  return(result)
 
 }
 

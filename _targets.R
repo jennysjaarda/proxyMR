@@ -595,7 +595,7 @@ list(
   ),
 
   tar_target(
-    household_MR_joint, ## `household_MR  ` is run in full sample only, not binned by age / time-together categories.
+    household_MR_joint, ## `household_MR_joint  ` is run in full sample only, not binned by age / time-together categories.
     run_household_MR_comprehensive_joint(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, MR_method_list),
     pattern = map(exposure_info, household_harmonised_data_meta_reverse_filter), iteration = "list"
   ),
@@ -616,6 +616,13 @@ list(
     household_MR_summary,
     summarize_household_MR_comprehensive(household_MR, corr_mat_traits),
     pattern = map(household_MR)
+  ),
+
+  tar_target(
+    ## summarize into one table, ignore leave-1-out analyses for now, meta-analyze across sexes and calculate heterogeneity statistic between sexes.
+    household_MR_summary_joint,
+    summarize_household_MR_comprehensive_joint(household_MR_joint, corr_mat_traits),
+    pattern = map(household_MR_joint)
   ),
 
   tar_target(
@@ -673,6 +680,13 @@ list(
     standard_MR_summary,
     summarize_standard_MR_comprehensive(standard_MR),
     pattern = map(standard_MR)
+  ),
+
+  tar_target(
+    ## summarize into one table, ignore leave-1-out analyses for now, meta-analyze across sexes and calculate heterogeneity statistic between sexes.
+    standard_MR_summary_joint,
+    summarize_standard_MR_comprehensive(standard_MR_joint),
+    pattern = map(standard_MR_joint)
   ),
 
   tar_target(
