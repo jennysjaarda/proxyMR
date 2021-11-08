@@ -3469,7 +3469,7 @@ summarize_standard_MR_comprehensive <- function(standard_MR){
 
 summarize_standard_MR_comprehensive_joint <- function(standard_MR_joint){
 
-  exposure_ID <- standard_MR_joint[[1]][["exp_male_MR_complete"]][["MR_summary"]][,"exposure_ID"][[1]]
+  exposure_ID <- standard_MR_joint[[1]][["MR_summary"]][,"exposure_ID"][[1]]
   cat(paste0("Summarizing and meta-analyzing standard MR results across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
 
   result <- numeric()
