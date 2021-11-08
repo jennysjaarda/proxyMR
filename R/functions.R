@@ -3501,10 +3501,10 @@ replace_Neale_ID <- function(data, traits_corr2_filled, data_Neale_ID_col, outpu
 
 }
 
-find_sig_standard_MR_summary <- function(household_MR_summary_joint){
+find_sig_standard_MR_summary <- function(standard_MR_summary_joint){
 
-  denom <- dim(household_MR_summary_joint)[1] #divide by 2 because each meta result is there twice (one row/sex)
-  sig_only <- standard_MR_summary %>% filter(IVW_pval < 0.05/denom)
+  denom <- dim(standard_MR_summary_joint)[1] #divide by 2 because each meta result is there twice (one row/sex)
+  sig_only <- standard_MR_summary_joint %>% filter(IVW_pval < 0.05/denom)
   return(sig_only)
 }
 
