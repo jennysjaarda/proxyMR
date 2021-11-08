@@ -2894,9 +2894,14 @@ household_MR_comprehensive_ind <- function(harmonise_dat, MR_method_list){
   outcome_ID <- harmonise_dat$outcome_ID[1]
   exposure_sex <- harmonise_dat$exposure_sex[1]
   outcome_sex <- harmonise_dat$outcome_sex[1]
+
+  if(is.null(exposure_sex)){
+    exposure_sex <- NA
+    outcome_sex <- NA
+  }
+
   exposure_description <- harmonise_dat$exposure_description[1]
   outcome_description <- harmonise_dat$outcome_description[1]
-
 
   het_test <- mr_heterogeneity(harmonise_dat, method_list=c("mr_egger_regression", "mr_ivw"))
   egger_test <- mr_pleiotropy_test(harmonise_dat)
@@ -2991,6 +2996,34 @@ run_household_MR_comprehensive <- function(exposure_info, outcomes_to_run, house
   return(output_list)
 
 }
+
+run_household_MR_comprehensive_joint <- function(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, MR_method_list){
+
+  output_list <- list()
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+
+  cat(paste0("\nRunning complete MR analyses for all outcomes with phenotype `", exposure_ID, "`\nas exposure (i.e. Egger, leave-one-out, sensitivity, MR plot. \n[This is only being run in full sample, not in individual bins.]\n\n"))
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
+    MR_complete_i <- list()
+
+    harmonised_dat_i <- household_harmonised_data_meta_reverse_filter[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data_meta_filter")]]
+    harmonised_dat_sub <- harmonised_dat_i %>% filter(grouping_var == "age_even_bins") %>% filter(bin == "all")
+    MR_complete_i <- household_MR_comprehensive_ind(harmonised_dat_sub, MR_method_list)
+
+
+    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_MR_complete")]] <- MR_complete_i
+
+    cat(paste0("Finished computing full MR results for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+
+  }
+
+  return(output_list)
+
+}
+
 
 run_household_MVMR <- function(exposure_info, outcomes_to_run){
 
@@ -3311,6 +3344,36 @@ run_standard_MR_comprehensive <- function(exposure_info, outcomes_to_run, standa
       }
     }
 
+
+    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_MR_complete")]] <- MR_complete_i
+
+    cat(paste0("Finished computing full MR results for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+
+  }
+
+  return(output_list)
+
+}
+
+
+run_standard_MR_comprehensive_joint <- function(exposure_info, outcomes_to_run, standard_harmonised_data_meta_reverse_filter, MR_method_list){
+
+  output_list <- list()
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+
+  cat(paste0("\nRunning complete MR analyses for all outcomes with phenotype `", exposure_ID, "as exposure\n(i.e. Egger, leave-one-out, sensitivity, MR plot in same individual (i.e. standard MR). \n\n"))
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
+    MR_complete_i <- list()
+
+    if(outcome_ID != exposure_ID){
+
+      standard_dat_i <- standard_harmonised_data_meta_reverse_filter[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data_meta_filter")]]
+      MR_complete_i <- household_MR_comprehensive_ind(standard_dat_i, MR_method_list) ##the inner function for running the MR is the same for household and standard MR.
+
+    }
 
     output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_MR_complete")]] <- MR_complete_i
 
@@ -4537,11 +4600,28 @@ household_MR_plot <-  function (dat, original_MR){
   outcome_ID <- dat$outcome[1]
   exposure_sex <- dat$exposure_sex[1]
   outcome_sex <- dat$outcome_sex[1]
+
+
   exposure_description <- dat$exposure_description[1]
   outcome_description <- dat$outcome_description[1]
 
   mr_title <- bquote(atop(.(paste0("Estimate of the assortative mating effect of ")),
                           italic(.(outcome_description)) ~ 'on' ~ italic(.(exposure_description)) ~ .(paste0(' for ', exposure_sex, "s on ", outcome_sex,"s"))))
+
+
+
+  xlab <- paste0("SNP effect of ", exposure_ID, " in ", exposure_sex, "s (general population)")
+  ylab <- paste("SNP effect of ", outcome_ID, " in ",
+                outcome_sex, "partner")
+
+  if(is.na(exposure_sex)){
+    mr_title <- bquote(atop(.(paste0("Estimate of the assortative mating effect of ")),
+                            italic(.(outcome_description)) ~ 'on' ~ italic(.(exposure_description))))
+
+    xlab <- paste0("SNP effect of ", exposure_ID, " in (general population)")
+    ylab <- paste("SNP effect of ", outcome_ID, " in partner")
+
+  }
 
   mr_results <- original_MR
 
@@ -4586,10 +4666,9 @@ household_MR_plot <-  function (dat, original_MR){
                                                                    "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99",
                                                                    "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6",
                                                                    "#6a3d9a", "#ffff99", "#b15928")) + ggplot2::labs(colour = "MR Test",
-                                                                                                                     x = paste0("SNP effect of ", exposure_ID, " in ", exposure_sex, "s (general population)"), y = paste("SNP effect of ", outcome_ID, " in ",
-                                                                                                                                                                                                     outcome_sex, "partner")) + ggplot2::theme(legend.position = "bottom",
-                                                                                                                                                                                                                                               legend.direction = "horizontal") + ggplot2::guides(colour = ggplot2::guide_legend(nrow = 2)) +
-                           theme(legend.title = element_blank())
+                                                                                                                     x = xlab, y = ylab) + ggplot2::theme(legend.position = "bottom",
+                                                                                                                                                         legend.direction = "horizontal") + ggplot2::guides(colour = ggplot2::guide_legend(nrow = 2)) +
+                                                                                                                       theme(legend.title = element_blank())
                        })
   mrres
 }

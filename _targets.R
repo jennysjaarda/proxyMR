@@ -595,6 +595,13 @@ list(
   ),
 
   tar_target(
+    household_MR_joint, ## `household_MR  ` is run in full sample only, not binned by age / time-together categories.
+    run_household_MR_comprehensive_joint(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, MR_method_list),
+    pattern = map(exposure_info, household_harmonised_data_meta_reverse_filter), iteration = "list"
+  ),
+
+
+  tar_target(
     household_MVMR, # to run model: $Y_p \sim X_i + Y_i + X_p$
     {
       path_household_GWAS
@@ -653,6 +660,12 @@ list(
     standard_MR,
     run_standard_MR_comprehensive(exposure_info, outcomes_to_run, standard_harmonised_data, MR_method_list),
     pattern = map(exposure_info, standard_harmonised_data), iteration = "list"
+  ),
+
+  tar_target(
+    standard_MR_joint,
+    run_standard_MR_comprehensive_joint(exposure_info, outcomes_to_run, standard_harmonised_data_meta_reverse_filter, MR_method_list),
+    pattern = map(exposure_info, standard_harmonised_data_meta_reverse_filter), iteration = "list"
   ),
 
   tar_target(
