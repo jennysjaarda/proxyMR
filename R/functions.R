@@ -4614,7 +4614,7 @@ household_MR_plot <-  function (dat, original_MR){
   ylab <- paste("SNP effect of ", outcome_ID, " in ",
                 outcome_sex, "partner")
 
-  if(is.na(exposure_sex)){
+  if(is.null(exposure_sex)){
     mr_title <- bquote(atop(.(paste0("Estimate of the assortative mating effect of ")),
                             italic(.(outcome_description)) ~ 'on' ~ italic(.(exposure_description))))
 
