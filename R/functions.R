@@ -1058,6 +1058,9 @@ create_trait_dirs <- function(Neale_pheno_ID){
 
   dir.create(paste0(pheno_dir, "/IVs/Neale/", trait_ID), showWarnings = FALSE)
 
+  dir.create(paste0(pheno_dir, "/household_GWAS_rev_filter/", trait_ID), showWarnings = FALSE)
+  dir.create(paste0(pheno_dir, "/standard_GWAS_rev_filter/", trait_ID), showWarnings = FALSE)
+
 }
 
 create_MR_dirs <- function(Neale_pheno_ID){
@@ -1614,6 +1617,59 @@ write_outcome_stats <- function(outcome_ID, extract_Neale_outcome_result, exposu
 
 }
 
+write_outcome_stats_filter <- function(exposure_info, outcomes_to_run, standard_harmonised_data_meta_reverse_filter, standard_harmonised_data_reverse_filter, summ_stats){
+
+
+  pheno_dir <- paste0("analysis/traitMR/" )
+
+  file_list <- numeric()
+
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+  snp_chr <- summ_stats[[1]] %>% dplyr::select(rsid, chr)
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    outcome_ID <- outcomes_to_run$Neale_pheno_ID[i]
+    GWAS_file_i <- paste0(pheno_dir, "/standard_GWAS_rev_filter/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
+
+    meta_GWAS <- standard_harmonised_data_meta_reverse_filter[[i]] %>% dplyr::select(SNP, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
+
+    male_GWAS <- standard_harmonised_data_reverse_filter[[i]] %>% dplyr::select(SNP, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
+    female_GWAS <- standard_harmonised_data_reverse_filter[[i]] %>% dplyr::select(SNP, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
+
+
+    standard_harmonised_data_reverse_filter
+
+  }
+
+
+
+  for(i in 1:dim(exposures_to_run)[1]){
+
+    #IV_stats <- summ_stats[[i]]
+    exposure_ID <- exposures_to_run$Neale_pheno_ID[i]
+    rsids <- IV_stats[[1]]$rsid
+
+    GWAS_file_i <- paste0(pheno_dir, "/standard_GWAS_rev_filter/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
+    file_list <- c(GWAS_file_i, file_list)
+    outcome_result_i <- numeric()
+
+    for(sex in c("both_sexes", "male", "female")){
+      outcome_stats_sex <- extract_Neale_outcome_result[[paste0(outcome_ID, "_", sex, "_summary_stats")]]
+      outcome_stats_sex_sub <- outcome_stats_sex[which(outcome_stats_sex$SNP %in% rsids),]
+      if(!all(rsids %in% outcome_stats_sex_sub$SNP)) stop(paste0("Missing outcome info for some IVs for exposure `", exposure_ID, "` in outcome `", outcome_ID, "`."))
+      outcome_stats_sex_sub$sex <- sex
+      outcome_stats_sex_sub$exposure_ID <- exposure_ID
+      outcome_result_i <- rbind(outcome_result_i, outcome_stats_sex_sub)
+    }
+
+    write.csv(outcome_result_i, GWAS_file_i, row.names = F)
+    cat(paste0("Finished writing standard GWAS statistics for exposure ", i, " of ", dim(exposures_to_run)[1], ".\n\n" ))
+  }
+
+  return(file_list)
+
+}
 
 extract_bgen <- function(snps, file){
 
@@ -2509,6 +2565,69 @@ check_num_SNPS_removed_reverse_filter <- function(exposure_info, outcomes_to_run
   return(output)
 
 }
+
+
+filter_reverse_SNPs_household_data_sex_spec <- function(exposure_info, outcomes_to_run, household_harmonised_data, standard_harmonised_data_meta_reverse_filter){
+
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+  output_list <- list()
+  cat(paste0("\nFiltering sex-specific, harmonised household SNP data for evidence of reverse causality across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    sex_filter <- list()
+    for(exposure_sex in c("male", "female")){
+
+      dat <- household_harmonised_data[[i]][[paste0("exp_", exposure_sex, "_harmonised_data")]]
+      outcome_ID <- dat$outcome_ID[1]
+
+      snps_to_keep <- standard_harmonised_data_meta_reverse_filter[[i]]$SNP
+      dat_filt <- dat[which(dat$SNP %in% snps_to_keep),]
+
+      sex_filter[[paste0("exp_", exposure_sex, "_harmonised_data_filter")]] <- dat_filt
+
+
+
+    }
+
+    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data_filter")]] <- sex_filter
+
+    cat(paste0("Finished filtering sex-specific harmonised household data for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+  }
+
+  return(output_list)
+}
+
+filter_reverse_SNPs_standard_data_sex_spec <- function(exposure_info, outcomes_to_run, standard_harmonised_data, standard_harmonised_data_meta_reverse_filter){
+
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+  output_list <- list()
+  cat(paste0("\nFiltering sex-specific, harmonised standard SNP data for evidence of reverse causality across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    sex_filter <- list()
+    for(exposure_sex in c("male", "female")){
+
+      dat <- standard_harmonised_data[[i]][[paste0("exp_", exposure_sex, "_harmonised_data")]]
+      outcome_ID <- dat$outcome_ID[1]
+
+      snps_to_keep <- standard_harmonised_data_meta_reverse_filter[[i]]$SNP
+      dat_filt <- dat[which(dat$SNP %in% snps_to_keep),]
+
+      sex_filter[[paste0("exp_", exposure_sex, "_harmonised_data_filter")]] <- dat_filt
+
+    }
+
+    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data_filter")]] <- sex_filter
+
+    cat(paste0("Finished filtering sex-specific standard household data for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+  }
+
+  return(output_list)
+
+}
+
 
 filter_reverse_SNPs_household_data <- function(exposure_info, outcomes_to_run, household_harmonised_data_meta, standard_harmonised_data_meta_reverse_filter){
 

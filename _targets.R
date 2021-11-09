@@ -511,6 +511,8 @@ list(
     pattern = map(exposure_info, standard_harmonised_data), iteration = "list"
   ),
 
+  ## Filter SNPs for evidence of reverse-causality based on same-person two-trait MR (`standard_MR`)
+
   tar_target(
     standard_harmonised_data_meta_reverse_filter, # filter SNPs for evidence of reverse causation using Ninon's filtering method.
     filter_reverse_SNPs_standard_data(exposure_info, outcomes_to_run, standard_harmonised_data_meta, reverse_MR_threshold),
@@ -523,12 +525,36 @@ list(
     pattern = map(exposure_info, standard_harmonised_data_meta_reverse_filter)
   ),
 
-
   tar_target(
-    household_harmonised_data_meta_reverse_filter, # using same set of filtered SNPs from `standard_harmonised_data_meta_reverse_filter`, filter household data.
+    household_harmonised_data_meta_reverse_filter, # using same set of filtered SNPs from `standard_harmonised_data_meta_reverse_filter`, filter meta household data.
     filter_reverse_SNPs_household_data(exposure_info, outcomes_to_run, household_harmonised_data_meta, standard_harmonised_data_meta_reverse_filter),
     pattern = map(exposure_info, household_harmonised_data_meta, standard_harmonised_data_meta_reverse_filter), iteration = "list"
   ),
+
+  tar_target(
+    standard_harmonised_data_reverse_filter, # using same set of filtered SNPs from `standard_harmonised_data_meta_reverse_filter`, filter sex-specific standard data.
+    filter_reverse_SNPs_standard_data_sex_spec(exposure_info, outcomes_to_run, standard_harmonised_data, standard_harmonised_data_meta_reverse_filter),
+    pattern = map(exposure_info, standard_harmonised_data, standard_harmonised_data_meta_reverse_filter), iteration = "list"
+  ),
+
+  tar_target(
+    household_harmonised_data_reverse_filter, # using same set of filtered SNPs from `standard_harmonised_data_meta_reverse_filter`, filter sex-specific household data.
+    filter_reverse_SNPs_household_data_sex_spec(exposure_info, outcomes_to_run, household_harmonised_data, standard_harmonised_data_meta_reverse_filter),
+    pattern = map(exposure_info, household_harmonised_data, standard_harmonised_data_meta_reverse_filter), iteration = "list"
+  ),
+
+  ## Write filtered and meta-analyzed SNP results
+
+  tar_target(
+    path_outcome_stats_filter,
+    {
+      path_outcome_dirs
+      write_outcome_stats_filter(exposure_info, outcomes_to_run, standard_harmonised_data_meta_reverse_filter, standard_harmonised_data_reverse_filter, summ_stats)
+    },
+    pattern = map(exposure_info, standard_harmonised_data_meta_reverse_filter, standard_harmonised_data_reverse_filter, summ_stats), format = "file"
+  ),
+
+
 
   ## MR
 
