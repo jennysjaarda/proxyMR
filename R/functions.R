@@ -3680,6 +3680,109 @@ run_proxyMR_comparison <- function(exposure_info, household_MR_summary_BF_sig, h
 
 }
 
+run_proxyMR_comparison_joint <- function(exposure_info, household_MR_summary_BF_sig, household_MR_summary_joint, standard_MR_summary_joint, household_MR_summary_AM){
+
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+  ## only run this for those where omega is significant and where exposure and outcome ID are different.
+  MR_sub <- household_MR_summary_BF_sig %>% filter(exposure_ID==!!exposure_ID) %>% filter(exposure_ID!=outcome_ID)
+
+  summarized_result <- as_tibble(numeric())
+
+  cat(paste0("Comparing gamma, rho and omega estimates for phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+
+  if(dim(MR_sub)[1]!=0){
+
+    for(i in 1:dim(MR_sub)[1]){
+      outcome_ID <- MR_sub$outcome_ID[[i]]
+      #exposure_sex <- MR_sub$exposure_sex[[i]]
+      #if(exposure_sex=="male"){outcome_sex="female"}
+      #if(exposure_sex=="female"){outcome_sex="male"}
+
+      # p = partner / outcome
+
+      hh_MR_sub <- household_MR_summary_joint %>% #filter(exposure_sex==!!exposure_sex) %>%
+        filter(outcome_ID==!!outcome_ID)
+
+      cols_interst <- c("IVW_beta", "IVW_se", "IVW_pval", "N_exposure_GWAS", "N_outcome_GWAS", "N_snps")
+
+
+      ## Sex-specific proxy MR
+      xiyp_summary <- hh_MR_sub %>% dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xiyp_', names(.)))
+
+      ## Sex-specific AM MR
+      xixp_summary <- household_MR_summary_AM %>% filter(exposure_ID==!!exposure_ID) %>% filter(outcome_ID==!!exposure_ID) %>% #filter(exposure_sex==!!exposure_sex) %>%
+        dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xixp_', names(.)))
+      yiyp_summary <- household_MR_summary_AM %>% filter(exposure_ID==!!outcome_ID) %>% filter(outcome_ID==!!outcome_ID) %>% #filter(exposure_sex==!!exposure_sex) %>%
+        dplyr::select(all_of(cols_interst)) %>% setNames(paste0('yiyp_', names(.)))
+
+      ## Sex-specific standard MR
+      ## (y is the outcome, x is the exposure)
+      ## exposure and outcome sex are the same, i.e. exposure/outcome sex are irrelevant
+
+      xiyi_summary <- standard_MR_summary_joint %>% filter(outcome_ID==!!outcome_ID) %>% # %>% filter(exposure_sex==!!exposure_sex)
+        dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xiyi_', names(.)))
+      xpyp_summary <- standard_MR_summary_joint %>% filter(outcome_ID==!!outcome_ID) %>% # %>% filter(outcome_sex==!!outcome_sex)
+        dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xpyp_', names(.)))
+
+
+      summary_cols <- MR_sub %>% slice(i) %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description)
+      row_i <- cbind(summary_cols, xiyp_summary, xixp_summary, yiyp_summary, xiyi_summary, xpyp_summary)
+
+      summarized_result <- rbind(summarized_result, row_i)
+    }
+
+
+    summarized_result <- as_tibble(summarized_result) %>% type_convert() %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character)
+
+    #expsoure_sex_temp <- summarized_result$exposure_sex
+    #outcome_sex_temp <- ifelse(expsoure_sex_temp=="male", "female", "male")
+
+    ## outcome sex previously was the same as exposure sex coming from the standard MR (where exposure and outcome sex would be the same)
+    #summarized_result$outcome_sex <- outcome_sex_temp
+
+
+    # Calc products and their SEs
+
+    summarized_result <- summarized_result %>% #dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, exposure_sex, outcome_sex, contains(var), contains("N_outcome_GWAS"), contains("N_snps")) %>% rename_all(~stringr::str_replace(., paste0("_", var, "_"),"_")) %>%
+      mutate(xixp_xpyp_beta = xixp_IVW_beta*xpyp_IVW_beta) %>%
+      mutate(xixp_xpyp_se = sqrt(variance_of_product(xixp_IVW_beta, xixp_IVW_se, xpyp_IVW_beta, xpyp_IVW_se))) %>%
+
+      mutate(xiyi_yiyp_beta = xiyi_IVW_beta*yiyp_IVW_beta) %>%
+      mutate(xiyi_yiyp_se = sqrt(variance_of_product(xiyi_IVW_beta, xiyi_IVW_se, yiyp_IVW_beta, yiyp_IVW_se))) %>%
+
+      mutate(gam_beta = xixp_xpyp_beta) %>% mutate(gam_se = xixp_xpyp_se) %>%
+      mutate(rho_beta = xiyi_yiyp_beta) %>% mutate(rho_se = xiyi_yiyp_se) %>%
+      mutate(omega_beta = xiyp_IVW_beta) %>% mutate(omega_se = xiyp_IVW_se) %>%
+      mutate(gam_rho_beta = gam_beta + rho_beta) %>%
+      mutate(gam_rho_se = sqrt(variance_of_sum(gam_se, rho_se)))
+
+    # Meta analyzed MRs estimates and gam, rho and omega across sexes and calculate heterogeneity between them
+
+    summarized_result_prev <- summarized_result
+
+    # Calc difference between estimates (gamma, rho and omega)
+    prod_diff_list <- list()
+
+    prod_diff_result <- summarized_result %>%
+      mutate(omega_vs_gam_pval = z.test_p(gam_beta, gam_se, omega_beta, omega_se)) %>%
+      mutate(omega_vs_rho_pval = z.test_p(rho_beta, rho_se, omega_beta, omega_se)) %>%
+      mutate(omega_vs_gam_rho_pval = z.test_p(gam_rho_beta, gam_rho_se, omega_beta, omega_se)) %>%
+      mutate(gam_vs_rho_pval = z.test_p(rho_beta, rho_se, gam_beta, gam_se)) %>%
+
+      dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, starts_with("gam"), starts_with("rho"), starts_with("omega"))
+
+
+    summarized_result_sub <- summarized_result %>% dplyr::select(-starts_with("gam")) %>% dplyr::select(-starts_with("omega")) %>% dplyr::select(-starts_with("rho")) %>% dplyr::select(-starts_with("xiyi_yiyp")) %>% dplyr::select(-starts_with("xixp_xpyp"))
+    output <- list(MR_results = summarized_result_sub, proxy_MR_comparison = prod_diff_result)
+
+  } else output <- NULL
+
+  return(output)
+
+}
+
+
 adj_yiyp_xIVs <- function(exposure_info, household_harmonised_data, household_MR_summary_BF_sig){
 
   outcome_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)

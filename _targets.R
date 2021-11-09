@@ -695,9 +695,15 @@ list(
   ),
 
   tar_target(
-    proxyMR_comparison, ## RERUN wtih newly meta-analyzed results.
+    proxyMR_comparison, ## Change names to have "_sex-specific" suffix. All inputs except `exposure_info` need to be updated to sex-specific results.
     run_proxyMR_comparison(exposure_info, household_MR_summary_BF_sig, household_MR_summary, standard_MR_summary, household_MR_summary_AM),
     map(exposure_info, household_MR_summary, standard_MR_summary), iteration = "list"
+  ),
+
+  tar_target(
+    proxyMR_comparison_joint,
+    run_proxyMR_comparison_joint(exposure_info, household_MR_summary_BF_sig, household_MR_summary_joint, standard_MR_summary_joint, household_MR_summary_AM),
+    map(exposure_info, household_MR_summary_joint, standard_MR_summary_joint), iteration = "list"
   ),
 
   tar_target(
@@ -706,7 +712,7 @@ list(
   ),
 
   tar_target(
-    proxyMR_comparison_summary, ## used to be `proxyMR_figure_data`
+    proxyMR_comparison_summary,
     summarize_proxyMR_comparison(proxyMR_comparison, traits_corr2_filled)
   ),
 
