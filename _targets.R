@@ -369,6 +369,11 @@ list(
   ),
 
   tar_target(
+    path_rev_filter_dirs,
+    create_trait_rev_filt_dirs(outcomes_to_run$Neale_pheno_ID), pattern = map(outcomes_to_run), iteration = "list"
+  ),
+
+  tar_target(
     pheno_data, # pheno data list could expand beyond just those traits with relevant IVs by changing `outcomes_to_run`
     {
       path_phesant
@@ -548,7 +553,7 @@ list(
   tar_target(
     path_outcome_stats_filter,
     {
-      path_outcome_dirs
+      path_rev_filter_dirs
       write_outcome_stats_filter(exposure_info, outcomes_to_run, standard_harmonised_data_meta_reverse_filter, standard_harmonised_data_reverse_filter, summ_stats)
     },
     pattern = map(exposure_info, standard_harmonised_data_meta_reverse_filter, standard_harmonised_data_reverse_filter, summ_stats), format = "file"

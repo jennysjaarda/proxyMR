@@ -1058,6 +1058,14 @@ create_trait_dirs <- function(Neale_pheno_ID){
 
   dir.create(paste0(pheno_dir, "/IVs/Neale/", trait_ID), showWarnings = FALSE)
 
+}
+
+create_trait_rev_filt_dirs <- function(Neale_pheno_ID){
+
+  trait_ID <- Neale_pheno_ID ## this is the Neale_id, used to be pheno_description
+
+  print(trait_ID)
+
   dir.create(paste0(pheno_dir, "/household_GWAS_rev_filter/", trait_ID), showWarnings = FALSE)
   dir.create(paste0(pheno_dir, "/standard_GWAS_rev_filter/", trait_ID), showWarnings = FALSE)
 
@@ -1633,6 +1641,14 @@ write_outcome_stats_filter <- function(exposure_info, outcomes_to_run, standard_
     GWAS_file_i <- paste0(pheno_dir, "/standard_GWAS_rev_filter/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
 
     meta_GWAS <- standard_harmonised_data_meta_reverse_filter[[i]] %>% dplyr::select(SNP, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
+
+    meta_GWAS$chr <- snp_chr[match(meta_GWAS$SNP, snp_chr$rsid), "chr"]
+    meta_GWAS <- meta_GWAS %>% dplyr::select(SNP, chr, everything()) %>% mutate(outcome_ID=outcome_ID) %>% mutate(sex = "meta") %>% mutate(exposure_ID=exposure_ID)
+
+    colnames(meta_GWAS)[match(c("beta.outcome", "se.outcome", "pval.outcome", "other_allele.outcome", "effect_allele.outcome", "eaf.outcome", "samplesize.outcome"), colnames(meta_GWAS))] <-
+      c("beta", "se", "pval", "other_allele", "effect_allele", "eaf", "samplesize")
+
+
 
     male_GWAS <- standard_harmonised_data_reverse_filter[[i]] %>% dplyr::select(SNP, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
     female_GWAS <- standard_harmonised_data_reverse_filter[[i]] %>% dplyr::select(SNP, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
