@@ -1641,55 +1641,81 @@ write_outcome_stats_filter <- function(exposure_info, outcomes_to_run, standard_
 
     outcome_ID <- outcomes_to_run$Neale_pheno_ID[i]
     GWAS_file_i <- paste0(pheno_dir, "/standard_GWAS_rev_filter/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
+    file_list <- c(GWAS_file_i, file_list)
 
     meta_GWAS <- standard_harmonised_data_meta_reverse_filter[[i]] %>% dplyr::select(SNP, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
+    male_GWAS <- standard_harmonised_data_reverse_filter[[i]][[paste0("exp_male_harmonised_data_filter")]] %>% dplyr::select(SNP, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
+    female_GWAS <- standard_harmonised_data_reverse_filter[[i]][[paste0("exp_female_harmonised_data_filter")]] %>% dplyr::select(SNP, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
 
-    meta_GWAS$chr <- snp_chr[match(meta_GWAS$SNP, snp_chr$rsid), "chr"]
-    meta_GWAS <- meta_GWAS %>% dplyr::select(SNP, chr, everything()) %>% mutate(outcome_ID=outcome_ID) %>% mutate(sex = "meta") %>% mutate(exposure_ID=exposure_ID)
-
-    colnames(meta_GWAS)[match(c("beta.outcome", "se.outcome", "pval.outcome", "other_allele.outcome", "effect_allele.outcome", "eaf.outcome", "samplesize.outcome"), colnames(meta_GWAS))] <-
-      c("beta", "se", "pval", "other_allele", "effect_allele", "eaf", "samplesize")
-
-
-
-    male_GWAS <- standard_harmonised_data_reverse_filter[[i]] %>% dplyr::select(SNP, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
-    female_GWAS <- standard_harmonised_data_reverse_filter[[i]] %>% dplyr::select(SNP, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
-
-
-    standard_harmonised_data_reverse_filter
-
-  }
-
-
-
-  for(i in 1:dim(exposures_to_run)[1]){
-
-    #IV_stats <- summ_stats[[i]]
-    exposure_ID <- exposures_to_run$Neale_pheno_ID[i]
-    rsids <- IV_stats[[1]]$rsid
-
-    GWAS_file_i <- paste0(pheno_dir, "/standard_GWAS_rev_filter/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
-    file_list <- c(GWAS_file_i, file_list)
     outcome_result_i <- numeric()
 
-    for(sex in c("both_sexes", "male", "female")){
-      outcome_stats_sex <- extract_Neale_outcome_result[[paste0(outcome_ID, "_", sex, "_summary_stats")]]
-      outcome_stats_sex_sub <- outcome_stats_sex[which(outcome_stats_sex$SNP %in% rsids),]
-      if(!all(rsids %in% outcome_stats_sex_sub$SNP)) stop(paste0("Missing outcome info for some IVs for exposure `", exposure_ID, "` in outcome `", outcome_ID, "`."))
-      outcome_stats_sex_sub$sex <- sex
-      outcome_stats_sex_sub$exposure_ID <- exposure_ID
-      outcome_result_i <- rbind(outcome_result_i, outcome_stats_sex_sub)
+    for(sex in c("meta", "male", "female")){
+
+      dat <- get(paste0(sex, "_GWAS"))
+      dat$chr <- snp_chr[match(dat$SNP, snp_chr$rsid), "chr"]
+      dat <- dat %>% dplyr::select(SNP, chr, everything()) %>% mutate(outcome_ID=outcome_ID) %>% mutate(sex = !!sex) %>% mutate(exposure_ID=exposure_ID)
+
+
+      colnames(dat)[match(c("beta.outcome", "se.outcome", "pval.outcome", "other_allele.outcome", "effect_allele.outcome", "eaf.outcome", "samplesize.outcome"), colnames(dat))] <-
+        c("beta", "se", "pval", "other_allele", "effect_allele", "eaf", "samplesize")
+
+      outcome_result_i <- rbind(outcome_result_i, dat)
+
+
     }
+
 
     write.csv(outcome_result_i, GWAS_file_i, row.names = F)
     cat(paste0("Finished writing standard GWAS statistics for exposure ", i, " of ", dim(exposures_to_run)[1], ".\n\n" ))
+
   }
 
   return(file_list)
-
 }
 
 write_household_GWAS_filter <- function(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, household_harmonised_data_reverse_filter, summ_stats){
+
+  pheno_dir <- paste0("analysis/traitMR/" )
+
+  file_list <- numeric()
+
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+  snp_chr <- summ_stats[[1]] %>% dplyr::select(rsid, chr)
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    outcome_ID <- outcomes_to_run$Neale_pheno_ID[i]
+    GWAS_file_i <- paste0(pheno_dir, "/household_GWAS_rev_filter/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
+    file_list <- c(GWAS_file_i, file_list)
+
+    meta_GWAS <- household_harmonised_data_meta_reverse_filter[[i]] %>% dplyr::select(SNP, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
+    male_GWAS <- household_harmonised_data_reverse_filter[[i]][[paste0("exp_male_harmonised_data_filter")]] %>% dplyr::select(SNP, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
+    female_GWAS <- household_harmonised_data_reverse_filter[[i]][[paste0("exp_female_harmonised_data_filter")]] %>% dplyr::select(SNP, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
+
+    outcome_result_i <- numeric()
+
+    for(sex in c("meta", "male", "female")){
+
+      dat <- get(paste0(sex, "_GWAS"))
+      dat$chr <- snp_chr[match(dat$SNP, snp_chr$rsid), "chr"]
+      dat <- dat %>% dplyr::select(SNP, chr, everything()) %>% mutate(outcome_ID=outcome_ID) %>% mutate(sex = !!sex) %>% mutate(exposure_ID=exposure_ID)
+
+
+      colnames(dat)[match(c("beta.outcome", "se.outcome", "pval.outcome", "other_allele.outcome", "effect_allele.outcome", "eaf.outcome", "samplesize.outcome"), colnames(dat))] <-
+        c("beta", "se", "pval", "other_allele", "effect_allele", "eaf", "samplesize")
+
+      outcome_result_i <- rbind(outcome_result_i, dat)
+
+
+    }
+
+
+    write.csv(outcome_result_i, GWAS_file_i, row.names = F)
+    cat(paste0("Finished writing household GWAS statistics for exposure ", i, " of ", dim(exposures_to_run)[1], ".\n\n" ))
+
+  }
+
+  return(file_list)
 
 
 }

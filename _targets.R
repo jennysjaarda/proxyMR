@@ -559,7 +559,14 @@ list(
     pattern = map(exposure_info, standard_harmonised_data_meta_reverse_filter, standard_harmonised_data_reverse_filter, summ_stats), format = "file"
   ),
 
-
+  tar_target(
+    path_household_GWAS_filter,
+    {
+      path_rev_filter_dirs
+      write_household_GWAS_filter(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, household_harmonised_data_reverse_filter, summ_stats)
+    },
+    pattern = map(exposure_info, household_harmonised_data_meta_reverse_filter, household_harmonised_data_reverse_filter, summ_stats), format = "file"
+  ),
 
   ## MR
 
