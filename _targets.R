@@ -792,7 +792,7 @@ list(
       path_outcome_stats_filter
       adj_yiyp_xIVs_joint(exposure_info, household_harmonised_data_meta_reverse_filter, household_MR_summary_BF_sig)
     },
-    map(exposure_info, household_harmonised_data)
+    map(exposure_info, household_harmonised_data_meta_reverse_filter)
   ),
 
   tar_target(

@@ -4088,45 +4088,48 @@ adj_yiyp_xIVs_joint <- function(exposure_info, household_harmonised_data_meta_re
 
     for(i in 1:dim(MR_sub)[1]){
 
+      ## The numbers below represent using exposure_ID #17 (i.e. `exposure_info <- tar_read(exposure_info, branches = 17)[[1]]` and `i=1`)
       exposure_ID <- MR_sub$exposure_ID[[i]]
-      #exposure_sex <- MR_sub$exposure_sex[[i]]
-      #if(exposure_sex=="male"){outcome_sex="female"}
-      #if(exposure_sex=="female"){outcome_sex="male"}
       harmonised_dat_name <- paste0(outcome_ID, "_vs_", outcome_ID, "_harmonised_data_meta_filter")
-      #expsosure_sex_name <- paste0("exp_", exposure_sex, "_harmonised_data")
       univar_harmonised_dat <- household_harmonised_data_meta_reverse_filter[[harmonised_dat_name]] %>% filter(bin == "all" & grouping_var == "time_together_even_bins")
 
+      #1 - 516 IVs
       hh_GWAS_file_xIVs <- paste0("analysis/traitMR/household_GWAS_rev_filter/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
-      yp_XIV_GWAS_results <- fread(hh_GWAS_file_xIVs, data.table = F) %>% filter(sex=="meta" & bin == "all" & grouping_var == "time_together_even_bins")
+      yp_XIV_GWAS_results <- fread(hh_GWAS_file_xIVs, data.table = F) %>% filter(exposure_sex=="meta" & bin == "all" & grouping_var == "time_together_even_bins")
       ## this will pull the household GWAS results for phenotype `outcome_ID` for IVs from `exposure_ID`, i.e. the effect of G on Yp for only X IVs.
 
-
+      #2 - 384 IVs
       GWAS_file_yIVs_1 <- paste0("analysis/traitMR/standard_GWAS_rev_filter/", exposure_ID, "/", exposure_ID, "_vs_", outcome_ID, "_GWAS.csv")
       xi_YIV_GWAS_results <- fread(GWAS_file_yIVs_1, data.table = F) %>% filter(sex == "meta")
       ## this will pull the standard GWAS results for phenotype `exposure_ID` for IVs from `outcome_ID`, i.e. the effect of G on Xi for only Y IVs.
 
+      #3 - 409 IVs
       GWAS_file_yIVs_2 <- paste0("analysis/traitMR/standard_GWAS_rev_filter/", outcome_ID, "/", outcome_ID, "_vs_", outcome_ID, "_GWAS.csv")
       yi_YIV_GWAS_results <- fread(GWAS_file_yIVs_2, data.table = F) %>% filter(sex == "meta")
-      ## this will pull the standard GWAS results for phenotype `exposure_ID` for IVs from `outcome_ID`, i.e. the effect of G on Yi for only Y IVs.
+      ## this will pull the standard GWAS results for phenotype `outcome_ID` for IVs from `outcome_ID`, i.e. the effect of G on Yi for only Y IVs.
 
       ## need to also pull the effect of G on Xi for X IVs
       ## and the effect of G on Yi on for X IVs
       ## i.e. we want to include X IVs in the MV MR as well: Y_p ~ Y_i + X_i
 
+      #4 - 521 IVs
       GWAS_file_xIVs_1 <- paste0("analysis/traitMR/standard_GWAS_rev_filter/", exposure_ID, "/", exposure_ID, "_vs_", exposure_ID, "_GWAS.csv")
       xi_XIV_GWAS_results <- fread(GWAS_file_xIVs_1, data.table = F) %>% filter(sex == "meta")
       ## this will pull the standard GWAS results for phenotype `exposure_ID` for IVs from `exposure_ID`, i.e. the effect of G on Xi for only X IVs.
 
+      #5 - 516 IVs
       GWAS_file_xIVs_2 <- paste0("analysis/traitMR/standard_GWAS_rev_filter/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
       yi_XIV_GWAS_results <- fread(GWAS_file_xIVs_2, data.table = F) %>% filter(sex == "meta")
-
       ## this will pull the standard GWAS results for phenotype `outcome_ID` for IVs from `exposure_ID`, i.e. the effect of G on Yi for only X IVs.
 
-      ## This should be based on meta-analyzed pvals from effect on `outcome_ID`
+      ## Pruning should be based on meta-analyzed pvals from effect on `outcome_ID`
+      ## First subset `yi_YIV_GWAS_results` to be only those set of SNPs that show no evidence of reverse causality with X
 
-      snps <- c(yi_YIV_GWAS_results$SNP, yi_XIV_GWAS_results$SNP)
-      chr <- c(yi_YIV_GWAS_results$chr, yi_XIV_GWAS_results$chr)
-      pvals <- c(yi_YIV_GWAS_results$pval, yi_XIV_GWAS_results$pval)
+      yi_YIV_GWAS_results_sub <- yi_YIV_GWAS_results %>% filter(SNP %in% xi_YIV_GWAS_results$SNP)
+
+      snps <- c(yi_YIV_GWAS_results_sub$SNP, yi_XIV_GWAS_results$SNP)
+      chr <- c(yi_YIV_GWAS_results_sub$chr, yi_XIV_GWAS_results$chr)
+      pvals <- c(yi_YIV_GWAS_results_sub$pval, yi_XIV_GWAS_results$pval)
 
 
       to_prune_mat <- tibble(SNP = snps,
@@ -4135,13 +4138,19 @@ adj_yiyp_xIVs_joint <- function(exposure_info, household_harmonised_data_meta_re
 
       pruned_mat <- IV_clump(to_prune_mat, prune_threshold)
 
-      yi_GWAS <- rbind(yi_YIV_GWAS_results, yi_XIV_GWAS_results)
-      xi_GWAS <- rbind(xi_YIV_GWAS_results, xi_XIV_GWAS_results)
+      ## Subset `xi_XIV_GWAS_results` to be only those set of SNPs that show no evidence of reverse causality with Y
+      xi_XIV_GWAS_results_sub <- xi_XIV_GWAS_results %>% filter(SNP %in% yi_XIV_GWAS_results$SNP)
+
+
+      yi_GWAS <- rbind(yi_YIV_GWAS_results_sub, yi_XIV_GWAS_results)
+      xi_GWAS <- rbind(xi_YIV_GWAS_results, xi_XIV_GWAS_results_sub)
 
       mv_X_data <- full_join(yi_GWAS, xi_GWAS, by = "SNP", suffix = c("_yi","_xi")) %>% dplyr::select(-exposure_ID_xi, -exposure_ID_yi) %>% unique()
 
-      mv_Y_data_YIV <- univar_harmonised_dat[,c("SNP", "beta.outcome", "se.outcome", "effect_allele.outcome")]
-      mv_Y_data_XIV <- yp_XIV_GWAS_results[,c("SNP", "geno_index_beta", "geno_index_se", "allele1")] # allele1 is effect allele
+
+
+      mv_Y_data_YIV <- univar_harmonised_dat[,c("SNP", "beta.outcome", "se.outcome", "effect_allele.outcome")] %>% filter(SNP %in% xi_YIV_GWAS_results$SNP)
+      mv_Y_data_XIV <- yp_XIV_GWAS_results[,c("SNP", "beta", "se", "effect_allele")]
 
       colnames_MV_y <- c("SNP", "beta_yp", "se_yp", "effect_allele_yp")
       colnames(mv_Y_data_YIV) <- colnames_MV_y
@@ -4172,6 +4181,8 @@ adj_yiyp_xIVs_joint <- function(exposure_info, household_harmonised_data_meta_re
       names(mv_xi) <- paste0("xi", c("_beta", "_se", "_pval"))
 
       temp_row <- c(mv_yi, mv_xi)
+
+      exposure_sex <- "meta"
       description <- c(exposure_ID, outcome_ID, exposure_sex)
       names(description) <- c("exposure_ID", "outcome_ID", "exposure_sex")
 
