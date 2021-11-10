@@ -1688,17 +1688,20 @@ write_household_GWAS_filter <- function(exposure_info, outcomes_to_run, househol
     GWAS_file_i <- paste0(pheno_dir, "/household_GWAS_rev_filter/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
     file_list <- c(GWAS_file_i, file_list)
 
-    meta_GWAS <- household_harmonised_data_meta_reverse_filter[[i]] %>% dplyr::select(SNP, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
-    male_GWAS <- household_harmonised_data_reverse_filter[[i]][[paste0("exp_male_harmonised_data_filter")]] %>% dplyr::select(SNP, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
-    female_GWAS <- household_harmonised_data_reverse_filter[[i]][[paste0("exp_female_harmonised_data_filter")]] %>% dplyr::select(SNP, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
+    meta_GWAS <- household_harmonised_data_meta_reverse_filter[[i]] %>% dplyr::select(exposure_ID, outcome_ID, SNP, grouping_var, bin, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
+    male_GWAS <- household_harmonised_data_reverse_filter[[i]][[paste0("exp_male_harmonised_data_filter")]] %>% dplyr::select(exposure_ID, outcome_ID, SNP, grouping_var, bin, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
+    female_GWAS <- household_harmonised_data_reverse_filter[[i]][[paste0("exp_female_harmonised_data_filter")]] %>% dplyr::select(exposure_ID, outcome_ID, SNP, grouping_var, bin, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
 
     outcome_result_i <- numeric()
 
     for(sex in c("meta", "male", "female")){
 
+      if(sex=="meta"){outcome_sex <- "meta"}
+      if(sex=="male"){outcome_sex <- "female"}
+      if(sex=="female"){outcome_sex <- "male"}
       dat <- get(paste0(sex, "_GWAS"))
       dat$chr <- snp_chr[match(dat$SNP, snp_chr$rsid), "chr"]
-      dat <- dat %>% dplyr::select(SNP, chr, everything()) %>% mutate(outcome_ID=outcome_ID) %>% mutate(sex = !!sex) %>% mutate(exposure_ID=exposure_ID)
+      dat <- dat %>% mutate(exposure_sex = !!sex) %>% mutate(outcome_sex = !!outcome_sex) %>% dplyr::select(exposure_ID, outcome_ID, SNP, chr, grouping_var, bin, exposure_sex, outcome_sex, everything())
 
 
       colnames(dat)[match(c("beta.outcome", "se.outcome", "pval.outcome", "other_allele.outcome", "effect_allele.outcome", "eaf.outcome", "samplesize.outcome"), colnames(dat))] <-
@@ -4094,7 +4097,7 @@ adj_yiyp_xIVs_joint <- function(exposure_info, household_harmonised_data_meta_re
       univar_harmonised_dat <- household_harmonised_data_meta_reverse_filter[[harmonised_dat_name]] %>% filter(bin == "all" & grouping_var == "time_together_even_bins")
 
       hh_GWAS_file_xIVs <- paste0("analysis/traitMR/household_GWAS_rev_filter/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
-      yp_XIV_GWAS_results <- fread(hh_GWAS_file_xIVs, data.table = F) %>% filter(exposure_sex==!!exposure_sex & bin == "all" & grouping_var == "time_together_even_bins")
+      yp_XIV_GWAS_results <- fread(hh_GWAS_file_xIVs, data.table = F) %>% filter(sex=="meta" & bin == "all" & grouping_var == "time_together_even_bins")
       ## this will pull the household GWAS results for phenotype `outcome_ID` for IVs from `exposure_ID`, i.e. the effect of G on Yp for only X IVs.
 
 

@@ -568,7 +568,7 @@ list(
     pattern = map(exposure_info, household_harmonised_data_meta_reverse_filter, household_harmonised_data_reverse_filter, summ_stats), format = "file"
   ),
 
-  ## MR
+  ## Household MR
 
   tar_target(
     path_MR_dirs,
@@ -600,23 +600,6 @@ list(
   ),
 
   tar_target(
-    household_MR_binned_het, # calc sex-het, and slope and Q-stat among bins, sex-specific and binned
-    calc_binned_household_MR_het(exposure_info, outcomes_to_run, household_MR_binned_meta),
-    pattern = map(exposure_info, household_MR_binned_meta)
-  ),
-
-  tar_target(
-    household_MR_binned_AM_figs,
-    create_MR_binned_AM_figs(household_harmonised_data, household_MR_binned_meta, custom_col),
-    pattern = map(household_harmonised_data, household_MR_binned_meta), iteration = "list"
-  ),
-
-  tar_target(
-    household_MR_AM_FvsM_fig,
-    create_household_MR_AM_FvsM_fig(household_MR_binned_het, custom_col),
-  ),
-
-  tar_target(
     path_household_MR_binned,
     {
       path_MR_dirs
@@ -625,6 +608,11 @@ list(
     pattern = map(exposure_info, household_MR_binned_meta), format = "file"
   ),
 
+  tar_target(
+    household_MR_binned_het, # calc sex-het, and slope and Q-stat among bins, sex-specific and binned
+    calc_binned_household_MR_het(exposure_info, outcomes_to_run, household_MR_binned_meta),
+    pattern = map(exposure_info, household_MR_binned_meta)
+  ),
 
   tar_target(
     household_MR, ## `household_MR  ` is run in full sample only, not binned by age / time-together categories.
@@ -633,20 +621,9 @@ list(
   ),
 
   tar_target(
-    household_MR_joint, ## `household_MR_joint  ` is run in full sample only, not binned by age / time-together categories.
+    household_MR_joint, ## `household_MR_joint ` is run in full sample only, not binned by age / time-together categories.
     run_household_MR_comprehensive_joint(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, MR_method_list),
     pattern = map(exposure_info, household_harmonised_data_meta_reverse_filter), iteration = "list"
-  ),
-
-
-  tar_target(
-    household_MVMR, # to run model: $Y_p \sim X_i + Y_i + X_p$
-    {
-      path_household_GWAS
-      path_outcome_stats
-      run_household_MVMR(exposure_info, outcomes_to_run)
-    },
-    pattern = map(exposure_info), iteration = "list"
   ),
 
   tar_target(
@@ -663,11 +640,7 @@ list(
     pattern = map(household_MR_joint)
   ),
 
-  tar_target(
-    household_MVMR_summary,
-    summarize_household_MVMR(household_MVMR, traits_corr2_filled, corr_mat_traits),
-    pattern = map(household_MVMR)
-  ),
+  ## Filter Household MR for correlation and significance
 
   tar_target(
     household_MR_summary_corr_filter,
@@ -677,6 +650,20 @@ list(
   tar_target(
     household_MR_summary_BF_sig,
     find_sig_household_MR_summary(household_MR_summary_corr_filter)
+  ),
+
+
+  ## Household MR analyses for only same trait (AM = assortative mating)
+
+  tar_target(
+    household_MR_binned_AM_figs,
+    create_MR_binned_AM_figs(household_harmonised_data, household_MR_binned_meta, custom_col),
+    pattern = map(household_harmonised_data, household_MR_binned_meta), iteration = "list"
+  ),
+
+  tar_target(
+    household_MR_AM_FvsM_fig,
+    create_household_MR_AM_FvsM_fig(household_MR_binned_het, custom_col),
   ),
 
   tar_target(
@@ -700,6 +687,26 @@ list(
     num_tests_by_PCs_AM_sig,
     calc_num_tests_by_PCs(PC_traits_AM_sig, 0.995)
   ),
+
+  ## Household MVMR:  $Y_p \sim X_i + Y_i + X_p$
+
+  tar_target(
+    household_MVMR,
+    {
+      path_household_GWAS
+      path_outcome_stats
+      run_household_MVMR(exposure_info, outcomes_to_run)
+    },
+    pattern = map(exposure_info), iteration = "list"
+  ),
+
+  tar_target(
+    household_MVMR_summary,
+    summarize_household_MVMR(household_MVMR, traits_corr2_filled, corr_mat_traits),
+    pattern = map(household_MVMR)
+  ),
+
+  ## Standard MR
 
   tar_target(
     standard_MR,
@@ -732,6 +739,8 @@ list(
     find_sig_standard_MR_summary(standard_MR_summary_joint)
   ),
 
+  ## Compute rho, omega and gamma
+
   tar_target(
     proxyMR_comparison, ## Change names to have "_sex-specific" suffix. All inputs except `exposure_info` need to be updated to sex-specific results.
     run_proxyMR_comparison(exposure_info, household_MR_summary_BF_sig, household_MR_summary, standard_MR_summary, household_MR_summary_AM),
@@ -755,11 +764,33 @@ list(
   ),
 
   tar_target(
+    proxyyMR_IV_overlap,
+    {
+      path_summ_stats
+      find_proxyMR_IV_overlap(exposure_info, proxyMR_MR_paths_summary)
+    },
+    map(exposure_info)
+
+  ),
+
+  ## Adj $Y_p \sim Y_i$ associations for $X_i$ and reperform proxyMR
+
+  tar_target(
     proxyMR_yiyp_adj,
     {
       path_household_GWAS
       path_outcome_stats
       adj_yiyp_xIVs(exposure_info, household_harmonised_data, household_MR_summary_BF_sig)
+    },
+    map(exposure_info, household_harmonised_data)
+  ),
+
+  tar_target(
+    proxyMR_yiyp_adj_joint,
+    {
+      path_household_GWAS_filter
+      path_outcome_stats_filter
+      adj_yiyp_xIVs_joint(exposure_info, household_harmonised_data_meta_reverse_filter, household_MR_summary_BF_sig)
     },
     map(exposure_info, household_harmonised_data)
   ),
@@ -780,6 +811,8 @@ list(
     summarize_proxyMR_comparison(proxyMR_comparison_yiyp_adj, traits_corr2_filled)
   ),
 
+  ## Add z's to proxyMR
+
   tar_group_count(
     MV_z, ## z's are based on standard_MR: x -> z -> y
     find_MV_z(household_MR_summary_BF_sig, standard_MR_summary),
@@ -787,12 +820,10 @@ list(
   ),
 
   tar_target(
-    MV_z_corr_filter,
+    MV_z_corr_filter, # filter to only z's that have correlation < 0.8 (play with this a bit).
     corr_filter_MV_z(MV_z, corr_mat_traits, z_prune_threshold),
     map(MV_z)
   ),
-
-  # filter to only z's that have correlation < 0.8 (play with this a bit).
 
   tar_target(
     z_summ_stats,
@@ -809,15 +840,7 @@ list(
     map(MV_z_corr_filter, z_summ_stats)
   ),
 
-  tar_target(
-    proxyyMR_IV_overlap,
-    {
-      path_summ_stats
-      find_proxyMR_IV_overlap(exposure_info, proxyMR_MR_paths_summary)
-    },
-    map(exposure_info)
-
-  ),
+  ## Create some summary figures
 
   tar_target(
     proxyMR_prod_comparison_fig,
