@@ -1066,6 +1066,8 @@ create_trait_rev_filt_dirs <- function(Neale_pheno_ID){
 
   print(trait_ID)
 
+  pheno_dir <- paste0("analysis/traitMR")
+
   dir.create(paste0(pheno_dir, "/household_GWAS_rev_filter/", trait_ID), showWarnings = FALSE)
   dir.create(paste0(pheno_dir, "/standard_GWAS_rev_filter/", trait_ID), showWarnings = FALSE)
 
@@ -1684,6 +1686,11 @@ write_outcome_stats_filter <- function(exposure_info, outcomes_to_run, standard_
   }
 
   return(file_list)
+
+}
+
+write_household_GWAS_filter <- function(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, household_harmonised_data_reverse_filter, summ_stats){
+
 
 }
 
