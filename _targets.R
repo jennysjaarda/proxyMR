@@ -802,6 +802,12 @@ list(
   ),
 
   tar_target(
+    proxyMR_comparison_yiyp_adj_joint,
+    run_proxyMR_comparison_adj_yiyp_joint(exposure_info, household_MR_summary_BF_sig, household_MR_summary_joint, standard_MR_summary_joint, household_MR_summary_AM, proxyMR_yiyp_adj_joint),
+    map(exposure_info, household_MR_summary_joint, standard_MR_summary_joint), iteration = "list"
+  ),
+
+  tar_target(
     proxyMR_MR_paths_summary_yiyp_adj, ## summarize the different MR paths in each Xi -> Yp
     summarize_proxyMR_paths(proxyMR_comparison_yiyp_adj)
   ),
