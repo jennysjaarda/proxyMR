@@ -689,6 +689,8 @@ list(
   ),
 
   ## Household MVMR:  $Y_p \sim X_i + Y_i + X_p$
+  ## Decided that this won't work afterall since we don't have additional instruments for X_p, beyond those that are already instruments for X_i. The only way around would be to run a GWAS on X_p, but it's not worth the effort.
+  ## If we change our minds the `run_household_MVMR_joint` needs some minor attention before running.
 
   tar_target(
     household_MVMR,
@@ -696,6 +698,17 @@ list(
       path_household_GWAS
       path_outcome_stats
       run_household_MVMR(exposure_info, outcomes_to_run)
+    },
+    pattern = map(exposure_info), iteration = "list"
+  ),
+
+
+  tar_target(
+    household_MVMR_joint,
+    {
+      path_household_GWAS_filter
+      path_outcome_stats_filter
+      run_household_MVMR_joint(exposure_info, outcomes_to_run)
     },
     pattern = map(exposure_info), iteration = "list"
   ),
@@ -808,13 +821,13 @@ list(
   ),
 
   tar_target(
-    proxyMR_MR_paths_summary_yiyp_adj, ## summarize the different MR paths in each Xi -> Yp
-    summarize_proxyMR_paths(proxyMR_comparison_yiyp_adj)
+    proxyMR_MR_paths_summary_yiyp_adj_joint, ## summarize the different MR paths in each Xi -> Yp
+    summarize_proxyMR_paths(proxyMR_comparison_yiyp_adj_joint)
   ),
 
   tar_target(
-    proxyMR_comparison_summary_yiyp_adj,
-    summarize_proxyMR_comparison(proxyMR_comparison_yiyp_adj, traits_corr2_filled)
+    proxyMR_comparison_summary_yiyp_adj_joint,
+    summarize_proxyMR_comparison_joint(proxyMR_comparison_yiyp_adj_joint, traits_corr2_filled)
   ),
 
   ## Add z's to proxyMR
