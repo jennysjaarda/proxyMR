@@ -1,0 +1,98 @@
+---
+title: "Update Meeting: 11-11-2021"
+author: "Jenny Sjaarda"
+date: "2021-11-11"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+
+```{r setup, include = FALSE}
+
+options(scipen=999)
+source("code/settings.R")
+source("R/functions.R")
+library(targets)
+library(dplyr)
+library(DT)
+library(knitr)
+library(ggplot2)
+library(kableExtra)
+
+```
+
+```{r load_targets, include = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+tar_load(proxyMR_comparison_summary_yiyp_adj_joint)
+tar_load(proxyMR_MR_paths_summary_yiyp_adj_joint)
+
+```
+
+# Progress update.
+
+- Last time, we ran a MVMR as follows: $Y_p \sim X_i + Y_i + X_p$, using instruments for ${X_i, Y_i, X_p}$. Unfortunately, realized this won't work after all because there is too much co-linearity between $X_i$ and $X_p$. We also don't have additional instruments for $X_p$, beyond those that are already instruments for $X_i$. The only way around would be to run a GWAS on $X_p$, but probably not worth that effort (unlikely to find any additional instrument anyways).
+- Updated pipeline to meta-analyze across sexes at the SNP level rather than the MR level (minimize weak-instrument bias). 
+- In all two-trait MRs, I’ve filtered out SNPs that show evidence of reverse causation based on same-person statistics (i.e. from Neale, meta-analyzed across sexes as per update above) and then use those same, filtered IVs in the couple MRs. IVs were filtered based on the code below (for reference), essentially removing any SNP that is more strongly associated with the outcome than the expsoure at a threshold of p < `# r reverse_MR_threshold`, corresponding to the `reverse_MR_threshold` in the code below. 
+
+```{r eval=FALSE}
+
+reverse_t_threshold  =  stats::qnorm(reverse_MR_threshold)
+
+dat_filter <- dat %>%
+  mutate(z_score.exposure = beta.exposure / se.exposure) %>%
+  mutate(z_score.outcome = beta.outcome / se.outcome) %>%
+  mutate(std_beta.exposure = z_score.exposure / sqrt(samplesize.exposure)) %>%
+  mutate(std_beta.outcome = z_score.outcome / sqrt(samplesize.outcome)) %>%
+  mutate(std_se.exposure = 1 / sqrt(samplesize.exposure)) %>%
+  mutate(std_se.outcome = 1 / sqrt(samplesize.outcome)) %>%
+  mutate(std_t_stat = (abs(std_beta.exposure) - abs(std_beta.outcome)) /
+           sqrt(std_se.exposure^2 + std_se.outcome^2)) %>%
+  filter(std_t_stat > reverse_t_threshold)
+```
+
+# Results. 
+
+As a recap, the model is below. 
+
+```{r proxyMR_figure_adj, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600}
+proxyMR_prod_comparison_fig_yiyp_adj
+```
+
+A summary of the regressions between $\omega$, $\rho$ and $\gamma$ is below. 
+
+```{r regression_summary, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600}
+data <- proxyMR_comparison_summary_yiyp_adj_joint
+summary(lm(rho_beta ~ omega_beta + 0, data = data))
+summary(lm(gam_beta ~ omega_beta + 0, data = data))
+summary(lm(gam_rho_beta ~ omega_beta + 0, data = data))
+```
+
+```{r resid_summary, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600}
+rho_resid <- resid(lm(rho_beta ~ gam_beta, data = data))
+data$gam_rho_resid <- rho_resid + data$gam_beta
+summary(lm(gam_rho_resid ~ omega_beta + 0, data = data))
+```
+
+
+```{r proxyMR_fsig_omega_vs_gam, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600, message = FALSE, warning = FALSE}
+
+data$exposure_sex <- "joint"
+
+ 
+x_start <- "gam"
+y_start <- "omega"
+overlay_var_start <- "omega_vs_gam_BF_sig"
+overlay_var = paste0(overlay_var_start)
+
+
+x = paste0(x_start, "_beta")
+y = paste0(y_start, "_beta")
+
+count <- 0
+
+plot <- create_proxy_prod_comparison_fig_ind(data, exposure_sex = "joint", x, y, overlay_var, count)
+
+plot[[1]]
+
+```
+
