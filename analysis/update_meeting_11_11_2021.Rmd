@@ -19,6 +19,7 @@ library(DT)
 library(knitr)
 library(ggplot2)
 library(kableExtra)
+library(cowplot)
 
 ```
 
@@ -54,27 +55,29 @@ dat_filter <- dat %>%
 
 As a recap, the model is below. 
 
-```{r proxyMR_figure_adj, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600}
-proxyMR_prod_comparison_fig_yiyp_adj
+```{r YiYp_adj_model, echo = FALSE}
+library(knitr)
+knitr::include_graphics("assets/two_trait_model_yiyp_adj.png", error = FALSE)
 ```
+
 
 A summary of the regressions between $\omega$, $\rho$ and $\gamma$ is below. 
 
-```{r regression_summary, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600}
+```{r regression_summary, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
 data <- proxyMR_comparison_summary_yiyp_adj_joint
 summary(lm(rho_beta ~ omega_beta + 0, data = data))
 summary(lm(gam_beta ~ omega_beta + 0, data = data))
 summary(lm(gam_rho_beta ~ omega_beta + 0, data = data))
 ```
 
-```{r resid_summary, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600}
+```{r resid_summary, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
 rho_resid <- resid(lm(rho_beta ~ gam_beta, data = data))
 data$gam_rho_resid <- rho_resid + data$gam_beta
 summary(lm(gam_rho_resid ~ omega_beta + 0, data = data))
 ```
 
 
-```{r proxyMR_fsig_omega_vs_gam, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600, message = FALSE, warning = FALSE}
+```{r proxyMR_sig_gam_vs_omega, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600, message = FALSE, warning = FALSE}
 
 data$exposure_sex <- "joint"
 
@@ -96,3 +99,24 @@ plot[[1]]
 
 ```
 
+```{r proxyMR_sig_rho_vs_omega, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600, message = FALSE, warning = FALSE}
+
+data$exposure_sex <- "joint"
+
+ 
+x_start <- "rho"
+y_start <- "omega"
+overlay_var_start <- "omega_vs_rho_BF_sig"
+overlay_var = paste0(overlay_var_start)
+
+
+x = paste0(x_start, "_beta")
+y = paste0(y_start, "_beta")
+
+count <- 0
+
+plot <- create_proxy_prod_comparison_fig_ind(data, exposure_sex = "joint", x, y, overlay_var, count)
+
+plot[[1]]
+
+```
