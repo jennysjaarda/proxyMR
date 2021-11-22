@@ -29,9 +29,9 @@ tar_load(household_MR_summary)
 
 # Progress update
 
-Decided to run MVMR as follows: $Y_p \sim X_i + Y_i + X_p$, using instruments for ${X_i, Y_i, X_p}$. In this MR, the coefficient for $X_i$ would represent the *direct* $X_i \rightarrow Y_p$ causal effect and hopefully this would be close to zero in most cases. Running simply the $Y_p \sim X_i$ MR (with only $X_i$ instruments), would give you the $X_i \rightarrow Y_p$ *total* effect. Then we can compare the direct and total effect results. 
+Decided to run MVMR as follows: $Y_p \sim X_i + Y_i + X_p$, using instruments for ${X_i, Y_i, X_p}$. In this MR, the coefficient for $X_i$ would represent the **direct** $X_i \rightarrow Y_p$ causal effect and hopefully this would be close to zero in most cases. Running simply the $Y_p \sim X_i$ MR (with only $X_i$ instruments), would give you the $X_i \rightarrow Y_p$ **total** effect. Then we can compare the direct and total effect results. 
 
-A summary of the MVMR results are below, filtered to only traits with abs(correlation) < 0.8, and then BF significant with $X_i$.
+A summary of the MVMR results are below, filtered to only traits with `abs(correlation) < 0.8`, and then BF significant with $X_i$.
 
 The column `corr_traits` corresponds to the raw correlation between traits in the biobank. The columns `IVW_meta_beta` and `IVW_meta_pval` correspond to the meta-analyzed across sexes univariate results from the $Y_p ~ X_i$ MR. The subsequent columns correspond to the MVMR MR results. 
 
@@ -40,7 +40,7 @@ The column `corr_traits` corresponds to the raw correlation between traits in th
 household_MVMR_summary.DT <- household_MVMR_summary %>% filter(same_trait==FALSE) %>% filter(abs(corr_traits) < 0.8) 
 
 num_tests <- dim(household_MVMR_summary.DT)[1]
-household_MVMR_BF.DT <- household_MVMR_summary.DT %>% filter(xi_meta_pval < 0.05/num_tests) %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, corr_traits, yi_meta_beta, yi_meta_pval, xi_meta_beta, xi_meta_pval, xp_meta_beta, xp_meta_pval) %>% unique()
+household_MVMR_BF.DT <- household_MVMR_summary.DT %>% filter(xi_meta_pval < 0.05/num_tests*2) %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, corr_traits, yi_meta_beta, yi_meta_pval, xi_meta_beta, xi_meta_pval, xp_meta_beta, xp_meta_pval) %>% unique()
 
 
 household_MR_summary_sub <- household_MR_summary %>% dplyr::select(exposure_ID, outcome_ID, IVW_meta_beta, IVW_meta_se, IVW_meta_pval) %>% unique()
@@ -51,9 +51,13 @@ DT::datatable(MVMR_uniMR_comparison.DT, width = "100%") %>% formatRound(columns=
 
 ```
 
+The plot below displays the direct effect (from MVMR) vs indirect effects (from univariate MR) of $X_i$ on $Y_p$ for all combinations of traits with `abs(correlation) < 0.8` (i.e. the data above plus non-significant results). Total number of tests is `r dim(household_MVMR_summary.DT)[1]/2`. The second plot shows only BF-significant results according to the MVMR. 
+
 ```{r direct_vs_indirect_effects_plot, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE}
 
-plot_data <-  inner_join(household_MR_summary_sub, household_MVMR_summary.DT)  %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, corr_traits, IVW_meta_beta, IVW_meta_se, yi_meta_beta, yi_meta_se, xi_meta_beta, xi_meta_se, xp_meta_beta, xp_meta_se) %>% unique()
+  plot_data <-  inner_join(household_MR_summary_sub, household_MVMR_summary.DT)  %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, corr_traits, IVW_meta_beta, IVW_meta_se, yi_meta_beta, yi_meta_se, xi_meta_beta, xi_meta_se, xi_meta_pval, xp_meta_beta, xp_meta_se) %>% unique()
+
+sig_plot_data <- plot_data %>% filter(xi_meta_pval < 0.05/num_tests*2)
 
 #bquote('x axis'~(Å^2))
 #expression(Sepal~Length[cm])
@@ -93,4 +97,36 @@ plot <-
 
 plot 
 
+
+
+plot_sig <-
+  ggplot2::ggplot(data = sig_plot_data, ggplot2::aes(x = IVW_meta_beta,
+                                                 y = xi_meta_beta)) +
+  geom_point(alpha = 3 / 4) +
+  geom_smooth(
+    mapping = aes(x = IVW_meta_beta, y = xi_meta_beta),
+    method = "lm",
+    se = FALSE,
+    formula = y ~ x + 0,
+    fullrange = TRUE,
+    color = custom_col[4]
+  ) +
+  ggplot2::geom_errorbar(
+    ggplot2::aes(ymin = xi_meta_beta - xi_meta_se, ymax = xi_meta_beta + xi_meta_se),
+    colour = "grey",
+    width = 0
+  ) +
+  ggplot2::geom_errorbarh(
+    ggplot2::aes(xmin = IVW_meta_beta - IVW_meta_se, xmax = IVW_meta_beta + IVW_meta_se),
+    colour = "grey",
+    height = 0
+  ) +
+  theme_minimal() +
+  ggplot2::labs(
+    x = expression(Indirect~effect~of~X[i]~on~Y[p]~(from~univariate~MR)),
+    y = expression(Direct~effect~of~X[i]~on~Y[p]~(from~MVMR))
+  ) + 
+  geom_abline(slope=1, intercept=0)
+
+plot_sig
 ```
