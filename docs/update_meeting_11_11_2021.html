@@ -15,8 +15,7 @@
 
 <title>Update Meeting: 11-11-2021</title>
 
-<script src="site_libs/header-attrs-2.10/header-attrs.js"></script>
-<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
@@ -47,8 +46,6 @@ div.section {
   padding-top: 12px;
 }
 </style>
-
-
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -369,50 +366,56 @@ div.tocify {
 
 
 <p>
-<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
-<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report"
+  data-toggle="collapse" data-target="#workflowr-report">
+  
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 </button>
 </p>
+
 <div id="workflowr-report" class="collapse">
 <ul class="nav nav-tabs">
-<li class="active">
+  <li class="active">
 <a data-toggle="tab" href="#summary">Summary</a>
 </li>
-<li>
-<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
+  <li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
 </li>
-<li>
+  <li>
 <a data-toggle="tab" href="#versions">Past versions</a>
 </li>
 </ul>
+
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
-<p>
-<strong>Last updated:</strong> 2021-11-11
+  <p>
+<strong>Last updated:</strong> 2021-11-22
 </p>
-<p>
-<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
+  <p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
 </p>
-<p>
+  <p>
 <strong>Knit directory:</strong> <code>proxyMR/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
 </p>
-<p>
+  <p>
+  
 This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
   href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.2). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
 </p>
 <hr>
 </div>
 <div id="checks" class="tab-pane fade">
-<div id="workflowr-checks" class="panel-group">
-<div class="panel panel-default">
+  <div class="panel-group" id="workflowr-checks">
+  <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted changes </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
 </p>
 </div>
-<div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown is untracked by Git. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+  
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
 </div>
 </div>
 </div>
@@ -424,7 +427,8 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 </div>
 <div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
 <div class="panel-body">
-<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+  
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it's best to always run the code in an empty environment.</p>
 </div>
 </div>
 </div>
@@ -436,6 +440,7 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 </div>
 <div id="strongSeedstrongcodesetseed20210602code" class="panel-collapse collapse">
 <div class="panel-body">
+  
 <p>The command <code>set.seed(20210602)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
 </div>
 </div>
@@ -448,6 +453,7 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 </div>
 <div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
 <div class="panel-body">
+  
 <p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
 </div>
 </div>
@@ -460,6 +466,7 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 </div>
 <div id="strongCachestrongnone" class="panel-collapse collapse">
 <div class="panel-body">
+  
 <p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
 </div>
 </div>
@@ -472,6 +479,7 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 </div>
 <div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
 <div class="panel-body">
+  
 <p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
 </div>
 </div>
@@ -479,48 +487,204 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtree012cb6bcb4f8dc22e9c770255f0118886a51fa9ctargetblank012cb6ba"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/jennysjaarda/proxyMR/tree/012cb6bcb4f8dc22e9c770255f0118886a51fa9c" target="_blank">012cb6b</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtree810aae7fd85768d9208298bb0af7b819b7d9cd1etargetblank810aae7a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/jennysjaarda/proxyMR/tree/810aae7fd85768d9208298bb0af7b819b7d9cd1e" target="_blank">810aae7</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtree012cb6bcb4f8dc22e9c770255f0118886a51fa9ctargetblank012cb6ba" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtree810aae7fd85768d9208298bb0af7b819b7d9cd1etargetblank810aae7a" class="panel-collapse collapse">
 <div class="panel-body">
+  
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
+
 <p>
-The results in this page were generated with repository version <a href="https://github.com/jennysjaarda/proxyMR/tree/012cb6bcb4f8dc22e9c770255f0118886a51fa9c" target="_blank">012cb6b</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://github.com/jennysjaarda/proxyMR/tree/810aae7fd85768d9208298bb0af7b819b7d9cd1e" target="_blank">810aae7</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
+
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 </p>
+
 <pre><code>
 Ignored files:
-    Ignored:    .DS_Store
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
+    Ignored:    _targets/
+    Ignored:    analysis/_site.yml_cp
+    Ignored:    analysis/bgenie_GWAS/
+    Ignored:    analysis/data_setup/
+    Ignored:    analysis/download_Neale_list.csv
+    Ignored:    analysis/process_Neale.out
+    Ignored:    analysis/traitMR/
+    Ignored:    data/Neale_SGG_directory_12_07_2021.csv
+    Ignored:    data/Neale_SGG_directory_15_07_2021.csv
+    Ignored:    data/PHESANT_file_directory_05_10_2021.txt
+    Ignored:    data/UKBB_pheno_directory_05_10_2021.csv
+    Ignored:    data/processed/
+    Ignored:    data/raw/
+    Ignored:    output/figures/
+    Ignored:    output/tables/traitMR/
+    Ignored:    proxyMR_comparison.RData
     Ignored:    proxyMR_figure_data.RData
+    Ignored:    proxymr_100_clustermq.out
+    Ignored:    proxymr_101_clustermq.out
+    Ignored:    proxymr_102_clustermq.out
+    Ignored:    proxymr_103_clustermq.out
+    Ignored:    proxymr_104_clustermq.out
+    Ignored:    proxymr_105_clustermq.out
+    Ignored:    proxymr_106_clustermq.out
+    Ignored:    proxymr_107_clustermq.out
+    Ignored:    proxymr_108_clustermq.out
+    Ignored:    proxymr_109_clustermq.out
+    Ignored:    proxymr_10_clustermq.out
+    Ignored:    proxymr_110_clustermq.out
+    Ignored:    proxymr_111_clustermq.out
+    Ignored:    proxymr_112_clustermq.out
+    Ignored:    proxymr_113_clustermq.out
+    Ignored:    proxymr_114_clustermq.out
+    Ignored:    proxymr_115_clustermq.out
+    Ignored:    proxymr_116_clustermq.out
+    Ignored:    proxymr_117_clustermq.out
+    Ignored:    proxymr_118_clustermq.out
+    Ignored:    proxymr_119_clustermq.out
+    Ignored:    proxymr_11_clustermq.out
+    Ignored:    proxymr_120_clustermq.out
+    Ignored:    proxymr_121_clustermq.out
+    Ignored:    proxymr_122_clustermq.out
+    Ignored:    proxymr_123_clustermq.out
+    Ignored:    proxymr_124_clustermq.out
+    Ignored:    proxymr_125_clustermq.out
+    Ignored:    proxymr_126_clustermq.out
+    Ignored:    proxymr_127_clustermq.out
+    Ignored:    proxymr_128_clustermq.out
+    Ignored:    proxymr_129_clustermq.out
+    Ignored:    proxymr_12_clustermq.out
+    Ignored:    proxymr_130_clustermq.out
+    Ignored:    proxymr_131_clustermq.out
+    Ignored:    proxymr_132_clustermq.out
+    Ignored:    proxymr_133_clustermq.out
+    Ignored:    proxymr_134_clustermq.out
+    Ignored:    proxymr_135_clustermq.out
+    Ignored:    proxymr_136_clustermq.out
+    Ignored:    proxymr_137_clustermq.out
+    Ignored:    proxymr_138_clustermq.out
+    Ignored:    proxymr_139_clustermq.out
+    Ignored:    proxymr_13_clustermq.out
+    Ignored:    proxymr_140_clustermq.out
+    Ignored:    proxymr_14_clustermq.out
+    Ignored:    proxymr_15_clustermq.out
+    Ignored:    proxymr_16_clustermq.out
+    Ignored:    proxymr_17_clustermq.out
+    Ignored:    proxymr_18_clustermq.out
+    Ignored:    proxymr_19_clustermq.out
+    Ignored:    proxymr_1_clustermq.out
+    Ignored:    proxymr_20_clustermq.out
+    Ignored:    proxymr_21_clustermq.out
+    Ignored:    proxymr_22_clustermq.out
+    Ignored:    proxymr_23_clustermq.out
+    Ignored:    proxymr_24_clustermq.out
+    Ignored:    proxymr_25_clustermq.out
+    Ignored:    proxymr_26_clustermq.out
+    Ignored:    proxymr_27_clustermq.out
+    Ignored:    proxymr_28_clustermq.out
+    Ignored:    proxymr_29_clustermq.out
+    Ignored:    proxymr_2_clustermq.out
+    Ignored:    proxymr_30_clustermq.out
+    Ignored:    proxymr_31_clustermq.out
+    Ignored:    proxymr_32_clustermq.out
+    Ignored:    proxymr_33_clustermq.out
+    Ignored:    proxymr_34_clustermq.out
+    Ignored:    proxymr_35_clustermq.out
+    Ignored:    proxymr_36_clustermq.out
+    Ignored:    proxymr_37_clustermq.out
+    Ignored:    proxymr_38_clustermq.out
+    Ignored:    proxymr_39_clustermq.out
+    Ignored:    proxymr_3_clustermq.out
+    Ignored:    proxymr_40_clustermq.out
+    Ignored:    proxymr_41_clustermq.out
+    Ignored:    proxymr_42_clustermq.out
+    Ignored:    proxymr_43_clustermq.out
+    Ignored:    proxymr_44_clustermq.out
+    Ignored:    proxymr_45_clustermq.out
+    Ignored:    proxymr_46_clustermq.out
+    Ignored:    proxymr_47_clustermq.out
+    Ignored:    proxymr_48_clustermq.out
+    Ignored:    proxymr_49_clustermq.out
+    Ignored:    proxymr_4_clustermq.out
+    Ignored:    proxymr_50_clustermq.out
+    Ignored:    proxymr_51_clustermq.out
+    Ignored:    proxymr_52_clustermq.out
+    Ignored:    proxymr_53_clustermq.out
+    Ignored:    proxymr_54_clustermq.out
+    Ignored:    proxymr_55_clustermq.out
+    Ignored:    proxymr_56_clustermq.out
+    Ignored:    proxymr_57_clustermq.out
+    Ignored:    proxymr_58_clustermq.out
+    Ignored:    proxymr_59_clustermq.out
+    Ignored:    proxymr_5_clustermq.out
+    Ignored:    proxymr_60_clustermq.out
+    Ignored:    proxymr_61_clustermq.out
+    Ignored:    proxymr_62_clustermq.out
+    Ignored:    proxymr_63_clustermq.out
+    Ignored:    proxymr_64_clustermq.out
+    Ignored:    proxymr_65_clustermq.out
+    Ignored:    proxymr_66_clustermq.out
+    Ignored:    proxymr_67_clustermq.out
+    Ignored:    proxymr_68_clustermq.out
+    Ignored:    proxymr_69_clustermq.out
+    Ignored:    proxymr_6_clustermq.out
+    Ignored:    proxymr_70_clustermq.out
+    Ignored:    proxymr_71_clustermq.out
+    Ignored:    proxymr_72_clustermq.out
+    Ignored:    proxymr_73_clustermq.out
+    Ignored:    proxymr_74_clustermq.out
+    Ignored:    proxymr_75_clustermq.out
+    Ignored:    proxymr_76_clustermq.out
+    Ignored:    proxymr_77_clustermq.out
+    Ignored:    proxymr_78_clustermq.out
+    Ignored:    proxymr_79_clustermq.out
+    Ignored:    proxymr_7_clustermq.out
+    Ignored:    proxymr_80_clustermq.out
+    Ignored:    proxymr_81_clustermq.out
+    Ignored:    proxymr_82_clustermq.out
+    Ignored:    proxymr_83_clustermq.out
+    Ignored:    proxymr_84_clustermq.out
+    Ignored:    proxymr_85_clustermq.out
+    Ignored:    proxymr_86_clustermq.out
+    Ignored:    proxymr_87_clustermq.out
+    Ignored:    proxymr_88_clustermq.out
+    Ignored:    proxymr_89_clustermq.out
+    Ignored:    proxymr_8_clustermq.out
+    Ignored:    proxymr_90_clustermq.out
+    Ignored:    proxymr_91_clustermq.out
+    Ignored:    proxymr_92_clustermq.out
+    Ignored:    proxymr_93_clustermq.out
+    Ignored:    proxymr_94_clustermq.out
+    Ignored:    proxymr_95_clustermq.out
+    Ignored:    proxymr_96_clustermq.out
+    Ignored:    proxymr_97_clustermq.out
+    Ignored:    proxymr_98_clustermq.out
+    Ignored:    proxymr_99_clustermq.out
+    Ignored:    proxymr_9_clustermq.out
     Ignored:    renv/library/
-    Ignored:    renv/local/
     Ignored:    renv/staging/
 
 Untracked files:
-    Untracked:  R/proxyMR_figures.R
-    Untracked:  R/proxyMR_hiercharchy.R
-    Untracked:  analysis/project_status.Rmd
-    Untracked:  analysis/update_meeting_11_11_2021.Rmd
+    Untracked:  Rplots.pdf
 
 Unstaged changes:
-    Modified:   R/functions.R
-    Modified:   _targets.R
-    Modified:   analysis/index.Rmd
-    Modified:   analysis/setup.Rmd
-    Modified:   analysis/todo_list.Rmd
-    Modified:   analysis/update_meeting_15_10_2021.Rmd
+    Modified:   analysis/AM_MR_summary.Rmd
+    Modified:   analysis/couple_selection.Rmd
+    Modified:   output/tables/define_Neale_categories.csv
+    Modified:   output/tables/define_Neale_categories_filled.csv
+    Modified:   renv.lock
 
 </code></pre>
+
 <p>
-Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
 </p>
+
 </div>
 </div>
 </div>
@@ -528,19 +692,108 @@ Note that any generated files, e.g. HTML, png, CSS, etc., are not included in t
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
+  
 <p>
-There are no past versions. Publish this analysis with <code>wflow_publish()</code> to start tracking its development.
+These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/update_meeting_11_11_2021.Rmd</code>) and HTML (<code>docs/update_meeting_11_11_2021.html</code>) files. If you've configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
 </p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/jennysjaarda/proxyMR/blob/810aae7fd85768d9208298bb0af7b819b7d9cd1e/analysis/update_meeting_11_11_2021.Rmd" target="_blank">810aae7</a>
+</td>
+<td>
+Jenny Sjaarda
+</td>
+<td>
+2021-11-22
+</td>
+<td>
+wflow_publish(&quot;analysis/update_meeting_11_11_2021.Rmd&quot;)
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/jennysjaarda/proxyMR/blob/9845a8775b18ae6b10d34a9f3f4e0ba59ab496a8/analysis/update_meeting_11_11_2021.Rmd" target="_blank">9845a87</a>
+</td>
+<td>
+jennysjaarda
+</td>
+<td>
+2021-11-11
+</td>
+<td>
+add update meeting 11-11-21
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/jennysjaarda/proxyMR/9845a8775b18ae6b10d34a9f3f4e0ba59ab496a8/docs/update_meeting_11_11_2021.html" target="_blank">9845a87</a>
+</td>
+<td>
+jennysjaarda
+</td>
+<td>
+2021-11-11
+</td>
+<td>
+add update meeting 11-11-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+
 <hr>
 </div>
 </div>
 </div>
-<div id="progress-update" class="section level1" number="1">
-<h1 number="1"><span class="header-section-number">1</span> Progress update</h1>
+
+
+
+
+
+
+
+
+
+
+
+<div id="progress-update." class="section level1">
+<h1><span class="header-section-number">1</span> Progress update.</h1>
 <ul>
-<li>Last time, we ran a MVMR as follows: <span class="math inline">\(Y_p \sim X_i + Y_i + X_p\)</span>, using instruments for <span class="math inline">\({X_i, Y_i, X_p}\)</span>. Unfortunately, realized this won’t work after all because there is too much co-linearity between <span class="math inline">\(X_i\)</span> and <span class="math inline">\(X_p\)</span>. We also don’t have additional instruments for <span class="math inline">\(X_p\)</span>, beyond those that are already instruments for <span class="math inline">\(X_i\)</span>. The only way around would be to run a GWAS on <span class="math inline">\(X_p\)</span>, but probably not worth that effort (unlikely to find any additional instrument anyways).</li>
+<li>Last time, we ran a MVMR as follows: <span class="math">\(Y_p \sim X_i + Y_i + X_p\)</span>, using instruments for <span class="math">\({X_i, Y_i, X_p}\)</span>. Unfortunately, realized this won't work after all because there is too much co-linearity between <span class="math">\(X_i\)</span> and <span class="math">\(X_p\)</span>. We also don't have additional instruments for <span class="math">\(X_p\)</span>, beyond those that are already instruments for <span class="math">\(X_i\)</span>. The only way around would be to run a GWAS on <span class="math">\(X_p\)</span>, but probably not worth that effort (unlikely to find any additional instrument anyways).</li>
 <li>Updated pipeline to meta-analyze across sexes at the SNP level rather than the MR level (minimize weak-instrument bias).</li>
-<li>In all two-trait MRs, I’ve filtered out SNPs that show evidence of reverse causation based on same-person statistics (i.e. from Neale, meta-analyzed across sexes as per update above) and then use those same, filtered IVs in the couple MRs. IVs were filtered based on the code below (for reference), essentially removing any SNP that is more strongly associated with the outcome than the expsoure at a threshold of p &lt; <code># r reverse_MR_threshold</code>.</li>
+<li>In all two-trait MRs, I’ve filtered out SNPs that show evidence of reverse causation based on same-person statistics (i.e. from Neale, meta-analyzed across sexes as per update above) and then use those same, filtered IVs in the couple MRs. IVs were filtered based on the code below (for reference), essentially removing any SNP that is more strongly associated with the outcome than the expsoure at a threshold of p &lt; <code># r reverse_MR_threshold</code>, corresponding to the <code>reverse_MR_threshold</code> in the code below.</li>
 </ul>
 <pre class="r"><code>reverse_t_threshold  =  stats::qnorm(reverse_MR_threshold)
 
@@ -553,56 +806,183 @@ dat_filter &lt;- dat %&gt;%
   mutate(std_se.outcome = 1 / sqrt(samplesize.outcome)) %&gt;%
   mutate(std_t_stat = (abs(std_beta.exposure) - abs(std_beta.outcome)) /
            sqrt(std_se.exposure^2 + std_se.outcome^2)) %&gt;%
-  # mutate(t_stat = (abs(beta.exposure) - abs(beta.outcome)) /
-  #        sqrt(se.exposure^2 + se.outcome^2)) %&gt;%
   filter(std_t_stat &gt; reverse_t_threshold)</code></pre>
+</div>
+<div id="results." class="section level1">
+<h1><span class="header-section-number">2</span> Results.</h1>
+<p>As a recap, the model is below.</p>
+<p><img src="assets/two_trait_model_yiyp_adj.png" style="display: block; margin: auto;" /></p>
+<p>
+  <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig"
+  data-toggle="collapse" data-target="#fig-two_trait_model_yiyp_adj">
+  
+Past versions of two_trait_model_yiyp_adj.png
+</button>
+  </p>
+
+<div id="fig-two_trait_model_yiyp_adj" class="collapse">
+  <div class="table-responsive">
+  <table class="table table-condensed table-hover">
+  <thead>
+  <tr>
+  <th>
+Version
+</th>
+  <th>
+Author
+</th>
+  <th>
+Date
+</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+  <td>
+<a href="https://github.com/jennysjaarda/proxyMR/blob/529020ff80300880fe93b93913dba7934bc26400/docs/assets/two_trait_model_yiyp_adj.png" target="_blank">529020f</a>
+</td>
+  <td>
+jennysjaarda
+</td>
+  <td>
+2021-09-24
+</td>
+  </tr>
+  </tbody>
+  </table>
+  </div>
+  </div>
+  
+
+
+<p>A summary of the regressions between <span class="math">\(\omega\)</span>, <span class="math">\(\rho\)</span> and <span class="math">\(\gamma\)</span> is below.</p>
+<pre><code>
+Call:
+lm(formula = rho_beta ~ omega_beta + 0, data = data)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.59720 -0.02468  0.00983  0.04595  0.36472 
+
+Coefficients:
+           Estimate Std. Error t value            Pr(&gt;|t|)    
+omega_beta 0.445129   0.009718    45.8 &lt;0.0000000000000002 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+Residual standard error: 0.06695 on 929 degrees of freedom
+Multiple R-squared:  0.6931,    Adjusted R-squared:  0.6928 
+F-statistic:  2098 on 1 and 929 DF,  p-value: &lt; 0.00000000000000022</code></pre>
+<pre><code>
+Call:
+lm(formula = gam_beta ~ omega_beta + 0, data = data)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.75402 -0.02179  0.01994  0.04937  1.10864 
+
+Coefficients:
+           Estimate Std. Error t value            Pr(&gt;|t|)    
+omega_beta  0.62689    0.01225   51.18 &lt;0.0000000000000002 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+Residual standard error: 0.08438 on 929 degrees of freedom
+Multiple R-squared:  0.7382,    Adjusted R-squared:  0.7379 
+F-statistic:  2620 on 1 and 929 DF,  p-value: &lt; 0.00000000000000022</code></pre>
+<pre><code>
+Call:
+lm(formula = gam_rho_beta ~ omega_beta + 0, data = data)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-1.18334 -0.02240  0.02567  0.07289  1.45454 
+
+Coefficients:
+           Estimate Std. Error t value            Pr(&gt;|t|)    
+omega_beta  1.07202    0.01664   64.42 &lt;0.0000000000000002 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+Residual standard error: 0.1147 on 929 degrees of freedom
+Multiple R-squared:  0.8171,    Adjusted R-squared:  0.8169 
+F-statistic:  4149 on 1 and 929 DF,  p-value: &lt; 0.00000000000000022</code></pre>
+<pre><code>
+Call:
+lm(formula = gam_rho_resid ~ omega_beta + 0, data = data)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.76873 -0.02561  0.01144  0.04716  0.85106 
+
+Coefficients:
+           Estimate Std. Error t value            Pr(&gt;|t|)    
+omega_beta  0.72646    0.01171   62.02 &lt;0.0000000000000002 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+Residual standard error: 0.0807 on 929 degrees of freedom
+Multiple R-squared:  0.8054,    Adjusted R-squared:  0.8052 
+F-statistic:  3846 on 1 and 929 DF,  p-value: &lt; 0.00000000000000022</code></pre>
+<p><img src="figure/update_meeting_11_11_2021.Rmd/proxyMR_sig_gam_vs_omega-1.png" width="200%" style="display: block; margin: auto;" /></p>
+<p><img src="figure/update_meeting_11_11_2021.Rmd/proxyMR_sig_rho_vs_omega-1.png" width="200%" style="display: block; margin: auto;" /></p>
 <br>
 <p>
-<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo"
+  data-toggle="collapse" data-target="#workflowr-sessioninfo"
+  style = "display: block;">
+  
 <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
 </button>
 </p>
+
 <div id="workflowr-sessioninfo" class="collapse">
+
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 4.1.0 (2021-05-18)
-Platform: aarch64-apple-darwin20 (64-bit)
-Running under: macOS Big Sur 11.5.2
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: CentOS Linux 7 (Core)
 
 Matrix products: default
-BLAS:   /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRblas.dylib
-LAPACK: /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRlapack.dylib
+BLAS:   /data/sgg2/jenny/bin/R-4.1.0/lib64/R/lib/libRblas.so
+LAPACK: /data/sgg2/jenny/bin/R-4.1.0/lib64/R/lib/libRlapack.so
 
 locale:
-[1] en_CA.UTF-8/en_CA.UTF-8/en_CA.UTF-8/C/en_CA.UTF-8/en_CA.UTF-8
+[1] en_CA.UTF-8
 
 attached base packages:
-[1] stats     graphics  grDevices utils     datasets  methods   base     
+[1] stats     graphics  grDevices datasets  utils     methods   base     
 
 other attached packages:
- [1] kableExtra_1.3.4 knitr_1.33       DT_0.18          targets_0.7.0   
- [5] forcats_0.5.1    stringr_1.4.0    dplyr_1.0.7      purrr_0.3.4     
- [9] readr_2.0.1      tidyr_1.1.3      tibble_3.1.2     ggplot2_3.3.5   
-[13] tidyverse_1.3.1 
+ [1] cowplot_1.1.1      kableExtra_1.3.4   knitr_1.33         DT_0.18.1         
+ [5] forcats_0.5.1      stringr_1.4.0      dplyr_1.0.7        purrr_0.3.4       
+ [9] readr_1.4.0        tidyr_1.1.3        tibble_3.1.2       ggplot2_3.3.4     
+[13] tidyverse_1.3.1    targets_0.5.0.9001 workflowr_1.6.2   
 
 loaded via a namespace (and not attached):
- [1] Rcpp_1.0.7        svglite_2.0.0     lubridate_1.7.10  ps_1.6.0         
- [5] assertthat_0.2.1  rprojroot_2.0.2   digest_0.6.27     utf8_1.2.1       
- [9] R6_2.5.0          cellranger_1.1.0  backports_1.2.1   reprex_2.0.0     
-[13] evaluate_0.14     httr_1.4.2        pillar_1.6.1      rlang_0.4.11     
-[17] readxl_1.3.1      data.table_1.14.0 rstudioapi_0.13   callr_3.7.0      
-[21] rmarkdown_2.10    webshot_0.5.2     htmlwidgets_1.5.3 igraph_1.2.6     
-[25] munsell_0.5.0     broom_0.7.6       compiler_4.1.0    httpuv_1.6.1     
-[29] modelr_0.1.8      xfun_0.23         systemfonts_1.0.2 pkgconfig_2.0.3  
-[33] htmltools_0.5.1.1 tidyselect_1.1.1  workflowr_1.6.2   codetools_0.2-18 
-[37] viridisLite_0.4.0 fansi_0.5.0       crayon_1.4.1      tzdb_0.1.2       
-[41] dbplyr_2.1.1      withr_2.4.2       later_1.2.0       grid_4.1.0       
-[45] jsonlite_1.7.2    gtable_0.3.0      lifecycle_1.0.0   DBI_1.1.1        
-[49] git2r_0.28.0      magrittr_2.0.1    scales_1.1.1      cli_2.5.0        
-[53] stringi_1.6.2     fs_1.5.0          promises_1.2.0.1  xml2_1.3.2       
-[57] ellipsis_0.3.2    generics_0.1.0    vctrs_0.3.8       tools_4.1.0      
-[61] glue_1.4.2        hms_1.1.0         processx_3.5.2    yaml_2.2.1       
-[65] colorspace_2.0-1  rvest_1.0.0       haven_2.4.1      </code></pre>
+ [1] httr_1.4.2        sass_0.4.0        splines_4.1.0     jsonlite_1.7.2   
+ [5] viridisLite_0.4.0 modelr_0.1.8      bslib_0.3.0       assertthat_0.2.1 
+ [9] highr_0.9         renv_0.13.2-62    cellranger_1.1.0  yaml_2.2.1       
+[13] lattice_0.20-44   pillar_1.6.1      backports_1.2.1   glue_1.4.2       
+[17] digest_0.6.27     promises_1.2.0.1  rvest_1.0.0       colorspace_2.0-1 
+[21] Matrix_1.3-3      htmltools_0.5.2   httpuv_1.6.1      pkgconfig_2.0.3  
+[25] broom_0.7.7       haven_2.4.1       scales_1.1.1      webshot_0.5.2    
+[29] processx_3.5.2    svglite_2.0.0     whisker_0.4       later_1.2.0      
+[33] git2r_0.28.0      mgcv_1.8-35       farver_2.1.0      generics_0.1.0   
+[37] ellipsis_0.3.2    withr_2.4.2       cli_2.5.0         magrittr_2.0.1   
+[41] crayon_1.4.1      readxl_1.3.1      evaluate_0.14     ps_1.6.0         
+[45] fs_1.5.0          fansi_0.5.0       nlme_3.1-152      xml2_1.3.2       
+[49] tools_4.1.0       data.table_1.14.0 hms_1.1.0         lifecycle_1.0.0  
+[53] munsell_0.5.0     reprex_2.0.0      callr_3.7.0       compiler_4.1.0   
+[57] jquerylib_0.1.4   systemfonts_1.0.2 rlang_0.4.11      grid_4.1.0       
+[61] rstudioapi_0.13   htmlwidgets_1.5.3 igraph_1.2.6      rmarkdown_2.11.2 
+[65] gtable_0.3.0      codetools_0.2-18  DBI_1.1.1         R6_2.5.0         
+[69] lubridate_1.7.10  fastmap_1.1.0     utf8_1.2.1        rprojroot_2.0.2  
+[73] stringi_1.6.2     Rcpp_1.0.6        vctrs_0.3.8       dbplyr_2.1.1     
+[77] tidyselect_1.1.1  xfun_0.24        </code></pre>
 </div>
+
+
 </div>
 
 
@@ -617,8 +997,6 @@ footer is added to webpages before the MathJax javascript. -->
     "HTML-CSS": { availableFonts: ["TeX"] }
   });
 </script>
-
-
 
 
 </div>
