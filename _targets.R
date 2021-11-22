@@ -600,6 +600,12 @@ list(
   ),
 
   tar_target(
+    household_MR_binned_joint_std, # MR results run in data meta-analyzed at SNP-level. SNP effects were standardized first.
+    run_binned_household_MR_joint(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, grouping_var, MR_method_list = MR_method_list),
+    pattern = map(exposure_info, household_harmonised_data_meta_reverse_filter), iteration = "list"
+  ),
+
+  tar_target(
     path_household_MR_binned,
     {
       path_MR_dirs
@@ -881,56 +887,58 @@ list(
     create_proxy_sex_comparison_fig(proxyMR_comparison_summary_yiyp_adj)
   ),
 
-  tar_target(
-    PC_gwas_input,
-    prep_PC_GWAS(data_id_age, data_id_sex, sqc_munge, data_UKBB_sample)
-  ),
+  # Run a GWAS of PCs - based on results of PC correlation decided not to pursue this analysis. If we come back to it, it will need to be rerun in the proper UKB subgroup.
 
-  tar_target(
-    path_PC_gwas_input,
-    write_PC_gwas_input(PC_gwas_input),
-    format = "file"
-  ),
-
-  tar_target(
-    path_v2_snps,
-    create_UKBB_v2_snp_file_list(UKBB_processed_dir),
-    format = "file"
-  ),
-
-  tar_target(
-    file_v2_snps,
-    path_v2_snps
-  ),
-
-  tar_target(
-    bgenie_ukbb_chunks,
-      make_ukbb_chunks(file_v2_snps, chunk_size=5e4), pattern = map(file_v2_snps)
-  ),
-
-  tar_target(
-    bgenie_ukbb_chunks_run,
-    as_tibble(bgenie_ukbb_chunks)
-  ),
-
-  tar_target(
-    path_bgenie_GWAS_dir,
-    create_bgenie_GWAS_dir()
-  ),
-
-  tar_target(
-    path_bgenie_pcs,
-    launch_bgenie(bgenie_ukbb_chunks_run$chr, phenofile = path_PC_gwas_input, UKBB_dir,
-                  bgenie_ukbb_chunks_run$chr_char, bgenie_ukbb_chunks_run$start, bgenie_ukbb_chunks_run$end, bgenie_ukbb_chunks_run$chunk_num,
-                  output_dir = path_bgenie_GWAS_dir, output_prefix = "PC_GWAS"),
-    pattern = map(bgenie_ukbb_chunks_run), format = "file"
-  ),
-
-  tar_target(
-    path_bgenie_pcs_unzip,
-    unzip_bgenie(path_bgenie_pcs),
-    pattern = map(path_bgenie_pcs), format = "file"
-  ),
+  # tar_target(
+  #   PC_gwas_input,
+  #   prep_PC_GWAS(data_id_age, data_id_sex, sqc_munge, data_UKBB_sample)
+  # ),
+  #
+  # tar_target(
+  #   path_PC_gwas_input,
+  #   write_PC_gwas_input(PC_gwas_input),
+  #   format = "file"
+  # ),
+  #
+  # tar_target(
+  #   path_v2_snps,
+  #   create_UKBB_v2_snp_file_list(UKBB_processed_dir),
+  #   format = "file"
+  # ),
+  #
+  # tar_target(
+  #   file_v2_snps,
+  #   path_v2_snps
+  # ),
+  #
+  # tar_target(
+  #   bgenie_ukbb_chunks,
+  #     make_ukbb_chunks(file_v2_snps, chunk_size=5e4), pattern = map(file_v2_snps)
+  # ),
+  #
+  # tar_target(
+  #   bgenie_ukbb_chunks_run,
+  #   as_tibble(bgenie_ukbb_chunks)
+  # ),
+  #
+  # tar_target(
+  #   path_bgenie_GWAS_dir,
+  #   create_bgenie_GWAS_dir()
+  # ),
+  #
+  # tar_target(
+  #   path_bgenie_pcs,
+  #   launch_bgenie(bgenie_ukbb_chunks_run$chr, phenofile = path_PC_gwas_input, UKBB_dir,
+  #                 bgenie_ukbb_chunks_run$chr_char, bgenie_ukbb_chunks_run$start, bgenie_ukbb_chunks_run$end, bgenie_ukbb_chunks_run$chunk_num,
+  #                 output_dir = path_bgenie_GWAS_dir, output_prefix = "PC_GWAS"),
+  #   pattern = map(bgenie_ukbb_chunks_run), format = "file"
+  # ),
+  #
+  # tar_target(
+  #   path_bgenie_pcs_unzip,
+  #   unzip_bgenie(path_bgenie_pcs),
+  #   pattern = map(path_bgenie_pcs), format = "file"
+  # ),
 
   tar_target(
     corr_impact_by_PCs,
