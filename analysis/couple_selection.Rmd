@@ -31,17 +31,18 @@ tar_load(data_household_relationships)
 
 An overview of couple selection and exclusions can be seen [here](assets/couple_selection.png).
 
-# UKBB full sample 
+# UKBB full sample.
 
 The initial UKBB sample comprised of N = **`r data_main_UKBB_raw_count`** individuals. 
 
-# European, genetic, consenting sample 
+# European, genetic, consenting sample.
 
 Each phenotype in the SGG database was filtered for the following criteria based on the genetic qc file (located here: ``r files_ref %>% filter(custom_names == "sqc") %>% pull(files)``): 
 
 - `excess.relatives=0`
 - `putative.sex.chromosome.aneuploidy=0`
 - `in.white.british.ancestry.subset==1`
+- `used.in.pca.calculation==1`
 
 Redacted samples and participants that removed consent were also excluded. Specifically, redacted samples are any IDs in `c(-1, -2, -3)`, from the same genetic QC sample and the samples which removed consent, according to the exclusion file `w16389_20200204.csv`.
 
@@ -54,9 +55,9 @@ After filtering, N = **`r dim(data_id_age)[1]`** individuals remained.
 - The pipeline is not the simplest to follow and does a lot of referring to other variables and has been modified slightly based on the data we have. 
 - The main thing to note is all continuous variables were transformed to a normal distribution using an inverse normal rank transformation.
 - Each phenotype file contains ID, age, and sex columns (the first 3).
-- Note that this filtering procedure does not necessarily remove related individuals. For this, please use the function 'ukb_gen_samples_to_remove()' from the [UKBB r-package](https://cran.r-project.org/web/packages/ukbtools/vignettes/explore-ukb-data.html).
+- Note that this filtering procedure does not necessarily remove related individuals. For this, please use the function `ukb_gen_samples_to_remove()` from the [UKBB r-package](https://cran.r-project.org/web/packages/ukbtools/vignettes/explore-ukb-data.html).
 
-# Houshold pairs
+# Houshold pairs.
 
 Within the European, genetic, consenting sample, we limited to only individuals which came from households with exactly two participants in the UKBB based on the file: ``r files_ref %>% filter(custom_names == "household_info") %>% pull(files)``.
 
@@ -79,7 +80,7 @@ pairs_not_full_sex <- pairs[which(!(!is.na(pairs$sex1) & !is.na(pairs$sex2))),]
 
 After filtering, N = **`r dim(pairs_full_sex)[1]*2`** individuals and N = **`r dim(pairs_full_sex)[1]`** couples remained. 
 
-# Unrelated pairs 
+# Unrelated pairs.
 
 Household couples defined above were filtered based on kinship (estimate of the kinship coefficient for pair based on the set of markers used in the kinship inference) from the following file: ``r files_ref %>% filter(custom_names == "relatives") %>% pull(files)``. Couples were excluded if kinship was > `0.05`. 
 
@@ -91,7 +92,7 @@ pairs_unrelated <- subset(pairs_full_sex, pairs_full_sex$kinship<0.05)
 
 After filtering for relatedness, N = **`r dim(pairs_unrelated)[1]*2`** individuals and N = **`r dim(pairs_unrelated)[1]`** couples remained. 
 
-# Heterosexual pairs 
+# Heterosexual pairs. 
 
 Unrelated, household pairs were filtered to only include heterosexual couples. 
 
@@ -112,7 +113,7 @@ pairs_filter <- rbind(temp2, temp1)
 
 After removing homosexual pairs, N = **`r dim(pairs_filter)[1]*2`** individuals and N = **`r dim(pairs_filter)[1]`** couples remained. 
 
-# Couple pairs
+# Couple pairs.
 
 Finally, using the data at data-field `6141`, ["How are people in household related to participant"](https://biobank.ctsu.ox.ac.uk/showcase/field.cgi?id=6141), the heterosexual, unrelated, household pairs were filtered to only include couples who both responded `Husband, wife, or partner`. 
 
