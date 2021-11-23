@@ -1596,14 +1596,14 @@ extract_Neale_outcome <- function(outcome_ID, both_sexes_file, male_file, female
 
 }
 
-write_outcome_stats <- function(outcome_ID, extract_Neale_outcome_result, exposures_to_run, summ_stats){
+write_outcome_stats <- function(outcome_ID, extract_Neale_outcome_result, outcomes_to_run, summ_stats){
 
   pheno_dir <- paste0("analysis/traitMR/" )
 
   file_list <- numeric()
-  for(i in 1:dim(exposures_to_run)[1]){
+  for(i in 1:dim(outcomes_to_run)[1]){
     IV_stats <- summ_stats[[i]]
-    exposure_ID <- exposures_to_run$Neale_pheno_ID[i]
+    exposure_ID <- outcomes_to_run$Neale_pheno_ID[i]
     rsids <- IV_stats[[1]]$rsid
 
     GWAS_file_i <- paste0(pheno_dir, "/standard_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")

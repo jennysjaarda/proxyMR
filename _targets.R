@@ -348,11 +348,6 @@ list(
   ),
 
   tar_target(
-    exposures_to_run,
-    pull_traits_to_run(traits_final)
-  ),
-
-  tar_target(
     outcomes_to_run,
     pull_traits_to_run(traits_final) #this could be changed to traits_corr2_filled
   ),
@@ -395,7 +390,7 @@ list(
 
   tar_target(
     exposure_info,
-    get_trait_info(traits_final, exposures_to_run$Neale_pheno_ID,
+    get_trait_info(traits_final,outcomes_to_run$Neale_pheno_ID,
                    data_Neale_manifest, Neale_summary_dir, Neale_output_dir),
     pattern = map(exposures_to_run), iteration = "list"
   ),
@@ -457,7 +452,7 @@ list(
     path_household_GWAS,
     {
       path_pheno_data
-      path_outcome_dirs # delete all GWAS files and this target if you need to rerun below because it is not saved as `format = "file"`
+      path_outcome_dirs
       run_household_GWAS(exposure_info, summ_stats, outcomes_to_run, traits_corr2_filled,
                                   IV_genetic_data, joint_model_adjustments, grouping_var, household_time_munge)
     },
@@ -496,7 +491,7 @@ list(
     path_outcome_stats,
     {
       path_outcome_dirs
-      write_outcome_stats(outcomes_to_run$Neale_pheno_ID, outcome_stats, exposures_to_run, summ_stats)
+      write_outcome_stats(outcomes_to_run$Neale_pheno_ID, outcome_stats,outcomes_to_run, summ_stats)
     },
     pattern = map(outcomes_to_run, outcome_stats), format = "file"
   ),
