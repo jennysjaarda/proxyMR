@@ -392,7 +392,7 @@ list(
     exposure_info,
     get_trait_info(traits_final,outcomes_to_run$Neale_pheno_ID,
                    data_Neale_manifest, Neale_summary_dir, Neale_output_dir),
-    pattern = map(exposures_to_run), iteration = "list"
+    pattern = map(outcomes_to_run), iteration = "list"
   ),
 
   tar_target(
@@ -426,8 +426,8 @@ list(
 
   tar_target(
     summ_stats,
-    create_summary_stats(exposures_to_run$Neale_pheno_ID, exposure_info, IV_data_summary_run),
-    pattern = map(exposures_to_run, exposure_info, IV_data_summary_run),
+    create_summary_stats(outcomes_to_run$Neale_pheno_ID, exposure_info, IV_data_summary_run),
+    pattern = map(outcomes_to_run, exposure_info, IV_data_summary_run),
     iteration = "list"
   ),
 
@@ -435,9 +435,9 @@ list(
     path_summ_stats,
     {
       create_trait_dirs
-      write_summ_stats(exposures_to_run$Neale_pheno_ID, summ_stats)
+      write_summ_stats(outcomes_to_run$Neale_pheno_ID, summ_stats)
     },
-    pattern = map(exposures_to_run, summ_stats), format = "file"
+    pattern = map(outcomes_to_run, summ_stats), format = "file"
   ),
 
   tar_target(
