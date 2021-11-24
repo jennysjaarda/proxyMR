@@ -491,9 +491,9 @@ list(
     path_outcome_stats,
     {
       path_outcome_dirs
-      write_outcome_stats(outcomes_to_run$Neale_pheno_ID, outcome_stats,outcomes_to_run, summ_stats)
+      write_outcome_stats(exposure_info, outcome_stats,outcomes_to_run, summ_stats)
     },
-    pattern = map(outcomes_to_run, outcome_stats), format = "file"
+    pattern = map(exposure_info, outcome_stats), format = "file"
   ),
 
   tar_target(
