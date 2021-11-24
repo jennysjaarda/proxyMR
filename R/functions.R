@@ -1596,9 +1596,12 @@ extract_Neale_outcome <- function(outcome_ID, both_sexes_file, male_file, female
 
 }
 
-write_outcome_stats <- function(outcome_ID, extract_Neale_outcome_result, outcomes_to_run, summ_stats){
+write_outcome_stats <- function(exposure_info, extract_Neale_outcome_result, outcomes_to_run, summ_stats){
 
   pheno_dir <- paste0("analysis/traitMR/" )
+
+  outcome_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+
 
   file_list <- numeric()
   for(i in 1:dim(outcomes_to_run)[1]){
