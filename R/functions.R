@@ -1620,7 +1620,7 @@ write_outcome_stats <- function(outcome_ID, extract_Neale_outcome_result, outcom
     }
 
     write.csv(outcome_result_i, GWAS_file_i, row.names = F)
-    cat(paste0("Finished writing standard GWAS statistics for exposure ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+    cat(paste0("Finished writing standard GWAS statistics for exposure ", i, " of ", dim(outcomes_to_run)[1], " (from Neale).\n\n" ))
   }
 
   return(file_list)
