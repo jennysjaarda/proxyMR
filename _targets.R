@@ -401,6 +401,11 @@ list(
   ),
 
   tar_target(
+    corr_mat_traits_all,
+    calc_corr_mat_traits_all(traits_corr2_filled, path_pheno_data)
+  ),
+
+  tar_target(
     PC_trait_corr,
     calc_pc_trait_corr(outcomes_to_run$Neale_pheno_ID, pheno_data),
     pattern = map(outcomes_to_run, pheno_data), iteration = "list"
@@ -941,13 +946,21 @@ list(
     pattern = map(PC_trait_corr)
   ),
 
-
   tar_target(
     corr_impact_by_coords,
     calc_corr_impact_by_coords(outcomes_to_run, traits_corr, corr_mat_traits)
   ),
 
+  tar_target(
+    confounder_traits,
+    c("738", "845", "189_irnt") # household income, age completed education, townsend deprivation index
+  ),
 
+  tar_target(
+    corr_impact_by_traits,
+    calc_corr_impact_by_traits(outcomes_to_run, traits_corr, corr_mat_traits),
+    pattern = map(confounder_traits)
+  ),
   ### markdown docs
 
   tar_render(rmd_index, "analysis/index.Rmd"),
