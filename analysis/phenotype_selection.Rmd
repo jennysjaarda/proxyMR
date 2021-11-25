@@ -24,6 +24,7 @@ tar_load(data_phesant_directory)
 tar_load(Neale_SGG_dir_filt)
 tar_load(traits_corr)
 tar_load(traits_corr2)
+tar_load(traits_corr2_filled)
 tar_load(traits_corr3)
 tar_load(traits_corr4)
 tar_load(traits_corr5)
@@ -79,7 +80,7 @@ The traits remaining after this filter can be seen below.
 
 ```{r corr_filter, echo=FALSE}
 
-traits_corr2.DT <- traits_corr2 %>% as_tibble() %>% mutate(r = sqrt(r2)) %>% dplyr::select(Neale_pheno_ID, description, variable_type, category, N_pairs, r2, r) %>% unique()
+traits_corr2.DT <- traits_corr2_filled %>% as_tibble() %>% mutate(r = sqrt(r2)) %>% dplyr::select(Neale_pheno_ID, description, variable_type, category, N_pairs, r2, r) %>% unique()
 DT::datatable(traits_corr2.DT, width = "100%") %>% formatRound(columns=c('r2', 'r'), digits = 3)
 ```
 
