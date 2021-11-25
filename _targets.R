@@ -402,7 +402,7 @@ list(
 
   tar_target(
     corr_mat_traits_all,
-    calc_corr_mat_traits_all(traits_corr2_filled, path_pheno_data)
+    calc_corr_mat_traits_all(traits_corr2_filled, path_pheno_data, data_sqc, data_fam, data_relatives)
   ),
 
   tar_target(
@@ -953,12 +953,12 @@ list(
 
   tar_target(
     confounder_traits,
-    c("738", "845", "189_irnt") # household income, age completed education, townsend deprivation index
+    c("738", "845", "189_irnt", "20016_irnt") # household income, age completed education, townsend deprivation index, Fluid intelligence score
   ),
 
   tar_target(
     corr_impact_by_traits,
-    calc_corr_impact_by_traits(outcomes_to_run, traits_corr, corr_mat_traits),
+    calc_corr_impact_by_traits(outcomes_to_run, traits_corr, corr_mat_traits_all),
     pattern = map(confounder_traits)
   ),
   ### markdown docs
