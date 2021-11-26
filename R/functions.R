@@ -2944,7 +2944,7 @@ binned_household_MR_ind_joint_std <- function(exposure_info, outcome_ID, househo
 
   output <- bin_summary
 
-  numeric_cols <- c("n_exposure", "n_outcome", "nsnp", "IVW_beta", "IVW_se", "IVW_pval")
+  numeric_cols <- c("n_exposure", "n_outcome", "nsnp", "IVW_beta_std", "IVW_se_std", "IVW_pval_std")
   output <- as_tibble(output) %>% mutate_at(numeric_cols, as.numeric )
   return(output)
 
