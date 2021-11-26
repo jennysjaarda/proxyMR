@@ -606,6 +606,12 @@ list(
   ),
 
   tar_target(
+    couple_MR_vs_trait_corr,
+    compare_mr_raw_corr(exposure_info, household_MR_binned_joint_std, traits_corr),
+    pattern = map(exposure_info, household_MR_binned_joint_std)
+  ),
+
+  tar_target(
     path_household_MR_binned,
     {
       path_MR_dirs
@@ -952,7 +958,7 @@ list(
   ),
 
   tar_target(
-    confounder_traits,
+    confounder_traits, # Neale IDs of confounder traits to test. Running this differently than coor/PC analysis because there is no summing across traits.
     c("738", "845", "189_irnt", "20016_irnt") # household income, age completed education, townsend deprivation index, Fluid intelligence score
   ),
 

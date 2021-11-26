@@ -3027,7 +3027,6 @@ run_binned_household_MR_joint <- function(exposure_info, outcomes_to_run, househ
 
 }
 
-
 run_binned_household_MR_joint_std <- function(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, grouping_var, MR_method_list = MR_method_list){
 
   output_list <- list()
@@ -3065,6 +3064,28 @@ run_binned_household_MR_joint_std <- function(exposure_info, outcomes_to_run, ho
 
 }
 
+compare_mr_raw_corr <- function(exposure_info, household_MR_binned_joint_std, traits_corr){
+
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+
+  result_name <- paste0(exposure_ID, "_", "vs_", exposure_ID, "_MR")
+
+  MR_result <- household_MR_binned_joint_std[[result_name]] %>% filter(grouping_var == "age_even_bins") %>% filter(bin == "all")
+
+  phes_ID <- gsub("_irnt", "", exposure_ID)
+
+  couple_r2 <- as.numeric(traits_corr[which(traits_corr$ID==phes_ID),"r2"])
+  couple_r <- sqrt(i_couple_r2)
+  n_pairs <- as.numeric(traits_corr[which(traits_corr$ID==phes_ID),"N_pairs"])
+
+  MR_result$couple_r <- n_pairs
+  MR_result$couple_r2 <- couple_r2
+  MR_result$couple_r <- couple_r
+
+  MR_result <- MR_result %>% dplyr::select(-grouping_var, -bin)
+  return(MR_result)
+
+}
 
 meta_binned_household_MR <- function(exposure_info, outcomes_to_run, household_MR_binned){
 
