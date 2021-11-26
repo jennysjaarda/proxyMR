@@ -3075,7 +3075,7 @@ compare_mr_raw_corr <- function(exposure_info, household_MR_binned_joint_std, tr
   phes_ID <- gsub("_irnt", "", exposure_ID)
 
   couple_r2 <- as.numeric(traits_corr[which(traits_corr$ID==phes_ID),"r2"])
-  couple_r <- sqrt(i_couple_r2)
+  couple_r <- sqrt(couple_r2)
   n_pairs <- as.numeric(traits_corr[which(traits_corr$ID==phes_ID),"N_pairs"])
 
   MR_result$couple_r <- n_pairs
