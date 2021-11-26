@@ -1385,7 +1385,7 @@ calc_corr_impact_by_traits <- function(outcomes_to_run, traits_corr, corr_mat_tr
 
 
     i_couple_r2 <- as.numeric(traits_corr[which(traits_corr$ID==phes_ID),"r2"])
-    i_couple_r <- sqrt(trait_couple_r2)
+    i_couple_r <- sqrt(i_couple_r2)
 
 
     trait_interest_phes_ID <- gsub("_irnt", "", trait_interest)
