@@ -1407,7 +1407,7 @@ calc_corr_impact_by_traits <- function(outcomes_to_run, traits_corr, corr_mat_tr
   colnames(result) <- c("trait_j", "trait_interest", "trait_j_couple_corr", "trait_interest_couple_corr", "trait_j_trait_inter_corr", "corr_due_to_confounding")
   result <- result %>% as_tibble() %>% type_convert() %>% mutate_at(c("trait_j", "trait_interest"), as.character)
 
-  temp <- result %>
+  temp <- result %>%
     filter(trait_j != "130_irnt") %>% filter(trait_j != "129_irnt") %>%
     filter(trait_j != "22702_irnt") %>% filter(trait_j != "22704_irnt") %>%
     filter(trait_interest!=trait_j)
