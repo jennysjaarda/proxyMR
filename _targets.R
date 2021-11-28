@@ -628,8 +628,8 @@ list(
 
   tar_target(
     household_MR, ## `household_MR  ` is run in full sample only, not binned by age / time-together categories.
-    run_household_MR_comprehensive(exposure_info, outcomes_to_run, household_harmonised_data, MR_method_list),
-    pattern = map(exposure_info, household_harmonised_data), iteration = "list"
+    run_household_MR_comprehensive(exposure_info, outcomes_to_run, household_harmonised_data_reverse_filter, MR_method_list),
+    pattern = map(exposure_info, household_harmonised_data_reverse_filter), iteration = "list"
   ),
 
   tar_target(
