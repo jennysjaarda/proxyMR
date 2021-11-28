@@ -1407,6 +1407,12 @@ calc_corr_impact_by_traits <- function(outcomes_to_run, traits_corr, corr_mat_tr
   colnames(result) <- c("trait_j", "trait_interest", "trait_j_couple_corr", "trait_interest_couple_corr", "trait_j_trait_inter_corr", "corr_due_to_confounding")
   result <- result %>% as_tibble() %>% type_convert() %>% mutate_at(c("trait_j", "trait_interest"), as.character)
 
+  temp <- result %>
+    filter(trait_j != "130_irnt") %>% filter(trait_j != "129_irnt") %>%
+    filter(trait_j != "22702_irnt") %>% filter(trait_j != "22704_irnt") %>%
+    filter(trait_interest!=trait_j)
+
+
   return(result)
 }
 
@@ -3347,7 +3353,7 @@ run_household_MR_comprehensive <- function(exposure_info, outcomes_to_run, house
 
     for(exposure_sex in c("male", "female")){
 
-      harmonised_dat_i_sex <- household_harmonised_data[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data")]][[paste0("exp_", exposure_sex, "_harmonised_data")]]
+      harmonised_dat_i_sex <- household_harmonised_data[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data_filter")]][[paste0("exp_", exposure_sex, "_harmonised_data_filter")]]
       harmonised_dat_sub <- harmonised_dat_i_sex %>% filter(grouping_var == "age_even_bins") %>% filter(bin == "all")
       MR_complete_i_sex <- household_MR_comprehensive_ind(harmonised_dat_sub, MR_method_list)
       MR_complete_i[[paste0("exp_", exposure_sex, "_MR_complete")]] <- MR_complete_i_sex
