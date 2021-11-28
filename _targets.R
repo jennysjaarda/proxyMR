@@ -583,8 +583,8 @@ list(
   ### NEED TO FIRST FILTER HARMONISED DATA RESULTS
   tar_target(
     household_MR_binned_sex_specific, # MR results are given binned in full sample and binned by time-together and mean age
-    run_binned_household_MR(exposure_info, outcomes_to_run, household_harmonised_data, grouping_var, MR_method_list = MR_method_list),
-    pattern = map(exposure_info, household_harmonised_data), iteration = "list"
+    run_binned_household_MR(exposure_info, outcomes_to_run, household_harmonised_data_reverse_filter, grouping_var, MR_method_list = MR_method_list),
+    pattern = map(exposure_info, household_harmonised_data_reverse_filter), iteration = "list"
   ),
 
   tar_target(

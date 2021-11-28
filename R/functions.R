@@ -2788,7 +2788,7 @@ binned_household_MR_ind <- function(exposure_info, outcome_ID, household_harmoni
     if(exposure_sex=="female"){index="HOUSEHOLD_MEMBER2"}
     opp_index <- ifelse(index=="HOUSEHOLD_MEMBER1", "HOUSEHOLD_MEMBER2", "HOUSEHOLD_MEMBER1")
 
-    household_harmonised_data_sex <- household_harmonised_data[[paste0("exp_", exposure_sex, "_harmonised_data")]] %>% filter(grouping_var == !!grouping_var)
+    household_harmonised_data_sex <- household_harmonised_data[[paste0("exp_", exposure_sex, "_harmonised_data_filter")]] %>% filter(grouping_var == !!grouping_var)
 
     household_intervals <- levels(as.factor(household_harmonised_data_sex$bin))
     household_intervals_num <- strex::str_first_number(household_intervals)
