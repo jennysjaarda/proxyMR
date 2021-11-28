@@ -590,7 +590,7 @@ list(
   tar_target(
     household_MR_binned_meta, # meta-analyze binned results by sex
     meta_binned_household_MR(exposure_info, outcomes_to_run, household_MR_binned_sex_specific),
-    pattern = map(exposure_info, household_MR_binned), iteration = "list"
+    pattern = map(exposure_info, household_MR_binned_sex_specific), iteration = "list"
   ),
 
   tar_target(
