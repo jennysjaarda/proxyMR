@@ -3176,7 +3176,7 @@ calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, househo
         result_to_analyze <- result_to_analyze %>% separate(bin, c("bin_start_temp", "bin_stop_temp"), ",", remove = F) %>% mutate(bin_start = substring(bin_start_temp, 2)) %>%
           mutate(bin_stop = str_sub(bin_stop_temp,1,nchar(bin_stop_temp)-1)) %>% rowwise() %>%  mutate(bin_median = median(c(as.numeric(bin_start), as.numeric(bin_stop))))
 
-        bin_lm_weight <- lm(IVW_beta ~ bin_median, data = result_to_analyze, weights = 1/(IVW_meta_se^2))
+        bin_lm_weight <- lm(IVW_beta ~ bin_median, data = result_to_analyze, weights = 1/(IVW_se^2))
         bin_lm <- lm(IVW_beta ~ bin_median, data = result_to_analyze)
 
 
@@ -3250,6 +3250,82 @@ calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, househo
   #colnames(meta_result)[-c(1:2)] <- paste0("bin_slope_", colnames(meta_result)[-c(1:2)])
 
   #output <- left_join(exposure_i_result, meta_result)
+
+  output <- exposure_i_result %>% type_convert() %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character)
+
+  return(output)
+
+
+}
+
+
+calc_binned_household_MR_het_joint <- function(exposure_info, outcomes_to_run, household_MR_binned_joint){
+
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+
+  cat(paste0("\nCalculating difference in household MR between sexes and among age and time-together bins for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
+
+
+  exposure_i_result <- numeric()
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
+
+    household_MR_binned_joint_i <- household_MR_binned_joint[[i]]
+    household_MR_binned_joint_i_all <- household_MR_binned_joint_i %>% dplyr::filter(bin=="all" & grouping_var=="time_together_even_bins")
+
+
+    #sex_het_p <- household_MR_binned_meta_i_all$IVW_sex_het_pval[[1]]
+
+    for(group in c("age_even_bins", "time_together_even_bins")){
+
+      group_i_result <- numeric()
+
+
+        bin_result_temp <- household_MR_binned_joint_i %>% filter(grouping_var==group)
+
+        all_row <- which(bin_result_temp$bin=="all")
+        all_sum <- c(bin_result_temp[all_row,"IVW_beta"][[1]],bin_result_temp[all_row,"IVW_se"][[1]], bin_result_temp[all_row,"IVW_pval"][[1]])
+        names(all_sum) <- c("IVW_beta", "IVW_se", "IVW_pval")
+
+        result_to_analyze <- bin_result_temp %>% filter(bin != "all")
+
+        meta_bin <- metagen(TE = as.numeric(IVW_beta), seTE = as.numeric(IVW_se), studlab = bin, data = result_to_analyze)
+        Q_stat <- meta_bin$Q
+        Q_pval <- meta_bin$pval.Q
+
+        result_to_analyze <- result_to_analyze %>% separate(bin, c("bin_start_temp", "bin_stop_temp"), ",", remove = F) %>% mutate(bin_start = substring(bin_start_temp, 2)) %>%
+          mutate(bin_stop = str_sub(bin_stop_temp,1,nchar(bin_stop_temp)-1)) %>% rowwise() %>%  mutate(bin_median = median(c(as.numeric(bin_start), as.numeric(bin_stop))))
+
+        bin_lm_weight <- lm(IVW_beta ~ bin_median, data = result_to_analyze, weights = 1/(IVW_se^2))
+        bin_lm <- lm(IVW_beta ~ bin_median, data = result_to_analyze)
+
+
+        lm_summary_weight <- summary(bin_lm_weight)$coefficients["bin_median",c(1,2,4)]
+        lm_summary <- summary(bin_lm)$coefficients["bin_median",c(1,2,4)]
+
+        diff_sum <- c(sex_het_p, Q_stat, Q_pval, lm_summary, lm_summary_weight)
+
+        names(diff_sum) <- c("sex_het_pval", "Q_stat", "Q_pval",
+                             "bin_slope_beta", "bin_slope_se", "bin_slope_pval",
+                             "bin_slope_beta_wt", "bin_slope_se_wt", "bin_slope_pval_wt")
+
+        same_trait <- ifelse(exposure_ID==outcome_ID, TRUE, FALSE)
+        exposure_sex <- "joint"
+        outcome_sex <- "joint"
+        description_sum <- c(exposure_ID, outcome_ID, exposure_sex, outcome_sex, group, same_trait)
+        names(description_sum) <- c("exposure_ID", "outcome_ID", "exposure_sex", "outcome_sex", "grouping_var", "same_trait")
+
+        out_temp <- as.data.frame(t(c(description_sum, all_sum, diff_sum))) %>%
+          mutate_if(is.factor,as.character) %>%
+          as_tibble()
+
+        group_i_result <- rbind( group_i_result, out_temp)
+
+    }
+    cat(paste0("Finished calculating heterogeneity statistics for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+
+  }
 
   output <- exposure_i_result %>% type_convert() %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character)
 

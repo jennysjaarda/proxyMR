@@ -621,10 +621,18 @@ list(
   ),
 
   tar_target(
-    household_MR_binned_het, # calc sex-het, and slope and Q-stat among bins, sex-specific and binned
+    household_MR_binned_het_sex_spec, # calc sex-het, and slope and Q-stat among bins, in sex-specific results.
     calc_binned_household_MR_het(exposure_info, outcomes_to_run, household_MR_binned_meta),
     pattern = map(exposure_info, household_MR_binned_meta)
   ),
+
+  tar_target(
+    household_MR_binned_het_joint, # calc slope and Q-stat among bins in result meta-analyzed at SNP-level (joint).
+    calc_binned_household_MR_het_joint(exposure_info, outcomes_to_run, household_MR_binned_joint),
+    pattern = map(exposure_info, household_MR_binned_joint)
+  ),
+
+  ## join the result above together
 
   tar_target(
     household_MR, ## `household_MR  ` is run in full sample only, not binned by age / time-together categories.
@@ -686,6 +694,7 @@ list(
 
   tar_target(
     ## filter to only MR between same traits, these results meta-analyzed at MR-level.
+    ## These results will show the heterogeneity statistics.
     household_MR_summary_AM_meta,
     pull_AM_MRs_household_MR_summary(household_MR_summary)
   ),
