@@ -3274,9 +3274,6 @@ calc_binned_household_MR_het_joint <- function(exposure_info, outcomes_to_run, h
     household_MR_binned_joint_i <- household_MR_binned_joint[[i]]
     household_MR_binned_joint_i_all <- household_MR_binned_joint_i %>% dplyr::filter(bin=="all" & grouping_var=="time_together_even_bins")
 
-
-    #sex_het_p <- household_MR_binned_meta_i_all$IVW_sex_het_pval[[1]]
-
     for(group in c("age_even_bins", "time_together_even_bins")){
 
       group_i_result <- numeric()
@@ -3304,9 +3301,9 @@ calc_binned_household_MR_het_joint <- function(exposure_info, outcomes_to_run, h
         lm_summary_weight <- summary(bin_lm_weight)$coefficients["bin_median",c(1,2,4)]
         lm_summary <- summary(bin_lm)$coefficients["bin_median",c(1,2,4)]
 
-        diff_sum <- c(sex_het_p, Q_stat, Q_pval, lm_summary, lm_summary_weight)
+        diff_sum <- c(Q_stat, Q_pval, lm_summary, lm_summary_weight)
 
-        names(diff_sum) <- c("sex_het_pval", "Q_stat", "Q_pval",
+        names(diff_sum) <- c("Q_stat", "Q_pval",
                              "bin_slope_beta", "bin_slope_se", "bin_slope_pval",
                              "bin_slope_beta_wt", "bin_slope_se_wt", "bin_slope_pval_wt")
 
