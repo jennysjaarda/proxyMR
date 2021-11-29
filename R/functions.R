@@ -3274,6 +3274,7 @@ calc_binned_household_MR_het_joint <- function(exposure_info, outcomes_to_run, h
     household_MR_binned_joint_i <- household_MR_binned_joint[[i]]
     household_MR_binned_joint_i_all <- household_MR_binned_joint_i %>% dplyr::filter(bin=="all" & grouping_var=="time_together_even_bins")
 
+
     for(group in c("age_even_bins", "time_together_even_bins")){
 
       group_i_result <- numeric()
@@ -3318,9 +3319,9 @@ calc_binned_household_MR_het_joint <- function(exposure_info, outcomes_to_run, h
         as_tibble()
 
       group_i_result <- rbind( group_i_result, out_temp)
-
+      exposure_i_result <- rbind(exposure_i_result, group_i_result)
     }
-    exposure_i_result <- rbind(exposure_i_result, group_i_result)
+
 
     cat(paste0("Finished calculating heterogeneity statistics for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
 
