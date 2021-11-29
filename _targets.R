@@ -683,7 +683,7 @@ list(
 
   tar_target(
     household_MR_AM_FvsM_fig,
-    create_household_MR_AM_FvsM_fig(household_MR_binned_het, custom_col),
+    create_household_MR_AM_FvsM_fig(household_MR_binned_het_sex_spec, custom_col),
   ),
 
   tar_target(

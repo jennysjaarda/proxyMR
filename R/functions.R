@@ -3279,47 +3279,49 @@ calc_binned_household_MR_het_joint <- function(exposure_info, outcomes_to_run, h
       group_i_result <- numeric()
 
 
-        bin_result_temp <- household_MR_binned_joint_i %>% filter(grouping_var==group)
+      bin_result_temp <- household_MR_binned_joint_i %>% filter(grouping_var==group)
 
-        all_row <- which(bin_result_temp$bin=="all")
-        all_sum <- c(bin_result_temp[all_row,"IVW_beta"][[1]],bin_result_temp[all_row,"IVW_se"][[1]], bin_result_temp[all_row,"IVW_pval"][[1]])
-        names(all_sum) <- c("IVW_beta", "IVW_se", "IVW_pval")
+      all_row <- which(bin_result_temp$bin=="all")
+      all_sum <- c(bin_result_temp[all_row,"IVW_beta"][[1]],bin_result_temp[all_row,"IVW_se"][[1]], bin_result_temp[all_row,"IVW_pval"][[1]])
+      names(all_sum) <- c("IVW_beta", "IVW_se", "IVW_pval")
 
-        result_to_analyze <- bin_result_temp %>% filter(bin != "all")
+      result_to_analyze <- bin_result_temp %>% filter(bin != "all")
 
-        meta_bin <- metagen(TE = as.numeric(IVW_beta), seTE = as.numeric(IVW_se), studlab = bin, data = result_to_analyze)
-        Q_stat <- meta_bin$Q
-        Q_pval <- meta_bin$pval.Q
+      meta_bin <- metagen(TE = as.numeric(IVW_beta), seTE = as.numeric(IVW_se), studlab = bin, data = result_to_analyze)
+      Q_stat <- meta_bin$Q
+      Q_pval <- meta_bin$pval.Q
 
-        result_to_analyze <- result_to_analyze %>% separate(bin, c("bin_start_temp", "bin_stop_temp"), ",", remove = F) %>% mutate(bin_start = substring(bin_start_temp, 2)) %>%
-          mutate(bin_stop = str_sub(bin_stop_temp,1,nchar(bin_stop_temp)-1)) %>% rowwise() %>%  mutate(bin_median = median(c(as.numeric(bin_start), as.numeric(bin_stop))))
+      result_to_analyze <- result_to_analyze %>% separate(bin, c("bin_start_temp", "bin_stop_temp"), ",", remove = F) %>% mutate(bin_start = substring(bin_start_temp, 2)) %>%
+        mutate(bin_stop = str_sub(bin_stop_temp,1,nchar(bin_stop_temp)-1)) %>% rowwise() %>%  mutate(bin_median = median(c(as.numeric(bin_start), as.numeric(bin_stop))))
 
-        bin_lm_weight <- lm(IVW_beta ~ bin_median, data = result_to_analyze, weights = 1/(IVW_se^2))
-        bin_lm <- lm(IVW_beta ~ bin_median, data = result_to_analyze)
+      bin_lm_weight <- lm(IVW_beta ~ bin_median, data = result_to_analyze, weights = 1/(IVW_se^2))
+      bin_lm <- lm(IVW_beta ~ bin_median, data = result_to_analyze)
 
 
-        lm_summary_weight <- summary(bin_lm_weight)$coefficients["bin_median",c(1,2,4)]
-        lm_summary <- summary(bin_lm)$coefficients["bin_median",c(1,2,4)]
+      lm_summary_weight <- summary(bin_lm_weight)$coefficients["bin_median",c(1,2,4)]
+      lm_summary <- summary(bin_lm)$coefficients["bin_median",c(1,2,4)]
 
-        diff_sum <- c(Q_stat, Q_pval, lm_summary, lm_summary_weight)
+      diff_sum <- c(Q_stat, Q_pval, lm_summary, lm_summary_weight)
 
-        names(diff_sum) <- c("Q_stat", "Q_pval",
-                             "bin_slope_beta", "bin_slope_se", "bin_slope_pval",
-                             "bin_slope_beta_wt", "bin_slope_se_wt", "bin_slope_pval_wt")
+      names(diff_sum) <- c("Q_stat", "Q_pval",
+                           "bin_slope_beta", "bin_slope_se", "bin_slope_pval",
+                           "bin_slope_beta_wt", "bin_slope_se_wt", "bin_slope_pval_wt")
 
-        same_trait <- ifelse(exposure_ID==outcome_ID, TRUE, FALSE)
-        exposure_sex <- "joint"
-        outcome_sex <- "joint"
-        description_sum <- c(exposure_ID, outcome_ID, exposure_sex, outcome_sex, group, same_trait)
-        names(description_sum) <- c("exposure_ID", "outcome_ID", "exposure_sex", "outcome_sex", "grouping_var", "same_trait")
+      same_trait <- ifelse(exposure_ID==outcome_ID, TRUE, FALSE)
+      exposure_sex <- "joint"
+      outcome_sex <- "joint"
+      description_sum <- c(exposure_ID, outcome_ID, exposure_sex, outcome_sex, group, same_trait)
+      names(description_sum) <- c("exposure_ID", "outcome_ID", "exposure_sex", "outcome_sex", "grouping_var", "same_trait")
 
-        out_temp <- as.data.frame(t(c(description_sum, all_sum, diff_sum))) %>%
-          mutate_if(is.factor,as.character) %>%
-          as_tibble()
+      out_temp <- as.data.frame(t(c(description_sum, all_sum, diff_sum))) %>%
+        mutate_if(is.factor,as.character) %>%
+        as_tibble()
 
-        group_i_result <- rbind( group_i_result, out_temp)
+      group_i_result <- rbind( group_i_result, out_temp)
 
     }
+    exposure_i_result <- rbind(exposure_i_result, group_i_result)
+
     cat(paste0("Finished calculating heterogeneity statistics for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
 
   }
@@ -6708,4 +6710,18 @@ create_household_MR_AM_FvsM_fig <- function(household_MR_binned_het, custom_col)
     theme_minimal() +
     ggplot2::labs(colour = legend_title, x = paste0("AM MR estimate (male to female)"),
                   y = paste("AM MR estimate (female to male)"))
+
+  plot2 <- ggplot2::ggplot(data = plot_data, ggplot2::aes(x = IVW_beta_female,
+                                                         y = IVW_beta_male, color = factor(sex_het_sig), label = exposure_ID)) +
+    geom_point(alpha = 3/4) +
+
+    geom_smooth(mapping = aes(x = IVW_beta_female, y = IVW_beta_male), method = "lm", se=FALSE, formula = y~x+0, fullrange=TRUE, color = custom_col[4]) +
+    geom_abline(slope=1, intercept=0, color = "black") +
+    scale_color_manual(values = custom_col[c(1,2)], labels=c("p >= 0.01","p < 0.01")) +
+    theme_minimal() +
+    ggplot2::labs(colour = legend_title, x = paste0("AM MR estimate (female to male)"),
+                  y = paste("AM MR estimate (male to female)"))
+
+  return(list(plot_male_to_female = plot, plot_female_to_male = plot2))
+
 }
