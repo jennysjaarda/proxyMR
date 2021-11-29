@@ -1413,7 +1413,7 @@ calc_corr_impact_by_traits <- function(outcomes_to_run, traits_corr, corr_mat_tr
     filter(trait_interest!=trait_j)
 
 
-  return(result)
+  return(temp)
 }
 
 
