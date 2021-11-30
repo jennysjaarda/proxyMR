@@ -579,8 +579,6 @@ list(
     pattern = map(outcomes_to_run), iteration = "list"
   ),
 
-
-  ### NEED TO FIRST FILTER HARMONISED DATA RESULTS
   tar_target(
     household_MR_binned_sex_specific, # MR results are given binned in full sample and binned by time-together and mean age
     run_binned_household_MR(exposure_info, outcomes_to_run, household_harmonised_data_reverse_filter, grouping_var, MR_method_list = MR_method_list),
@@ -588,27 +586,27 @@ list(
   ),
 
   tar_target(
-    household_MR_binned_meta, # meta-analyze binned results by sex
+    household_MR_binned_MRmeta, # meta-analyze binned results by sex, meta-analyze at MR-level
     meta_binned_household_MR(exposure_info, outcomes_to_run, household_MR_binned_sex_specific),
     pattern = map(exposure_info, household_MR_binned_sex_specific), iteration = "list"
   ),
 
   tar_target(
-    household_MR_binned_joint, # MR results run in data meta-analyzed at SNP-level. Compare with meta-analyzed MR above to see impact of meta-analyzing MRs vs. meta-analyzing SNPs.
-    run_binned_household_MR_joint(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, grouping_var, MR_method_list = MR_method_list),
+    household_MR_binned_SNPmeta, # MR results run in data meta-analyzed at SNP-level. Compare with meta-analyzed MR above to see impact of meta-analyzing MRs vs. meta-analyzing SNPs.
+    run_binned_household_MR_SNPmeta(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, grouping_var, MR_method_list = MR_method_list),
     pattern = map(exposure_info, household_harmonised_data_meta_reverse_filter), iteration = "list"
   ),
 
-  tar_target(
-    household_MR_binned_joint_std, # MR results run in data meta-analyzed at SNP-level. SNP effects were standardized first.
-    run_binned_household_MR_joint_std(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, grouping_var, MR_method_list = MR_method_list),
-    pattern = map(exposure_info, household_harmonised_data_meta_reverse_filter), iteration = "list"
-  ),
+  # tar_target(
+  #   household_MR_binned_SNPmeta_std, # MR results run in data meta-analyzed at SNP-level. SNP effects were standardized first.
+  #   run_binned_household_MR_SNPmeta_std(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, grouping_var, MR_method_list = MR_method_list),
+  #   pattern = map(exposure_info, household_harmonised_data_meta_reverse_filter), iteration = "list"
+  # ),
 
   tar_target(
     couple_MR_vs_trait_corr,
-    compare_mr_raw_corr(exposure_info, household_MR_binned_joint_std, traits_corr),
-    pattern = map(exposure_info, household_MR_binned_joint_std)
+    compare_mr_raw_corr(exposure_info, household_MR_binned_SNPmeta, traits_corr),
+    pattern = map(exposure_info, household_MR_binned_SNPmeta)
   ),
 
   tar_target(
@@ -622,49 +620,51 @@ list(
 
   tar_target(
     household_MR_binned_het_sex_spec, # calc sex-het, and slope and Q-stat among bins, in sex-specific results.
-    calc_binned_household_MR_het(exposure_info, outcomes_to_run, household_MR_binned_meta),
-    pattern = map(exposure_info, household_MR_binned_meta)
+    calc_binned_household_MR_het(exposure_info, outcomes_to_run, household_MR_binned_MRmeta),
+    pattern = map(exposure_info, household_MR_binned_MRmeta)
   ),
 
   tar_target(
-    household_MR_binned_het_joint, # calc slope and Q-stat among bins in result meta-analyzed at SNP-level (joint).
-    calc_binned_household_MR_het_joint(exposure_info, outcomes_to_run, household_MR_binned_joint),
-    pattern = map(exposure_info, household_MR_binned_joint)
+    household_MR_binned_het_SNPmeta, # calc slope and Q-stat among bins in result meta-analyzed at SNP-level (joint).
+    calc_binned_household_MR_het_SNPmeta(exposure_info, outcomes_to_run, household_MR_binned_SNPmeta),
+    pattern = map(exposure_info, household_MR_binned_SNPmeta)
   ),
 
-  ## join the result above together
+  ####################################
+  ## join the result above together ##
+  ####################################
 
   tar_target(
-    household_MR, ## `household_MR  ` is run in full sample only, not binned by age / time-together categories.
+    household_MR_sex_specific, ## `household_MR_sex_specific` is run in full sample only, not binned by age / time-together categories.
     run_household_MR_comprehensive(exposure_info, outcomes_to_run, household_harmonised_data_reverse_filter, MR_method_list),
     pattern = map(exposure_info, household_harmonised_data_reverse_filter), iteration = "list"
   ),
 
   tar_target(
-    household_MR_joint, ## `household_MR_joint ` is run in full sample only, not binned by age / time-together categories.
-    run_household_MR_comprehensive_joint(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, MR_method_list),
+    household_MR_SNPmeta, ## `household_MR_metaSNP` is run in full sample only, not binned by age / time-together categories (meta-analyzed at SNP-level).
+    run_household_MR_comprehensive_SNPmeta(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, MR_method_list),
     pattern = map(exposure_info, household_harmonised_data_meta_reverse_filter), iteration = "list"
   ),
 
   tar_target(
     ## summarize into one table, ignore leave-1-out analyses for now, meta-analyze across sexes and calculate heterogeneity statistic between sexes.
-    household_MR_summary,
-    summarize_household_MR_comprehensive(household_MR, corr_mat_traits),
-    pattern = map(household_MR)
+    household_MR_summary_MRmeta,
+    summarize_household_MR_comprehensive(household_MR_sex_specific, corr_mat_traits),
+    pattern = map(household_MR_sex_specific)
   ),
 
   tar_target(
     ## summarize into one table, ignore leave-1-out analyses for now, meta-analyze across sexes and calculate heterogeneity statistic between sexes.
-    household_MR_summary_joint,
-    summarize_household_MR_comprehensive_joint(household_MR_joint, corr_mat_traits),
-    pattern = map(household_MR_joint)
+    household_MR_summary_SNPmeta,
+    summarize_household_MR_comprehensive_SNPmeta(household_MR_SNPmeta, corr_mat_traits),
+    pattern = map(household_MR_SNPmeta)
   ),
 
   ## Filter Household MR for correlation and significance
 
   tar_target(
     household_MR_summary_corr_filter,
-    find_non_corr_household_MR_summary(household_MR_summary_joint, corr_trait_threshold)
+    find_non_corr_household_MR_summary(household_MR_summary_SNPmeta, corr_trait_threshold)
   ),
 
   tar_target(
@@ -675,7 +675,7 @@ list(
 
   ## Household MR analyses for only same trait (AM = assortative mating)
 
-  tar_target(
+  tar_target( ### FIX THIS TARGET
     household_MR_binned_AM_figs,
     create_MR_binned_AM_figs(household_harmonised_data, household_MR_binned_meta, custom_col),
     pattern = map(household_harmonised_data, household_MR_binned_meta), iteration = "list"
@@ -689,14 +689,14 @@ list(
   tar_target(
     ## filter to only MR between same traits, these results meta-analyzed at SNP-level.
     household_MR_summary_AM,
-    pull_AM_MRs_household_MR_summary(household_MR_summary_joint)
+    pull_AM_MRs_household_MR_summary(household_MR_summary_SNPmeta)
   ),
 
   tar_target(
     ## filter to only MR between same traits, these results meta-analyzed at MR-level.
     ## These results will show the heterogeneity statistics.
-    household_MR_summary_AM_meta,
-    pull_AM_MRs_household_MR_summary(household_MR_summary)
+    household_MR_summary_MRmeta,
+    pull_AM_MRs_household_MR_summary(household_MR_summary_MRmeta)
   ),
 
   tar_target(
@@ -717,10 +717,10 @@ list(
 
   ## Household MVMR:  $Y_p \sim X_i + Y_i + X_p$
   ## Decided that this won't work afterall since we don't have additional instruments for X_p, beyond those that are already instruments for X_i. The only way around would be to run a GWAS on X_p, but it's not worth the effort.
-  ## If we change our minds the `run_household_MVMR_joint` needs some minor attention before running.
+  ## If we change our minds the `run_household_MVMR_SNPmeta` needs some minor attention before running.
 
   tar_target(
-    household_MVMR,
+    household_MVMR_sex_specific,
     {
       path_household_GWAS
       path_outcome_stats
@@ -731,52 +731,52 @@ list(
 
 
   tar_target(
-    household_MVMR_joint,
+    household_MVMR_SNPmeta,
     {
       path_household_GWAS_filter
       path_outcome_stats_filter
-      run_household_MVMR_joint(exposure_info, outcomes_to_run)
+      run_household_MVMR_SNPmeta(exposure_info, outcomes_to_run)
     },
     pattern = map(exposure_info), iteration = "list"
   ),
 
   tar_target(
-    household_MVMR_summary,
-    summarize_household_MVMR(household_MVMR, traits_corr2_filled, corr_mat_traits),
-    pattern = map(household_MVMR)
+    household_MVMR_summary_MRmeta,
+    summarize_household_MVMR(household_MVMR_sex_specific, traits_corr2_filled, corr_mat_traits),
+    pattern = map(household_MVMR_sex_specific)
   ),
 
   ## Standard MR
 
   tar_target(
-    standard_MR,
+    standard_MR_sex_specific,
     run_standard_MR_comprehensive(exposure_info, outcomes_to_run, standard_harmonised_data, MR_method_list),
     pattern = map(exposure_info, standard_harmonised_data), iteration = "list"
   ),
 
   tar_target(
-    standard_MR_joint,
-    run_standard_MR_comprehensive_joint(exposure_info, outcomes_to_run, standard_harmonised_data_meta_reverse_filter, MR_method_list),
+    standard_MR_SNPmeta,
+    run_standard_MR_comprehensive_SNPmeta(exposure_info, outcomes_to_run, standard_harmonised_data_meta_reverse_filter, MR_method_list),
     pattern = map(exposure_info, standard_harmonised_data_meta_reverse_filter), iteration = "list"
   ),
 
   tar_target(
     ## summarize into one table, ignore leave-1-out analyses for now, meta-analyze across sexes and calculate heterogeneity statistic between sexes.
-    standard_MR_summary,
-    summarize_standard_MR_comprehensive(standard_MR),
-    pattern = map(standard_MR)
+    standard_MR_summary_MRmeta,
+    summarize_standard_MR_comprehensive(standard_MR_sex_specific),
+    pattern = map(standard_MR_sex_specific)
   ),
 
   tar_target(
     ## summarize into one table, ignore leave-1-out analyses for now, meta-analyze across sexes and calculate heterogeneity statistic between sexes.
-    standard_MR_summary_joint,
-    summarize_standard_MR_comprehensive_joint(standard_MR_joint),
-    pattern = map(standard_MR_joint)
+    standard_MR_summary_SNPmeta,
+    summarize_standard_MR_comprehensive_SNPmeta(standard_MR_SNPmeta),
+    pattern = map(standard_MR_SNPmeta)
   ),
 
   tar_target(
     standard_MR_summary_BF_sig,
-    find_sig_standard_MR_summary(standard_MR_summary_joint)
+    find_sig_standard_MR_summary(standard_MR_summary_SNPmeta)
   ),
 
   ## Compute rho, omega and gamma

@@ -2807,6 +2807,20 @@ binned_household_MR_ind <- function(exposure_info, outcome_ID, household_harmoni
 
       harmonise_sub <- household_harmonised_data_sex[which(household_harmonised_data_sex[["bin"]]==bin),]
 
+      harmonise_sub_std <- harmonise_sub %>%
+        mutate(z_score.exposure = beta.exposure / se.exposure) %>%
+        mutate(z_score.outcome = beta.outcome / se.outcome) %>%
+        mutate(std_beta.exposure = z_score.exposure / sqrt(samplesize.exposure)) %>%
+        mutate(std_beta.outcome = z_score.outcome / sqrt(samplesize.outcome)) %>%
+        mutate(std_se.exposure = 1 / sqrt(samplesize.exposure)) %>%
+        mutate(std_se.outcome = 1 / sqrt(samplesize.outcome)) %>%
+        mutate(std_t_stat = (abs(std_beta.exposure) - abs(std_beta.outcome)) /
+                 sqrt(std_se.exposure^2 + std_se.outcome^2))
+
+      harmonise_sub_std <- harmonise_sub_std %>% dplyr::select(-beta.exposure, -se.exposure, -beta.outcome, -se.outcome) %>%
+        rename(beta.exposure = std_beta.exposure) %>% rename(se.exposure = std_se.exposure) %>%
+        rename(beta.outcome = std_beta.outcome) %>% rename(se.outcome = std_se.outcome)
+
       n_bin <- max(harmonise_sub$samplesize.outcome )
       n_exposure <- max(harmonise_sub$samplesize.exposure )
 
@@ -2839,7 +2853,7 @@ binned_household_MR_ind <- function(exposure_info, outcome_ID, household_harmoni
 
 }
 
-binned_household_MR_ind_joint <- function(exposure_info, outcome_ID, household_harmonised_data, grouping_var, MR_method_list) {
+binned_household_MR_ind_SNPmeta <- function(exposure_info, outcome_ID, household_harmonised_data, grouping_var, MR_method_list) {
 
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
   exposure_description <- exposure_info %>% filter(Value=="description") %>% pull(Info)
@@ -2890,8 +2904,7 @@ binned_household_MR_ind_joint <- function(exposure_info, outcome_ID, household_h
 
 }
 
-
-binned_household_MR_ind_joint_std <- function(exposure_info, outcome_ID, household_harmonised_data, grouping_var, MR_method_list) {
+binned_household_MR_ind_SNPmeta_std <- function(exposure_info, outcome_ID, household_harmonised_data, grouping_var, MR_method_list) {
 
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
   exposure_description <- exposure_info %>% filter(Value=="description") %>% pull(Info)
@@ -2957,7 +2970,6 @@ binned_household_MR_ind_joint_std <- function(exposure_info, outcome_ID, househo
 
 }
 
-
 # `run_household_MR_binned` runs the MR in individual bins (by age or time_together) and returns a table with results for each bin.
 run_binned_household_MR <- function(exposure_info, outcomes_to_run, household_harmonised_data, grouping_var, MR_method_list = MR_method_list){
 
@@ -2996,7 +3008,7 @@ run_binned_household_MR <- function(exposure_info, outcomes_to_run, household_ha
 
 }
 
-run_binned_household_MR_joint <- function(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, grouping_var, MR_method_list = MR_method_list){
+run_binned_household_MR_SNPmeta <- function(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, grouping_var, MR_method_list = MR_method_list){
 
   output_list <- list()
   output_files <- numeric()
@@ -3020,44 +3032,9 @@ run_binned_household_MR_joint <- function(exposure_info, outcomes_to_run, househ
 
       # run for each group
 
-      group_MR_result <- binned_household_MR_ind_joint(exposure_info, outcome_ID, household_harmonised_data_i, group, MR_method_list)
-      household_MR_result <- rbind(household_MR_result, group_MR_result)
-    }
+      # change function to `binned_household_MR_ind_SNPmeta` if you dont want standardized MR.
 
-    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_MR")]] <- household_MR_result
-
-    cat(paste0("Finished MR for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
-  }
-
-  return(output_list)
-
-}
-
-run_binned_household_MR_joint_std <- function(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, grouping_var, MR_method_list = MR_method_list){
-
-  output_list <- list()
-  output_files <- numeric()
-
-  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
-
-  pheno_dir <- paste0("analysis/traitMR")
-  cat(paste0("\nCalculating household MR in meta-analyzed SNPs in age and time-together bins for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
-
-  household_MR_result <- numeric()
-
-  for(i in 1:dim(outcomes_to_run)[1]){
-
-    household_MR_result <- numeric()
-    outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
-
-    household_harmonised_data_i <- household_harmonised_data_meta_reverse_filter[[i]]
-    for(group in grouping_var){
-
-      cat(paste0("\nRunning MR in bins of household pairs for group `", group, "`...\n"))
-
-      # run for each group
-
-      group_MR_result <- binned_household_MR_ind_joint_std(exposure_info, outcome_ID, household_harmonised_data_i, group, MR_method_list)
+      group_MR_result <- binned_household_MR_ind_SNPmeta_std(exposure_info, outcome_ID, household_harmonised_data_i, group, MR_method_list)
       household_MR_result <- rbind(household_MR_result, group_MR_result)
     }
 
@@ -3083,10 +3060,16 @@ compare_mr_raw_corr <- function(exposure_info, household_MR_binned_joint_std, tr
   couple_r2 <- as.numeric(traits_corr[which(traits_corr$ID==phes_ID),"r2"])
   couple_r <- sqrt(couple_r2)
   n_pairs <- as.numeric(traits_corr[which(traits_corr$ID==phes_ID),"N_pairs"])
-
+  r_se <- sqrt((1-couple_r^2)/(n_pairs-2))
   MR_result$n_pairs <- n_pairs
   MR_result$couple_r2 <- couple_r2
   MR_result$couple_r <- couple_r
+  MR_result$couple_r_se <- r_se
+
+  MR_result$diff_z <- z.test(MR_result[["IVW_beta_std"]], MR_result[["IVW_se_std"]], MR_result[["couple_r"]], MR_result[["couple_r_se"]])$statistic
+  MR_result$diff_p <- z.test(MR_result[["IVW_beta_std"]], MR_result[["IVW_se_std"]], MR_result[["couple_r"]], MR_result[["couple_r_se"]])$p
+
+  MR_result$correlation_larger <- ifelse(MR_result$couple_r > MR_result$IVW_beta_std, TRUE, FALSE)
 
   MR_result <- MR_result %>% dplyr::select(-grouping_var, -bin)
   return(MR_result)
@@ -3259,7 +3242,7 @@ calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, househo
 }
 
 
-calc_binned_household_MR_het_joint <- function(exposure_info, outcomes_to_run, household_MR_binned_joint){
+calc_binned_household_MR_het_SNPmeta <- function(exposure_info, outcomes_to_run, household_MR_binned_joint){
 
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
 
@@ -3347,6 +3330,22 @@ household_MR_comprehensive_ind <- function(harmonise_dat, MR_method_list){
     exposure_sex <- NA
     outcome_sex <- NA
   }
+
+
+  harmonise_dat <- harmonise_dat %>%
+    mutate(z_score.exposure = beta.exposure / se.exposure) %>%
+    mutate(z_score.outcome = beta.outcome / se.outcome) %>%
+    mutate(std_beta.exposure = z_score.exposure / sqrt(samplesize.exposure)) %>%
+    mutate(std_beta.outcome = z_score.outcome / sqrt(samplesize.outcome)) %>%
+    mutate(std_se.exposure = 1 / sqrt(samplesize.exposure)) %>%
+    mutate(std_se.outcome = 1 / sqrt(samplesize.outcome)) %>%
+    mutate(std_t_stat = (abs(std_beta.exposure) - abs(std_beta.outcome)) /
+             sqrt(std_se.exposure^2 + std_se.outcome^2))
+
+  harmonise_dat <- harmonise_dat %>% dplyr::select(-beta.exposure, -se.exposure, -beta.outcome, -se.outcome) %>%
+    rename(beta.exposure = std_beta.exposure) %>% rename(se.exposure = std_se.exposure) %>%
+    rename(beta.outcome = std_beta.outcome) %>% rename(se.outcome = std_se.outcome)
+
 
   exposure_description <- harmonise_dat$exposure_description[1]
   outcome_description <- harmonise_dat$outcome_description[1]
@@ -3445,7 +3444,7 @@ run_household_MR_comprehensive <- function(exposure_info, outcomes_to_run, house
 
 }
 
-run_household_MR_comprehensive_joint <- function(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, MR_method_list){
+run_household_MR_comprehensive_SNPmeta <- function(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, MR_method_list){
 
   output_list <- list()
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
@@ -3632,7 +3631,7 @@ run_household_MVMR <- function(exposure_info, outcomes_to_run){
 }
 
 
-run_household_MVMR_joint <- function(exposure_info, outcomes_to_run){
+run_household_MVMR_SNPmeta <- function(exposure_info, outcomes_to_run){
 
   output_list <- list()
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
@@ -3879,7 +3878,7 @@ summarize_household_MR_comprehensive <- function(household_MR, corr_mat_traits){
 
 }
 
-summarize_household_MR_comprehensive_joint <- function(household_MR_joint, corr_mat_traits){
+summarize_household_MR_comprehensive_SNPmeta <- function(household_MR_joint, corr_mat_traits){
 
   exposure_ID <- household_MR_joint[[1]][["MR_summary"]][,"exposure_ID"][[1]]
   cat(paste0("Summarizing and meta-analyzing household MR results across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
@@ -3993,7 +3992,7 @@ run_standard_MR_comprehensive <- function(exposure_info, outcomes_to_run, standa
 }
 
 
-run_standard_MR_comprehensive_joint <- function(exposure_info, outcomes_to_run, standard_harmonised_data_meta_reverse_filter, MR_method_list){
+run_standard_MR_comprehensive_SNPmeta <- function(exposure_info, outcomes_to_run, standard_harmonised_data_meta_reverse_filter, MR_method_list){
 
   output_list <- list()
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
@@ -4075,7 +4074,7 @@ summarize_standard_MR_comprehensive <- function(standard_MR){
 }
 
 
-summarize_standard_MR_comprehensive_joint <- function(standard_MR_joint){
+summarize_standard_MR_comprehensive_SNPmeta <- function(standard_MR_joint){
 
   exposure_ID <- standard_MR_joint[[1]][["MR_summary"]][,"exposure_ID"][[1]]
   cat(paste0("Summarizing and meta-analyzing standard MR results across sexes for all outcomes with phenotype `", exposure_ID, "` as exposure.\n\n"))
