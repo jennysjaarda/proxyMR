@@ -695,7 +695,7 @@ list(
   tar_target(
     ## filter to only MR between same traits, these results meta-analyzed at MR-level.
     ## These results will show the heterogeneity statistics.
-    household_MR_summary_MRmeta,
+    household_MR_summary_AM_MRmeta,
     pull_AM_MRs_household_MR_summary(household_MR_summary_MRmeta)
   ),
 
