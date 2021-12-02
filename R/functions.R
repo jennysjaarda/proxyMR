@@ -2821,6 +2821,8 @@ binned_household_MR_ind <- function(exposure_info, outcome_ID, household_harmoni
         rename(beta.exposure = std_beta.exposure) %>% rename(se.exposure = std_se.exposure) %>%
         rename(beta.outcome = std_beta.outcome) %>% rename(se.outcome = std_se.outcome)
 
+      harmonise_sub <- harmonise_sub_std
+
       n_bin <- max(harmonise_sub$samplesize.outcome )
       n_exposure <- max(harmonise_sub$samplesize.exposure )
 
@@ -6195,10 +6197,10 @@ mr_plot_binned_sex_specific <- function(harmonised_data, MR_binned, exposure_sex
 
 }
 
-mr_plot_sex_specific <- function(harmonised_data, MR_binned, custom_col){
+mr_plot_sex_specific <- function(harmonised_data, MR_binned, MR_binned_meta, custom_col){
 
-  harmonised_data.sex_male <- harmonised_data[[paste0("exp_", "male", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
-  harmonised_data.sex_female <- harmonised_data[[paste0("exp_", "female", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
+  harmonised_data.sex_male <- harmonised_data[[paste0("exp_", "male", "_harmonised_data_filter")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
+  harmonised_data.sex_female <- harmonised_data[[paste0("exp_", "female", "_harmonised_data_filter")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
 
   harmonise_dat_plot <- rbind(harmonised_data.sex_male, harmonised_data.sex_female) %>% mutate_at('exposure_sex', as.factor)
   trait_description <- as.character(harmonise_dat_plot[1, "exposure_description"])
@@ -6206,6 +6208,7 @@ mr_plot_sex_specific <- function(harmonised_data, MR_binned, custom_col){
 
   ## which grouping_var we choose doesn't matter
   bin_summary <- MR_binned %>% dplyr::filter(grouping_var=="age_even_bins") %>% dplyr::filter(bin == "all") %>% mutate_at('exposure_sex', as.factor)
+  bin_summary_meta <- MR_binned_meta %>% dplyr::filter(grouping_var=="age_even_bins") %>% dplyr::filter(bin == "all")
 
 
   outcome_levels <- levels(bin_summary$exposure_sex)
@@ -6233,7 +6236,7 @@ mr_plot_sex_specific <- function(harmonised_data, MR_binned, custom_col){
                   y = paste0("SNP effect on ", "partner\n(sex-specific)")) +
     ggplot2::theme(legend.position = "right", legend.direction = "vertical") +
     ggplot2::guides(colour = ggplot2::guide_legend(ncol = 1)) +
-    ggplot2::geom_abline(intercept = 0, slope = bin_summary$IVW_meta_beta, color="black", size=1)
+    ggplot2::geom_abline(intercept = 0, slope = bin_summary$IVW_meta_beta, color="black", size=1)   ### FIX THIS LINE.
 
 
   return(plot)
@@ -6528,9 +6531,9 @@ xy_plot_binned_meta <- function(harmonised_data, MR_binned, group, custom_col){
   fig_data_meta <- fig_data %>% filter(exposure_sex=="male")
 
   plot <- ggplot2::ggplot(data = fig_data_meta, ggplot2::aes(x = bin_median,
-                                                              y = IVW_meta_beta)) +
+                                                              y = IVW_beta)) +
     geom_smooth(method="lm",formula=y~x, se = F, fullrange = T, color = custom_col[2], linetype = "dashed") +
-    ggplot2::geom_errorbar(ggplot2::aes(ymin = IVW_beta_std - IVW_se_std, ymax = IVW_beta_std + IVW_se_std),
+    ggplot2::geom_errorbar(ggplot2::aes(ymin = IVW_beta - IVW_se, ymax = IVW_beta + IVW_se),
                            colour = "grey", width = 0) +
     ggplot2::geom_point(color = custom_col[2]) +
     scale_x_continuous(breaks=x_ticks, limits = c(min(x_ticks)-2, max(x_ticks)+2),
@@ -6550,8 +6553,8 @@ xy_plot_binned_meta <- function(harmonised_data, MR_binned, group, custom_col){
 
 xy_plot_binned_single_sex <- function(harmonised_data, MR_binned, exposure_sex, group, custom_col){
 
-  harmonised_data.sex_male <- harmonised_data[[paste0("exp_", "male", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
-  harmonised_data.sex_female <- harmonised_data[[paste0("exp_", "female", "_harmonised_data")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
+  harmonised_data.sex_male <- harmonised_data[[paste0("exp_", "male", "_harmonised_data_filter")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
+  harmonised_data.sex_female <- harmonised_data[[paste0("exp_", "female", "_harmonised_data_filter")]] %>% dplyr::filter(grouping_var == "age_even_bins") %>% dplyr::filter(bin== "all") %>% mutate_at('bin', as.factor)
 
   fig_data <- MR_binned %>% filter(bin!="all") %>% separate(bin, c("bin_start_temp", "bin_stop_temp"), ",", remove = F) %>% filter(grouping_var==!!group) %>% mutate(bin_start = substring(bin_start_temp, 2)) %>%
     mutate(bin_stop = str_sub(bin_stop_temp,1,nchar(bin_stop_temp)-1)) %>% rowwise() %>%
@@ -6674,7 +6677,7 @@ create_MR_binned_AM_figs <- function(household_harmonised_data_meta_reverse_filt
     assign(paste0("XY_sex_sidebyside_", group, "_fig"), xy_bin_side_by_side)
   }
 
-  overall_MR_fig <- mr_plot_sex_specific(household_harmonised_data.AM, household_MR_binned_meta.AM, custom_col)
+  overall_MR_fig <- mr_plot_sex_specific(household_harmonised_data.AM, household_MR_binned_MRmeta.AM, household_MR_binned_SNPmeta.AM, custom_col)
 
   return(list(overall_MR_fig = overall_MR_fig,
               MR_sex_specific_age_bins_fig = MR_sex_specific_age_even_bins_fig,
