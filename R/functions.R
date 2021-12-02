@@ -3066,10 +3066,10 @@ compare_mr_raw_corr <- function(exposure_info, household_MR_binned_joint_std, tr
   MR_result$couple_r <- couple_r
   MR_result$couple_r_se <- r_se
 
-  MR_result$diff_z <- z.test(MR_result[["IVW_beta_std"]], MR_result[["IVW_se_std"]], MR_result[["couple_r"]], MR_result[["couple_r_se"]])$statistic
-  MR_result$diff_p <- z.test(MR_result[["IVW_beta_std"]], MR_result[["IVW_se_std"]], MR_result[["couple_r"]], MR_result[["couple_r_se"]])$p
+  MR_result$diff_z <- z.test(MR_result[["IVW_beta"]], MR_result[["IVW_se"]], MR_result[["couple_r"]], MR_result[["couple_r_se"]])$statistic
+  MR_result$diff_p <- z.test(MR_result[["IVW_beta"]], MR_result[["IVW_se"]], MR_result[["couple_r"]], MR_result[["couple_r_se"]])$p
 
-  MR_result$correlation_larger <- ifelse(MR_result$couple_r > MR_result$IVW_beta_std, TRUE, FALSE)
+  MR_result$correlation_larger <- ifelse(MR_result$couple_r > MR_result$IVW_beta, TRUE, FALSE)
 
   MR_result <- MR_result %>% dplyr::select(-grouping_var, -bin)
   return(MR_result)
