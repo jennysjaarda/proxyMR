@@ -677,8 +677,8 @@ list(
 
   tar_target( ### FIX THIS TARGET
     household_MR_binned_AM_figs,
-    create_MR_binned_AM_figs(household_harmonised_data, household_MR_binned_meta, custom_col),
-    pattern = map(household_harmonised_data, household_MR_binned_meta), iteration = "list"
+    create_MR_binned_AM_figs(household_harmonised_data_meta_reverse_filter, household_harmonised_data_reverse_filter, household_MR_binned_SNPmeta, household_MR_binned_MRmeta, custom_col),
+    pattern = map(household_harmonised_data_meta_reverse_filter, household_harmonised_data_reverse_filter, household_MR_binned_SNPmeta, household_MR_binned_MRmeta), iteration = "list"
   ),
 
   tar_target(
