@@ -782,25 +782,25 @@ list(
   ## Compute rho, omega and gamma
 
   tar_target(
-    proxyMR_comparison_sex_specific, ## Change names to have "_sex-specific" suffix. All inputs except `exposure_info` need to be updated to sex-specific results.
+    proxyMR_comparison_sex_specific,
     run_proxyMR_comparison(exposure_info, household_MR_summary_BF_sig, household_MR_summary_MRmeta, standard_MR_summary_MRmeta, household_MR_summary_AM_MRmeta),
     map(exposure_info, household_MR_summary_MRmeta, standard_MR_summary_MRmeta), iteration = "list"
   ),
 
   tar_target(
     proxyMR_comparison_SNPmeta,
-    run_proxyMR_comparison_joint(exposure_info, household_MR_summary_BF_sig, household_MR_summary_SNPmeta, standard_MR_summary_SNPmeta, household_MR_summary_AM),
+    run_proxyMR_comparison_SNPmeta(exposure_info, household_MR_summary_BF_sig, household_MR_summary_SNPmeta, standard_MR_summary_SNPmeta, household_MR_summary_AM),
     map(exposure_info, household_MR_summary_SNPmeta, standard_MR_summary_SNPmeta), iteration = "list"
   ),
 
   tar_target(
-    proxyMR_MR_paths_summary, ## summarize the different MR paths in each Xi -> Yp
-    summarize_proxyMR_paths(proxyMR_comparison)
+    proxyMR_paths_summary, ## summarize the different MR paths in each Xi -> Yp
+    summarize_proxyMR_paths(proxyMR_comparison_SNPmeta)
   ),
 
   tar_target(
     proxyMR_comparison_summary,
-    summarize_proxyMR_comparison(proxyMR_comparison, traits_corr2_filled)
+    summarize_proxyMR_comparison(proxyMR_comparison_SNPmeta, traits_corr2_filled)
   ),
 
   tar_target(
@@ -818,19 +818,19 @@ list(
   tar_target(
     proxyMR_yiyp_adj,
     {
-      path_household_GWAS
-      path_outcome_stats
-      adj_yiyp_xIVs(exposure_info, household_harmonised_data, household_MR_summary_BF_sig)
+      path_outcome_stats_filter
+      path_household_GWAS_filter
+      adj_yiyp_xIVs(exposure_info, household_harmonised_data_reverse_filter, household_MR_summary_BF_sig)
     },
-    map(exposure_info, household_harmonised_data)
+    map(exposure_info, household_harmonised_data_reverse_filter)
   ),
 
   tar_target(
-    proxyMR_yiyp_adj_joint,
+    proxyMR_yiyp_adj_SNPmeta,
     {
       path_household_GWAS_filter
       path_outcome_stats_filter
-      adj_yiyp_xIVs_joint(exposure_info, household_harmonised_data_meta_reverse_filter, household_MR_summary_BF_sig)
+      adj_yiyp_xIVs_SNPmeta(exposure_info, household_harmonised_data_meta_reverse_filter, household_MR_summary_BF_sig)
     },
     map(exposure_info, household_harmonised_data_meta_reverse_filter)
   ),
