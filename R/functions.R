@@ -1273,7 +1273,10 @@ calc_pc_trait_corr <- function(Neale_pheno_ID, pheno_data){
   {
 
     phes_ID <- gsub("_irnt", "", Neale_pheno_ID)
-    cor_joint <- cor(full_data[[phes_ID]], full_data[[PC]])
+    full_data[["PC_ivt"]] <- ivt(full_data[[PC]])
+    # cor_joint <- cor(full_data[[phes_ID]], full_data[[PC]])
+    cor_joint <- cor(full_data[[phes_ID]], full_data[["PC_ivt"]])
+
     output_row <- cbind(Neale_pheno_ID, PC, cor_joint)
     for(sex_data in names(pheno_data)){
 
@@ -4179,42 +4182,45 @@ run_proxyMR_comparison <- function(exposure_info, household_MR_summary_BF_sig, h
 
     for(i in 1:dim(MR_sub)[1]){
       outcome_ID <- MR_sub$outcome_ID[[i]]
-      exposure_sex <- MR_sub$exposure_sex[[i]]
-      if(exposure_sex=="male"){outcome_sex="female"}
-      if(exposure_sex=="female"){outcome_sex="male"}
+      for(exposure_sex in c("male", "female")){
+        if(exposure_sex=="male"){outcome_sex="female"}
+        if(exposure_sex=="female"){outcome_sex="male"}
 
-      # p = partner / outcome
+        # p = partner / outcome
 
-      hh_MR_sub <- household_MR_summary %>% filter(exposure_sex==!!exposure_sex) %>%
-        filter(outcome_ID==!!outcome_ID)
+        hh_MR_sub <- household_MR_summary %>% filter(exposure_sex==!!exposure_sex) %>%
+          filter(outcome_ID==!!outcome_ID)
 
-      cols_interst <- c("IVW_beta", "IVW_se", "IVW_pval", "N_exposure_GWAS", "N_outcome_GWAS", "N_snps")
-
-
-      ## Sex-specific proxy MR
-      xiyp_summary <- hh_MR_sub %>% dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xiyp_', names(.)))
-
-      ## Sex-specific AM MR
-      xixp_summary <- household_MR_summary_AM %>% filter(exposure_ID==!!exposure_ID) %>% filter(outcome_ID==!!exposure_ID) %>%
-        filter(exposure_sex==!!exposure_sex) %>% dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xixp_', names(.)))
-      yiyp_summary <- household_MR_summary_AM %>% filter(exposure_ID==!!outcome_ID) %>% filter(outcome_ID==!!outcome_ID) %>%
-        filter(exposure_sex==!!exposure_sex) %>% dplyr::select(all_of(cols_interst)) %>% setNames(paste0('yiyp_', names(.)))
-
-      ## Sex-specific standard MR
-      ## (y is the outcome, x is the exposure)
-      ## exposure and outcome sex are the same, i.e. exposure/outcome sex are irrelevant
-
-      xiyi_summary <- standard_MR_summary %>% filter(exposure_sex==!!exposure_sex) %>% filter(outcome_ID==!!outcome_ID) %>%
-        dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xiyi_', names(.)))
-      xpyp_summary <- standard_MR_summary %>% filter(outcome_sex==!!outcome_sex) %>% filter(outcome_ID==!!outcome_ID) %>%
-        dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xpyp_', names(.)))
+        cols_interst <- c("IVW_beta", "IVW_se", "IVW_pval", "N_exposure_GWAS", "N_outcome_GWAS", "N_snps")
 
 
+        ## Sex-specific proxy MR
+        xiyp_summary <- hh_MR_sub %>% dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xiyp_', names(.)))
 
-      summary_cols <- MR_sub %>% slice(i) %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, exposure_sex, outcome_sex)
-      row_i <- cbind(summary_cols, xiyp_summary, xixp_summary, yiyp_summary, xiyi_summary, xpyp_summary)
+        ## Sex-specific AM MR
+        xixp_summary <- household_MR_summary_AM %>% filter(exposure_ID==!!exposure_ID) %>% filter(outcome_ID==!!exposure_ID) %>%
+          filter(exposure_sex==!!exposure_sex) %>% dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xixp_', names(.)))
+        yiyp_summary <- household_MR_summary_AM %>% filter(exposure_ID==!!outcome_ID) %>% filter(outcome_ID==!!outcome_ID) %>%
+          filter(exposure_sex==!!exposure_sex) %>% dplyr::select(all_of(cols_interst)) %>% setNames(paste0('yiyp_', names(.)))
 
-      summarized_result <- rbind(summarized_result, row_i)
+        ## Sex-specific standard MR
+        ## (y is the outcome, x is the exposure)
+        ## exposure and outcome sex are the same, i.e. exposure/outcome sex are irrelevant
+
+        xiyi_summary <- standard_MR_summary %>% filter(exposure_sex==!!exposure_sex) %>% filter(outcome_ID==!!outcome_ID) %>%
+          dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xiyi_', names(.)))
+        xpyp_summary <- standard_MR_summary %>% filter(outcome_sex==!!outcome_sex) %>% filter(outcome_ID==!!outcome_ID) %>%
+          dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xpyp_', names(.)))
+
+
+
+        summary_cols <- MR_sub %>% slice(i) %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, exposure_sex, outcome_sex)
+        row_i <- cbind(summary_cols, xiyp_summary, xixp_summary, yiyp_summary, xiyi_summary, xpyp_summary)
+
+        summarized_result <- rbind(summarized_result, row_i)
+      }
+
+
     }
 
 
@@ -6526,11 +6532,7 @@ xy_plot_binned_meta <- function(harmonised_data, MR_binned, group, custom_col){
 
   legend_title <- "Exposure sex"
 
-  ## doesn't matter what sex we choose for meta
-
-  fig_data_meta <- fig_data %>% filter(exposure_sex=="male")
-
-  plot <- ggplot2::ggplot(data = fig_data_meta, ggplot2::aes(x = bin_median,
+  plot <- ggplot2::ggplot(data = fig_data, ggplot2::aes(x = bin_median,
                                                               y = IVW_beta)) +
     geom_smooth(method="lm",formula=y~x, se = F, fullrange = T, color = custom_col[2], linetype = "dashed") +
     ggplot2::geom_errorbar(ggplot2::aes(ymin = IVW_beta - IVW_se, ymax = IVW_beta + IVW_se),

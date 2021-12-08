@@ -641,7 +641,7 @@ list(
   ),
 
   tar_target(
-    household_MR_SNPmeta, ## `household_MR_metaSNP` is run in full sample only, not binned by age / time-together categories (meta-analyzed at SNP-level).
+    household_MR_SNPmeta, ## `household_MR_SNPmeta` is run in full sample only, not binned by age / time-together categories (meta-analyzed at SNP-level).
     run_household_MR_comprehensive_SNPmeta(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, MR_method_list),
     pattern = map(exposure_info, household_harmonised_data_meta_reverse_filter), iteration = "list"
   ),
@@ -782,13 +782,13 @@ list(
   ## Compute rho, omega and gamma
 
   tar_target(
-    proxyMR_comparison, ## Change names to have "_sex-specific" suffix. All inputs except `exposure_info` need to be updated to sex-specific results.
-    run_proxyMR_comparison(exposure_info, household_MR_summary_BF_sig, household_MR_summary, standard_MR_summary, household_MR_summary_AM),
-    map(exposure_info, household_MR_summary, standard_MR_summary), iteration = "list"
+    proxyMR_comparison_sex_specific, ## Change names to have "_sex-specific" suffix. All inputs except `exposure_info` need to be updated to sex-specific results.
+    run_proxyMR_comparison(exposure_info, household_MR_summary_BF_sig, household_MR_summary_MRmeta, standard_MR_summary_MRmeta, household_MR_summary_AM_MRmeta),
+    map(exposure_info, household_MR_summary_MRmeta, standard_MR_summary_MRmeta), iteration = "list"
   ),
 
   tar_target(
-    proxyMR_comparison_joint,
+    proxyMR_comparison_SNPmeta,
     run_proxyMR_comparison_joint(exposure_info, household_MR_summary_BF_sig, household_MR_summary_joint, standard_MR_summary_joint, household_MR_summary_AM),
     map(exposure_info, household_MR_summary_joint, standard_MR_summary_joint), iteration = "list"
   ),
