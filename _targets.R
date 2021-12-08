@@ -789,8 +789,8 @@ list(
 
   tar_target(
     proxyMR_comparison_SNPmeta,
-    run_proxyMR_comparison_joint(exposure_info, household_MR_summary_BF_sig, household_MR_summary_joint, standard_MR_summary_joint, household_MR_summary_AM),
-    map(exposure_info, household_MR_summary_joint, standard_MR_summary_joint), iteration = "list"
+    run_proxyMR_comparison_joint(exposure_info, household_MR_summary_BF_sig, household_MR_summary_SNPmeta, standard_MR_summary_SNPmeta, household_MR_summary_AM),
+    map(exposure_info, household_MR_summary_SNPmeta, standard_MR_summary_SNPmeta), iteration = "list"
   ),
 
   tar_target(
