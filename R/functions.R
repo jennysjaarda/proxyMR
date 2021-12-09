@@ -4921,21 +4921,13 @@ summarize_proxyMR_comparison <- function(proxyMR_comparison, traits_corr2_filled
 
 
   comparison_result <- comparison_result %>%
-    mutate(omega_vs_gam_BF_sig_sex_specific = case_when(TRUE ~ omega_vs_gam_pval < 0.05/num_result,
+    mutate(omega_vs_gam_BF_sig = case_when(TRUE ~ omega_vs_gam_pval < 0.05/num_result,
                                                         TRUE ~ TRUE)) %>%
-    mutate(omega_vs_rho_BF_sig_sex_specific = case_when(TRUE ~ omega_vs_rho_pval < 0.05/num_result,
+    mutate(omega_vs_rho_BF_sig = case_when(TRUE ~ omega_vs_rho_pval < 0.05/num_result,
                                                         TRUE ~ TRUE)) %>%
-    mutate(gam_vs_rho_BF_sig_sex_specific = case_when(TRUE ~ gam_vs_rho_pval < 0.05/num_result,
+    mutate(gam_vs_rho_BF_sig = case_when(TRUE ~ gam_vs_rho_pval < 0.05/num_result,
                                                       TRUE ~ TRUE)) %>%
-    mutate(omega_vs_gam_rho_BF_sig_meta = case_when(TRUE ~ omega_vs_gam_rho_pval < 0.05/num_result,
-                                              TRUE ~ TRUE)) %>%
-    mutate(omega_vs_gam_BF_sig_meta = case_when(TRUE ~ omega_vs_gam_meta_pval < 0.05/num_result,
-                                                TRUE ~ TRUE)) %>%
-    mutate(omega_vs_rho_BF_sig_meta = case_when(TRUE ~ omega_vs_rho_meta_pval < 0.05/num_result,
-                                                TRUE ~ TRUE)) %>%
-    mutate(gam_vs_rho_BF_sig_meta = case_when(TRUE ~ gam_vs_rho_meta_pval < 0.05/num_result,
-                                              TRUE ~ TRUE)) %>%
-    mutate(omega_vs_gam_rho_BF_sig_meta = case_when(TRUE ~ omega_vs_gam_rho_meta_pval < 0.05/num_result,
+    mutate(omega_vs_gam_rho_BF_sig = case_when(TRUE ~ omega_vs_gam_rho_pval < 0.05/num_result,
                                               TRUE ~ TRUE))
 
 

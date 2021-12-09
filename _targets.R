@@ -799,7 +799,7 @@ list(
   ),
 
   tar_target(
-    proxyMR_comparison_summary,
+    proxyMR_comparison_summary, ## would need to reformat the function slightly for the sex-specific results
     summarize_proxyMR_comparison(proxyMR_comparison_SNPmeta, traits_corr2_filled)
   ),
 
