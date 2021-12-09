@@ -836,15 +836,15 @@ list(
   ),
 
   tar_target(
-    proxyMR_comparison_yiyp_adj,
+    proxyMR_comparison_yiyp_adj, ## TO RUN!
     run_proxyMR_comparison_adj_yiyp(exposure_info, household_MR_summary_BF_sig, household_MR_summary, standard_MR_summary, household_MR_summary_AM, proxyMR_yiyp_adj),
     map(exposure_info, household_MR_summary, standard_MR_summary), iteration = "list"
   ),
 
   tar_target(
-    proxyMR_comparison_yiyp_adj_joint,
-    run_proxyMR_comparison_adj_yiyp_joint(exposure_info, household_MR_summary_BF_sig, household_MR_summary_joint, standard_MR_summary_joint, household_MR_summary_AM, proxyMR_yiyp_adj_joint),
-    map(exposure_info, household_MR_summary_joint, standard_MR_summary_joint), iteration = "list"
+    proxyMR_comparison_yiyp_adj_SNPmeta,
+    run_proxyMR_comparison_adj_yiyp_SNPmeta(exposure_info, household_MR_summary_BF_sig, household_MR_summary_SNPmeta, standard_MR_summary_SNPmeta, household_MR_summary_AM, proxyMR_yiyp_adj_SNPmeta),
+    map(exposure_info, household_MR_summary_SNPmeta, standard_MR_summary_SNPmeta), iteration = "list"
   ),
 
   tar_target(

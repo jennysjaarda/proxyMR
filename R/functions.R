@@ -4799,7 +4799,7 @@ run_proxyMR_comparison_adj_yiyp <- function(exposure_info, household_MR_summary_
 
 }
 
-run_proxyMR_comparison_adj_yiyp_joint <- function(exposure_info, household_MR_summary_BF_sig, household_MR_summary_joint, standard_MR_summary_joint, household_MR_summary_AM, proxyMR_yiyp_adj_joint){
+run_proxyMR_comparison_adj_yiyp_SNPmeta <- function(exposure_info, household_MR_summary_BF_sig, household_MR_summary_SNPmeta, standard_MR_summary_SNPmeta, household_MR_summary_AM, proxyMR_yiyp_adj_SNPmeta){
 
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
   ## only run this for those where omega is significant and where exposure and outcome ID are different.
@@ -4814,15 +4814,15 @@ run_proxyMR_comparison_adj_yiyp_joint <- function(exposure_info, household_MR_su
 
     for(i in 1:dim(MR_sub)[1]){
       outcome_ID <- MR_sub$outcome_ID[[i]]
-      exposure_sex <- MR_sub$exposure_sex[[i]]
-      outcome_sex <- MR_sub$outcome_sex[[i]]
+      #exposure_sex <- MR_sub$exposure_sex[[i]]
+      #outcome_sex <- MR_sub$outcome_sex[[i]]
 
       #if(exposure_sex=="male"){outcome_sex="female"}
       #if(exposure_sex=="female"){outcome_sex="male"}
 
       # p = partner / outcome
 
-      hh_MR_sub <- household_MR_summary_joint %>% #filter(exposure_sex==!!exposure_sex) %>%
+      hh_MR_sub <- household_MR_summary_SNPmeta %>% #filter(exposure_sex==!!exposure_sex) %>%
         filter(outcome_ID==!!outcome_ID)
 
       cols_interst <- c("IVW_beta", "IVW_se", "IVW_pval", "N_exposure_GWAS", "N_outcome_GWAS", "N_snps")
@@ -4837,7 +4837,7 @@ run_proxyMR_comparison_adj_yiyp_joint <- function(exposure_info, household_MR_su
       yiyp_summary <- household_MR_summary_AM %>% filter(exposure_ID==!!outcome_ID) %>% filter(outcome_ID==!!outcome_ID) %>% # filter(exposure_sex==!!exposure_sex) %>%
         dplyr::select(all_of(cols_interst)) %>% setNames(paste0('yiyp_', names(.)))
 
-      yiyp_summary_adj <- proxyMR_yiyp_adj_joint %>% filter(outcome_ID==!!outcome_ID) %>% filter(exposure_ID==!!exposure_ID) %>% # filter(exposure_sex==!!exposure_sex) %>%
+      yiyp_summary_adj <- proxyMR_yiyp_adj_SNPmeta %>% filter(outcome_ID==!!outcome_ID) %>% filter(exposure_ID==!!exposure_ID) %>% # filter(exposure_sex==!!exposure_sex) %>%
         dplyr::select(yi_beta, yi_se, yi_pval) %>% setNames(c('yiyp_IVW_beta_adj', 'yiyp_IVW_se_adj', 'yiyp_IVW_pval_adj'))
 
 
@@ -4845,9 +4845,9 @@ run_proxyMR_comparison_adj_yiyp_joint <- function(exposure_info, household_MR_su
       ## since results are meta-analyzed at SNP-level, these two MRs are the same
       ## (y is the outcome, x is the exposure)
 
-      xiyi_summary <- standard_MR_summary_joint %>% filter(outcome_ID==!!outcome_ID) %>% # filter(exposure_sex==!!exposure_sex) %>%
+      xiyi_summary <- standard_MR_summary_SNPmeta %>% filter(outcome_ID==!!outcome_ID) %>% # filter(exposure_sex==!!exposure_sex) %>%
         dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xiyi_', names(.)))
-      xpyp_summary <- standard_MR_summary_joint %>% filter(outcome_ID==!!outcome_ID) %>% # %>% filter(outcome_sex==!!outcome_sex)
+      xpyp_summary <- standard_MR_summary_SNPmeta %>% filter(outcome_ID==!!outcome_ID) %>% # %>% filter(outcome_sex==!!outcome_sex)
         dplyr::select(all_of(cols_interst)) %>% setNames(paste0('xpyp_', names(.)))
 
 
