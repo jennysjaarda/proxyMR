@@ -1294,31 +1294,78 @@ calc_pc_trait_corr <- function(Neale_pheno_ID, pheno_data){
   return(result)
 }
 
-calc_corr_impact_by_PCs <- function(traits_corr, PCs_corr, PC_trait_corr){
+calc_corr_impact_by_PCs <- function(traits_corr, PCs_corr, PC_trait_corr,
+                                    path_pheno_data){
 
   result <- numeric()
 
   Neale_pheno_ID <- PC_trait_corr$Neale_pheno_ID[1]
   phes_ID <- gsub("_irnt", "", Neale_pheno_ID)
 
+  ###########################################################
+  ## Get the number of pairs in the correlation between the
+  ## trait `Neale_pheno_ID` and PCs
+  ## to use in the SE calculation
+  ###########################################################
+
+  male_pheno_file <- path_pheno_data[which(endsWith(path_pheno_data, paste0("/phesant/", Neale_pheno_ID, "_male.txt")))]
+  female_pheno_file <- path_pheno_data[which(endsWith(path_pheno_data, paste0("/phesant/", Neale_pheno_ID, "_female.txt")))]
+  male_pheno_data <- fread(male_pheno_file, header=TRUE, select=c("IID","sex","age", phes_ID))
+  female_pheno_data <- fread(female_pheno_file, header=TRUE, select=c("IID","sex","age", phes_ID))
+
+  joint_data <- rbind(male_pheno_data, female_pheno_data)
+
+  trait_PC_n_pairs <- dim(joint_data)[1] # represents number of pairs in the correlation between the PCs and trait of interest
+
+  ###########################################################
+  ## Couple correlations for trait of interest (and se and sample size)
+  ###########################################################
+
   trait_couple_r2 <- as.numeric(traits_corr[which(traits_corr$ID==phes_ID),"r2"])
   trait_couple_r <- sqrt(trait_couple_r2)
+
+  trait_couple_n_pairs <- as.numeric(traits_corr[which(traits_corr$ID==phes_ID),"N_pairs"])
+  trait_couple_r_se <- sqrt((1-trait_couple_r^2)/(trait_couple_n_pairs-2))
+
 
   PCs <- PCs_corr$description
 
   for(PC in PCs){
 
+    ###########################################################
+    ## UKB correlation between for trait of interest and PC
+    ## And calculate SE on R^2 term (formula from Zoltan)
+    ## We need SE on R^2 term because it is R^2 that is used in the `correlation_due_to_confounding` formula
+    ###########################################################
+
     trait_PC_r <- PC_trait_corr[which(PC_trait_corr$PC==PC),"corr_both_sexes"][[1]]
+    trait_PC_r2_se <- sqrt(4*trait_PC_r^2*(1-trait_PC_r^4)/trait_PC_n_pairs)
+
+    ###########################################################
+    ## Couple correlations for PCs
+    ## (and se and sample size)
+    ###########################################################
+
     PC_couple_r2 <- as.numeric(PCs_corr[which(PCs_corr$description==PC),"r2"])
     PC_couple_r <- sqrt(PC_couple_r2)
+    PC_couple_n_pairs <- as.numeric(PCs_corr[which(PCs_corr$description==PC),"N_pairs"])
+    PC_couple_r_se <- sqrt((1-PC_couple_r^2)/(PC_couple_n_pairs-2))
+
+    ###########################################################
+    ## Calculate the correlation due to confounding
+    ## and the corresponding SE
+    ###########################################################
 
     correlation_due_to_confounding <- trait_PC_r^2 *PC_couple_r
+    correlation_due_to_confounding_se <- sqrt(variance_of_product(trait_PC_r^2, trait_PC_r2_se, PC_couple_r, PC_couple_r_se))
 
-    temp_row <- cbind(Neale_pheno_ID, PC, trait_couple_r, PC_couple_r, trait_PC_r, correlation_due_to_confounding)
+    ## Bind results together
+    temp_row <- cbind(Neale_pheno_ID, PC, trait_couple_r, trait_couple_r_se, PC_couple_r, trait_PC_r, correlation_due_to_confounding, correlation_due_to_confounding_se)
     result <- rbind(result, temp_row)
   }
 
-  colnames(result) <- c("Neale_pheno_ID", "PC", "trait_couple_corr", "PC_couple_corr", "trait_PC_corr", "corr_due_to_confounding")
+  colnames(result) <- c("Neale_pheno_ID", "PC", "trait_couple_corr", "trait_couple_corr_se", "PC_couple_corr", "trait_PC_corr",
+                        "corr_due_to_confounding", "corr_due_to_confounding_se")
 
   result <- result %>% as_tibble() %>% type_convert() %>% mutate_at(c("Neale_pheno_ID"), as.character)
 
@@ -1326,6 +1373,7 @@ calc_corr_impact_by_PCs <- function(traits_corr, PCs_corr, PC_trait_corr){
   # remove home location and birth place coordinates
 
   temp <- result %>% group_by(Neale_pheno_ID) %>% mutate(corr_due_to_confounding_all = sum(corr_due_to_confounding)) %>%
+    mutate(corr_due_to_confounding_all_se = sqrt(sum(corr_due_to_confounding_se^2))) %>% ### CHECK THIS
     filter(Neale_pheno_ID != "130_irnt") %>% filter(Neale_pheno_ID != "129_irnt") %>%
     filter(Neale_pheno_ID != "22702_irnt") %>% filter(Neale_pheno_ID != "22704_irnt")
 
@@ -1333,19 +1381,68 @@ calc_corr_impact_by_PCs <- function(traits_corr, PCs_corr, PC_trait_corr){
 
 }
 
-calc_corr_impact_by_coords <- function(outcomes_to_run, traits_corr, corr_mat_traits){
+calc_corr_impact_by_coords <- function(outcomes_to_run, traits_corr, corr_mat_traits,
+                                       traits_all, path_pheno_data, sqc, fam, relatives){
 
   result <- numeric()
 
+  NC_pheno_data <- prep_pheno_data(traits_all, "129_irnt", sqc, fam, relatives)
+  NC_joint_data <- rbind(NC_pheno_data[[1]], NC_pheno_data[[2]]) %>% dplyr::select(-starts_with("PC_")) # remove PC columns
+
+  EC_pheno_data <- prep_pheno_data(traits_all, "130_irnt", sqc, fam, relatives)
+  EC_joint_data <- rbind(EC_pheno_data[[1]], EC_pheno_data[[2]]) %>% dplyr::select(-starts_with("PC_")) # remove PC columns
+
+
   for(i in 1:dim(outcomes_to_run)[1]){
+
 
     Neale_pheno_ID <- outcomes_to_run$Neale_pheno_ID[i]
     phes_ID <- gsub("_irnt", "", Neale_pheno_ID)
+
+    ###########################################################
+    ## Couple correlations for trait_i (and se and sample size)
+    ###########################################################
+
     trait_couple_r2 <- as.numeric(traits_corr[which(traits_corr$ID==phes_ID),"r2"])
     trait_couple_r <- sqrt(trait_couple_r2)
 
+    trait_couple_n_pairs <- as.numeric(traits_corr[which(traits_corr$ID==phes_ID),"N_pairs"])
+    trait_couple_r_se <- sqrt((1-trait_couple_r^2)/(trait_couple_n_pairs-2))
+
+    ###########################################################
+    ## Get the number of pairs in the correlation between the
+    ## trait `i` and N/E coordinates
+    ## to use in the SE calculation
+    ###########################################################
+
+    trait_pheno_data <- prep_pheno_data(traits_all, Neale_pheno_ID, sqc, fam, relatives)
+    trait_joint_data <- rbind(i_pheno_data[[1]], i_pheno_data[[2]]) %>% dplyr::select(-starts_with("PC_")) # remove PC columns
+
+    full_df_NC <- merge(trait_interest_joint_data, NC_joint_data[,c(1, 4)], all = TRUE)
+    full_df_EC <- merge(trait_interest_joint_data, EC_joint_data[,c(1, 4)], all = TRUE)
+
+    full_df_complete_NC <- full_df[complete.cases(full_df_NC), ]
+    full_df_complete_EC <- full_df[complete.cases(full_df_EC), ]
+
+    trait_NC_n_pairs <- dim(full_df_complete_NC)[1] # represents number of pairs in the correlation between the NC and trait `i`
+    trait_EC_n_pairs <- dim(full_df_complete_EC)[1] # represents number of pairs in the correlation between the EC and trait `i`
+
+    ###########################################################
+    ## UKB correlation between for trait_i and N/E coordinataes
+    ## And calculate SE on R^2 term (formula from Zoltan)
+    ## We need SE on R^2 term because it is R^2 that is used in the `correlation_due_to_confounding` formula
+    ###########################################################
+
     trait_NC_r <- corr_mat_traits[phes_ID, "129"]
     trait_EC_r <- corr_mat_traits[phes_ID, "130"]
+
+    trait_NC_r2_se <- sqrt(4*trait_NC_r^2*(1-trait_NC_r^4)/trait_NC_n_pairs)
+    trait_EC_r2_se <- sqrt(4*trait_EC_r^2*(1-trait_EC_r^4)/trait_EC_n_pairs)
+
+    ###########################################################
+    ## Couple correlations for N/E coord
+    ## (and se and sample size)
+    ###########################################################
 
     NC_couple_r2 <- as.numeric(traits_corr[which(traits_corr$ID=="129"),"r2"])
     EC_couple_r2 <- as.numeric(traits_corr[which(traits_corr$ID=="130"),"r2"])
@@ -1353,23 +1450,41 @@ calc_corr_impact_by_coords <- function(outcomes_to_run, traits_corr, corr_mat_tr
     NC_couple_r <- sqrt(NC_couple_r2)
     EC_couple_r <- sqrt(EC_couple_r2)
 
+    NC_couple_n_pairs <- as.numeric(traits_corr[which(traits_corr$ID=="129"),"N_pairs"])
+    EC_couple_n_pairs <- as.numeric(traits_corr[which(traits_corr$ID=="130"),"N_pairs"])
+
+    NC_couple_r_se <- sqrt((1-NC_couple_r^2)/(NC_couple_n_pairs-2))
+    EC_couple_r_se <- sqrt((1-EC_couple_r^2)/(EC_couple_n_pairs-2))
+
+    ###########################################################
+    ## Calculate the correlation due to confounding
+    ## and the corresponding SE
+    ###########################################################
+
     correlation_due_to_confounding_NC <- trait_NC_r^2 *NC_couple_r
     correlation_due_to_confounding_EC <- trait_EC_r^2 *EC_couple_r
 
-    temp_row_NC <- cbind(Neale_pheno_ID, "129", trait_couple_r, NC_couple_r, trait_NC_r, correlation_due_to_confounding_NC)
-    temp_row_EC <- cbind(Neale_pheno_ID, "130", trait_couple_r, EC_couple_r, trait_EC_r, correlation_due_to_confounding_EC)
+    correlation_due_to_confounding_NC_se <- sqrt(variance_of_product(trait_NC_r^2, trait_NC_r2_se, NC_couple_r, NC_couple_r_se))
+    correlation_due_to_confounding_EC_se <- sqrt(variance_of_product(trait_EC_r^2, trait_EC_r2_se, EC_couple_r, EC_couple_r_se))
+
+
+    ## Bind results together
+    temp_row_NC <- cbind(Neale_pheno_ID, "129", trait_couple_r, trait_couple_r_se, NC_couple_r, trait_NC_r, correlation_due_to_confounding_NC, correlation_due_to_confounding_NC_se)
+    temp_row_EC <- cbind(Neale_pheno_ID, "130", trait_couple_r, trait_couple_r_se, EC_couple_r, trait_EC_r, correlation_due_to_confounding_EC, correlation_due_to_confounding_EC_se)
 
     result_temp <- rbind(temp_row_NC, temp_row_EC)
     result <- rbind(result, result_temp)
+
   }
 
-  colnames(result) <- c("Neale_pheno_ID", "coordinate", "trait_couple_corr", "coordinate_couple_corr", "trait_coordiante_corr", "corr_due_to_confounding")
+  colnames(result) <- c("Neale_pheno_ID", "coordinate", "trait_couple_corr", "trait_couple_corr_se", "coordinate_couple_corr", "trait_coordiante_corr", "corr_due_to_confounding", "corr_due_to_confounding_se")
   result <- result %>% as_tibble() %>% type_convert() %>% mutate_at(c("Neale_pheno_ID"), as.character)
 
-  # sum up along PCs
+  # sum up along coordinates
   # remove home location and birth place coordinates
 
   temp <- result %>% group_by(Neale_pheno_ID) %>% mutate(corr_due_to_confounding_all = sum(corr_due_to_confounding)) %>%
+    mutate(corr_due_to_confounding_all_se = sqrt(sum(corr_due_to_confounding_se^2))) %>%
     filter(Neale_pheno_ID != "130_irnt") %>% filter(Neale_pheno_ID != "129_irnt") %>%
     filter(Neale_pheno_ID != "22702_irnt") %>% filter(Neale_pheno_ID != "22704_irnt")
 
@@ -1377,37 +1492,78 @@ calc_corr_impact_by_coords <- function(outcomes_to_run, traits_corr, corr_mat_tr
 }
 
 
-calc_corr_impact_by_traits <- function(outcomes_to_run, traits_corr, corr_mat_traits, trait_interest){
+calc_corr_impact_by_traits <- function(outcomes_to_run, traits_corr, corr_mat_traits, trait_interest,
+                                       traits_all, path_pheno_data, sqc, fam, relatives){
 
   result <- numeric()
+
+  trait_interest_pheno_data <- prep_pheno_data(traits_all, trait_interest, sqc, fam, relatives)
+  trait_interest_joint_data <- rbind(trait_interest_pheno_data[[1]], trait_interest_pheno_data[[2]]) %>% dplyr::select(-starts_with("PC_")) # remove PC columns
 
   for(i in 1:dim(outcomes_to_run)[1]){
 
     Neale_pheno_ID <- outcomes_to_run$Neale_pheno_ID[i]
     phes_ID <- gsub("_irnt", "", Neale_pheno_ID)
 
+    ###########################################################
+    ## Couple correlations for trait_i (and se and sample size)
+    ###########################################################
 
     i_couple_r2 <- as.numeric(traits_corr[which(traits_corr$ID==phes_ID),"r2"])
     i_couple_r <- sqrt(i_couple_r2)
 
+    i_couple_n_pairs <- as.numeric(traits_corr[which(traits_corr$ID==phes_ID),"N_pairs"])
+    i_couple_r_se <- sqrt((1-i_couple_r^2)/(i_couple_n_pairs-2))
+
+    ###########################################################
+    ## Get the number of pairs in the correlation between the
+    ## trait of interest and trait `i`
+    ## to use in the SE calculation
+    ###########################################################
+
+    i_pheno_data <- prep_pheno_data(traits_all, Neale_pheno_ID, sqc, fam, relatives)
+    i_joint_data <- rbind(i_pheno_data[[1]], i_pheno_data[[2]]) %>% dplyr::select(-starts_with("PC_")) # remove PC columns
+
+    full_df <- merge(trait_interest_joint_data, i_joint_data[,c(1, 4)], all = TRUE)
+    full_df_complete <- full_df[complete.cases(full_df), ]
+
+    trait_interest_i_n_pairs <- dim(full_df_complete)[1] # represents number of pairs in the correlation between the trait of interest and trait `i`
+
+    ###########################################################
+    ## UKB correlation between for trait_i and trait of interest
+    ## And calculate SE on R^2 term (formula from Zoltan)
+    ## We need SE on R^2 term because it is R^2 that is used in the `correlation_due_to_confounding` formula
+    ###########################################################
 
     trait_interest_phes_ID <- gsub("_irnt", "", trait_interest)
     trait_interest_i_r <- corr_mat_traits[phes_ID, trait_interest_phes_ID]
-    trait_interest_phes_ID
-    trait_interest_couple_r2 <- as.numeric(traits_corr[which(traits_corr$ID==trait_interest_phes_ID),"r2"])
+    trait_interest_i_r2_se <- sqrt(4*trait_interest_i_r^2*(1-trait_interest_i_r^4)/trait_interest_i_n_pairs)
 
+    ###########################################################
+    ## Couple correlations for trait of interest
+    ## (and se and sample size)
+    ###########################################################
+
+    trait_interest_couple_r2 <- as.numeric(traits_corr[which(traits_corr$ID==trait_interest_phes_ID),"r2"])
     trait_interest_couple_r <- sqrt(trait_interest_couple_r2)
 
+    trait_interest_n_pairs <- as.numeric(traits_corr[which(traits_corr$ID==phes_ID),"N_pairs"])
+    trait_interest_couple_r_se <- sqrt((1-trait_interest_couple_r^2)/(trait_interest_n_pairs-2))
+
+    ###########################################################
+    ## Calculate the correlation due to confounding
+    ## and the corresponding SE
+    ###########################################################
+
     correlation_due_to_confounding <- trait_interest_i_r^2 *trait_interest_couple_r
+    correlation_due_to_confounding_se <- sqrt(variance_of_product(trait_interest_i_r^2, trait_interest_i_r2_se, trait_interest_couple_r, trait_interest_couple_r_se))
 
-    temp_row <- cbind(Neale_pheno_ID, trait_interest, i_couple_r, trait_interest_couple_r, trait_interest_i_r, correlation_due_to_confounding)
-
-
-
+    temp_row <- cbind(Neale_pheno_ID, trait_interest, i_couple_r, i_couple_r_se, trait_interest_couple_r, trait_interest_i_r, correlation_due_to_confounding, correlation_due_to_confounding_se)
     result <- rbind(result, temp_row)
+
   }
 
-  colnames(result) <- c("trait_j", "trait_interest", "trait_j_couple_corr", "trait_interest_couple_corr", "trait_j_trait_inter_corr", "corr_due_to_confounding")
+  colnames(result) <- c("trait_j", "trait_interest", "trait_j_couple_corr", "trait_j_couple_corr_se", "trait_interest_couple_corr", "trait_j_trait_inter_corr", "corr_due_to_confounding", "corr_due_to_confounding_se")
   result <- result %>% as_tibble() %>% type_convert() %>% mutate_at(c("trait_j", "trait_interest"), as.character)
 
   temp <- result %>%

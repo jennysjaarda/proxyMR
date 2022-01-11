@@ -598,6 +598,7 @@ list(
   ),
 
   # tar_target(
+  ## No longer run becaus all effects are standardized first.
   #   household_MR_binned_SNPmeta_std, # MR results run in data meta-analyzed at SNP-level. SNP effects were standardized first.
   #   run_binned_household_MR_SNPmeta_std(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, grouping_var, MR_method_list = MR_method_list),
   #   pattern = map(exposure_info, household_harmonised_data_meta_reverse_filter), iteration = "list"
@@ -963,13 +964,15 @@ list(
 
   tar_target(
     corr_impact_by_PCs,
-    calc_corr_impact_by_PCs(traits_corr, PCs_corr, PC_trait_corr),
+    calc_corr_impact_by_PCs(traits_corr, PCs_corr, PC_trait_corr,
+                            path_pheno_data),
     pattern = map(PC_trait_corr)
   ),
 
   tar_target(
     corr_impact_by_coords,
-    calc_corr_impact_by_coords(outcomes_to_run, traits_corr, corr_mat_traits)
+    calc_corr_impact_by_coords(outcomes_to_run, traits_corr, corr_mat_traits,
+                               traits_corr2_filled, path_pheno_data, data_sqc, data_fam, data_relatives)
   ),
 
   tar_target(
@@ -979,7 +982,8 @@ list(
 
   tar_target(
     corr_impact_by_traits,
-    calc_corr_impact_by_traits(outcomes_to_run, traits_corr, corr_mat_traits_all, confounder_traits),
+    calc_corr_impact_by_traits(outcomes_to_run, traits_corr, corr_mat_traits_all, confounder_traits,
+                               traits_corr2_filled, path_pheno_data, data_sqc, data_fam, data_relatives),
     pattern = map(confounder_traits)
   ),
 
