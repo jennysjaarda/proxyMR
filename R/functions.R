@@ -1392,9 +1392,7 @@ calc_corr_impact_by_coords <- function(outcomes_to_run, traits_corr, corr_mat_tr
   EC_pheno_data <- prep_pheno_data(traits_all, "130_irnt", sqc, fam, relatives)
   EC_joint_data <- rbind(EC_pheno_data[[1]], EC_pheno_data[[2]]) %>% dplyr::select(-starts_with("PC_")) # remove PC columns
 
-
   for(i in 1:dim(outcomes_to_run)[1]){
-
 
     Neale_pheno_ID <- outcomes_to_run$Neale_pheno_ID[i]
     phes_ID <- gsub("_irnt", "", Neale_pheno_ID)
@@ -1416,13 +1414,13 @@ calc_corr_impact_by_coords <- function(outcomes_to_run, traits_corr, corr_mat_tr
     ###########################################################
 
     trait_pheno_data <- prep_pheno_data(traits_all, Neale_pheno_ID, sqc, fam, relatives)
-    trait_joint_data <- rbind(i_pheno_data[[1]], i_pheno_data[[2]]) %>% dplyr::select(-starts_with("PC_")) # remove PC columns
+    trait_joint_data <- rbind(trait_pheno_data[[1]], trait_pheno_data[[2]]) %>% dplyr::select(-starts_with("PC_")) # remove PC columns
 
-    full_df_NC <- merge(trait_interest_joint_data, NC_joint_data[,c(1, 4)], all = TRUE)
-    full_df_EC <- merge(trait_interest_joint_data, EC_joint_data[,c(1, 4)], all = TRUE)
+    full_df_NC <- merge(NC_joint_data, trait_joint_data[,c(1, 4)], all = TRUE)
+    full_df_EC <- merge(EC_joint_data, trait_joint_data[,c(1, 4)], all = TRUE)
 
-    full_df_complete_NC <- full_df[complete.cases(full_df_NC), ]
-    full_df_complete_EC <- full_df[complete.cases(full_df_EC), ]
+    full_df_complete_NC <- full_df_NC[complete.cases(full_df_NC), ]
+    full_df_complete_EC <- full_df_EC[complete.cases(full_df_EC), ]
 
     trait_NC_n_pairs <- dim(full_df_complete_NC)[1] # represents number of pairs in the correlation between the NC and trait `i`
     trait_EC_n_pairs <- dim(full_df_complete_EC)[1] # represents number of pairs in the correlation between the EC and trait `i`
