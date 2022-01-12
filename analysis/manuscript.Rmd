@@ -1,0 +1,171 @@
+---
+title: "Manuscript"
+author: "Jenny Sjaarda"
+date: "2022-01-04"
+output: workflowr::wflow_html
+---
+
+```{r setup, include = FALSE}
+
+options(scipen=999)
+source("code/settings.R")
+source("R/functions.R")
+library(targets)
+library(kableExtra)
+library(dplyr)
+library(DT)
+library(knitr)
+library(ggplot2)
+library(kableExtra)
+library(cowplot)
+library(plotly)
+library(plyr)
+```
+
+```{r load_targets, include = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+tar_load(couple_MR_vs_trait_corr)
+tar_load(corr_impact_by_traits)
+tar_load(traits_corr2_filled)
+tar_load(household_MR_summary_AM)
+tar_load(num_tests_by_PCs)
+tar_load(num_tests_by_PCs_AM_sig)
+tar_load(household_MR_binned_het_sex_spec)
+tar_load(household_MR_binned_het_joint)
+tar_load(traits_final)
+tar_load(household_MR_AM_FvsM_fig)
+tar_load(confounder_traits)
+
+```
+
+# A few notes. 
+
+- The number of effective tests can be found at the target `num_tests_by_PCs`. 
+- The number of effective tests among those significant in the MR can be found at the target `num_tests_by_PCs_AM_sig`.
+
+# Relationship between causal effects and raw phenotypic correlation in couples
+
+Sought to compare the raw correlation amongst couples vs. the standardized MR effects. There are many traits where the `correlation > MR effects` including some traits of interest such as standing height, place of birth, among many others. A plot comparing the two and a summary table of the significant effects is shown below. 
+
+```{r corr_vs_MR_effects, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE}
+
+plot_data <- replace_Neale_ID(couple_MR_vs_trait_corr, traits_corr2_filled, "exposure_ID", "outcome_description") %>% 
+  dplyr::rename(Phenotype = outcome_description) %>% 
+  dplyr::rename(Correlation = couple_r) %>% dplyr::rename(MR_est = IVW_beta)
+
+
+plot <- ggplot2::ggplot(data = plot_data, ggplot2::aes(x = Correlation,
+                                                       y = MR_est, Phenotype = Phenotype)) +
+  geom_point(alpha = 3/4) +
+  
+  geom_abline(slope=1, intercept=0) +
+  
+  ggplot2::geom_errorbar(
+    ggplot2::aes(ymin = MR_est - IVW_se, ymax = MR_est + IVW_se),
+    colour = "grey",
+    width = 0
+  ) +
+  ggplot2::geom_errorbar(
+    ggplot2::aes(xmin = Correlation - couple_r_se, xmax = Correlation + couple_r_se),
+    colour = "grey",
+    width = 0
+  ) +
+  
+  theme_minimal() +
+  ggplot2::labs(x = paste0("Couple correlation"),
+                y = paste("Standardized MR effect"))
+
+
+ggplotly(plot, tooltip = c("x", "y", "Phenotype"))
+
+```
+
+
+```{r corr_vs_MR_effects_table, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE}
+
+plot_data.DT <- plot_data %>% dplyr::rename(IVW_beta = MR_est) %>% 
+  filter(diff_p < 0.05/num_tests_by_PCs) %>%
+  mutate(mr_corr_diff = Correlation - IVW_beta) %>% 
+  mutate(correlation_larger = ifelse(Correlation > IVW_beta, TRUE, FALSE)) %>%
+  dplyr::select(Phenotype, Correlation, IVW_beta, IVW_pval, mr_corr_diff, correlation_larger)
+
+format_round_cols <- colnames(dplyr::select_if(plot_data.DT, is.numeric))
+
+DT::datatable(plot_data.DT, width = "100%") %>% formatRound(columns=format_round_cols, digits = 3)
+```
+
+# Effect of sex, age and time together on causal effects in couples
+
+```{r AM_data_prep, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE, include = FALSE}
+
+
+AM_result_sig <- household_MR_summary_AM %>% filter(IVW_pval < 0.05/num_tests_by_PCs) 
+AM_sig_traits <-household_MR_summary_AM %>% filter(IVW_pval < 0.05/num_tests_by_PCs) %>% pull(exposure_ID) %>% unique()
+AM_sex_spec_result_sig <- household_MR_binned_het_sex_spec %>% filter(same_trait ==TRUE) %>% filter(exposure_ID %in% AM_sig_traits) %>% filter(sex_het_pval < 0.05/num_tests_by_PCs_AM_sig)
+
+```
+
+- The number of analyses corresponds to the number of traits (`r dim(traits_final)[1]`). 
+- The significant results after adjusting for multiple hypothesis testing are shown below. 
+- `IVW_meta_beta` and `IVW_meta_pval` corresponds to the beta and p-value of the meta-analyzed MR across sexes, respectively (i.e. MR estimates were computed in each sex-seperately using sex-specific SNP-exposure and SNP-outcome results and then meta-analyzed).  
+- After adjusting for multiple tests (p < `0.05/`r num_tests_by_PCs``), identified `r dim(AM_result_sig)[1]` significant assortative mating MR results (corresponding to the table below).
+
+# Impact of confounders on couple correlation
+
+We tested the impact of confounding on genetic PCs, N/E coordinates and the following 4 traits: 
+
+```{r confounder_traits, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
+confounder_trait_tibble <- as_tibble(confounder_traits)
+confounder_trait_tibble_descript <- replace_Neale_ID(confounder_trait_tibble, traits_corr2_filled, "value", "outcome_description")
+confounder_trait_tibble_descript %>% 
+  kbl() %>%
+  kable_styling()
+```
+
+
+```{r confounder_plot, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE}
+
+plots <- list()
+for(i in 1:length(confounder_traits)){
+  
+  trait <- confounder_traits[i]
+  trait_description <- confounder_trait_tibble_descript[[1]][i]
+  
+  plot_data <- corr_impact_by_traits %>% filter(trait_interest==trait) %>% filter(trait_interest!=trait_j)
+  plot_data <- replace_Neale_ID(plot_data, traits_corr2_filled, "trait_j", "Phenotype")
+  plot <-
+    ggplot2::ggplot(
+      data = plot_data,
+      ggplot2::aes(x = trait_j_couple_corr,
+                   y = corr_due_to_confounding, Phenotype = Phenotype)
+    ) +
+    geom_point(alpha = 3 / 4) +
+    
+    ggplot2::geom_errorbar(
+      ggplot2::aes(ymin = corr_due_to_confounding - corr_due_to_confounding_se, ymax = corr_due_to_confounding + corr_due_to_confounding_se),
+      colour = "grey",
+      width = 0
+    ) +
+    ggplot2::geom_errorbar(
+      ggplot2::aes(xmin = trait_j_couple_corr - trait_j_couple_corr_se, xmax = trait_j_couple_corr + trait_j_couple_corr_se),
+      colour = "grey",
+      width = 0
+    ) +
+    
+    theme_minimal() +
+    ggplot2::labs(
+      x = paste0("Couple trait correlation"),
+      y = paste0("Couple correlation due to confounding"),
+      title = paste0("Impact of ", trait_description, "\n on couple correlation")
+    )
+  
+  
+ 
+    
+  plots[[i]] <- plot 
+}
+
+figures_grid <- plot_grid(plotlist = plots, nrow=2, ncol = 2, byrow = F, labels="AUTO")
+figures_grid
+```
+
+
