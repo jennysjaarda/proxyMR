@@ -11,7 +11,7 @@ options(clustermq.scheduler = "slurm", clustermq.template = "slurm_clustermq.tmp
 tar_option_set(
   resources = tar_resources(
     clustermq = tar_resources_clustermq(template = list(num_cores = 1, account = "sgg",
-                                                        ntasks = 1, partition = "sgg",
+                                                        ntasks = 4, partition = "sgg",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
   packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR",
@@ -262,7 +262,10 @@ list(
   ),
   tar_target(
     traits_to_count_IVs,
-    pull_traits_to_count_IVs(traits_corr2_filled)
+    {
+      run_process_Neale
+      pull_traits_to_count_IVs(traits_corr2_filled)
+    }
   ),
   tar_target(
     IV_list,
@@ -780,7 +783,8 @@ list(
     find_sig_standard_MR_summary(standard_MR_summary_SNPmeta)
   ),
 
-  ## Compute rho, omega and gamma
+  ## Compute rho, omega and gamma (without adjusting for $X_i$ SNPs)
+  ## [We don't use these results because we only consider those from the adjusted model.]
 
   tar_target(
     proxyMR_comparison_sex_specific,
@@ -817,11 +821,11 @@ list(
   ## Adj $Y_p \sim Y_i$ associations for $X_i$ and reperform proxyMR
 
   tar_target(
-    proxyMR_yiyp_adj,
+    proxyMR_yiyp_adj_sex_specific,
     {
       path_outcome_stats_filter
       path_household_GWAS_filter
-      adj_yiyp_xIVs(exposure_info, household_harmonised_data_reverse_filter, household_MR_summary_BF_sig)
+      adj_yiyp_xIVs_sex_specific(exposure_info, household_harmonised_data_reverse_filter, household_MR_summary_BF_sig)
     },
     map(exposure_info, household_harmonised_data_reverse_filter)
   ),
@@ -836,11 +840,8 @@ list(
     map(exposure_info, household_harmonised_data_meta_reverse_filter)
   ),
 
-  tar_target(
-    proxyMR_comparison_yiyp_adj, ## TO RUN!
-    run_proxyMR_comparison_adj_yiyp(exposure_info, household_MR_summary_BF_sig, household_MR_summary, standard_MR_summary, household_MR_summary_AM, proxyMR_yiyp_adj),
-    map(exposure_info, household_MR_summary, standard_MR_summary), iteration = "list"
-  ),
+  ## Run the formal comparisons between gamma, rho and omega.
+  ## Might need to add target(s) for sex-specific results if reviewers request.
 
   tar_target(
     proxyMR_comparison_yiyp_adj_SNPmeta,
@@ -849,67 +850,60 @@ list(
   ),
 
   tar_target(
-    proxyMR_MR_paths_summary_yiyp_adj_joint, ## summarize the different MR paths in each Xi -> Yp
-    summarize_proxyMR_paths(proxyMR_comparison_yiyp_adj_joint)
+    proxyMR_MR_paths_summary_yiyp_adj_SNPmeta, ## summarize the different MR paths in each Xi -> Yp
+    summarize_proxyMR_paths(proxyMR_comparison_yiyp_adj_SNPmeta)
   ),
 
   tar_target(
-    proxyMR_comparison_summary_yiyp_adj_joint,
-    summarize_proxyMR_comparison_joint(proxyMR_comparison_yiyp_adj_joint, traits_corr2_filled)
+    proxyMR_comparison_summary_yiyp_adj_SNPmeta,
+    summarize_proxyMR_comparison_SNPmeta(proxyMR_comparison_yiyp_adj_SNPmeta, traits_corr2_filled)
   ),
 
   ## Add z's to proxyMR
+  ## Did not end up performing this analysis because so much of the variance was explained by rho and gamma (i.e. direct effects)
 
-  tar_group_count(
-    MV_z, ## z's are based on standard_MR: x -> z -> y
-    find_MV_z(household_MR_summary_BF_sig, standard_MR_summary),
-    count=350
-  ),
-
-  tar_target(
-    MV_z_corr_filter, # filter to only z's that have correlation < 0.8 (play with this a bit).
-    corr_filter_MV_z(MV_z, corr_mat_traits, z_prune_threshold),
-    map(MV_z)
-  ),
-
-  tar_target(
-    z_summ_stats,
-    {
-      path_outcome_stats
-      pull_z_summ_stats(MV_z_corr_filter)
-    },
-    map(MV_z_corr_filter)
-  ),
-
-  tar_target(
-    z_summ_stats_pruned,
-    prune_z_summ_stats(MV_z_corr_filter, z_summ_stats, prune_threshold),
-    map(MV_z_corr_filter, z_summ_stats)
-  ),
+  # tar_group_count(
+  #   MV_z, ## z's are based on standard_MR: x -> z -> y
+  #   find_MV_z(household_MR_summary_BF_sig, standard_MR_summary),
+  #   count=350
+  # ),
+  #
+  # tar_target(
+  #   MV_z_corr_filter, # filter to only z's that have correlation < 0.8 (play with this a bit).
+  #   corr_filter_MV_z(MV_z, corr_mat_traits, z_prune_threshold),
+  #   map(MV_z)
+  # ),
+  #
+  # tar_target(
+  #   z_summ_stats,
+  #   {
+  #     path_outcome_stats
+  #     pull_z_summ_stats(MV_z_corr_filter)
+  #   },
+  #   map(MV_z_corr_filter)
+  # ),
+  #
+  # tar_target(
+  #   z_summ_stats_pruned,
+  #   prune_z_summ_stats(MV_z_corr_filter, z_summ_stats, prune_threshold),
+  #   map(MV_z_corr_filter, z_summ_stats)
+  # ),
 
   ## Create some summary figures
 
   tar_target(
-    proxyMR_prod_comparison_fig,
-    create_proxy_prod_comparison_fig(proxyMR_comparison_summary)
-  ),
-
-  tar_target(
-    proxyMR_sex_comparison_fig,
-    create_proxy_sex_comparison_fig(proxyMR_comparison_summary)
-  ),
-
-  tar_target(
     proxyMR_prod_comparison_fig_yiyp_adj,
-    create_proxy_prod_comparison_fig(proxyMR_comparison_summary_yiyp_adj)
+    create_proxy_prod_comparison_fig(proxyMR_comparison_summary_yiyp_adj_SNPmeta)
   ),
 
   tar_target(
     proxyMR_sex_comparison_fig_yiyp_adj,
-    create_proxy_sex_comparison_fig(proxyMR_comparison_summary_yiyp_adj)
+    create_proxy_sex_comparison_fig(proxyMR_comparison_summary_yiyp_adj_SNPmeta)
   ),
 
-  # Run a GWAS of PCs - based on results of PC correlation decided not to pursue this analysis. If we come back to it, it will need to be rerun in the proper UKB subgroup.
+  # Run a GWAS of PCs
+  # Based on results of PC correlation decided not to pursue this analysis.
+  # If we come back to it, it will need to be rerun in the proper UKB subgroup.
 
   # tar_target(
   #   PC_gwas_input,
@@ -962,6 +956,8 @@ list(
   #   pattern = map(path_bgenie_pcs), format = "file"
   # ),
 
+  ## Confounder analysis
+
   tar_target(
     corr_impact_by_PCs,
     calc_corr_impact_by_PCs(traits_corr, PCs_corr, PC_trait_corr,
@@ -985,21 +981,7 @@ list(
     calc_corr_impact_by_traits(outcomes_to_run, traits_corr, corr_mat_traits_all, confounder_traits,
                                traits_corr2_filled, path_pheno_data, data_sqc, data_fam, data_relatives),
     pattern = map(confounder_traits)
-  ),
-
-  ### markdown docs
-
-  tar_render(rmd_index, "analysis/index.Rmd"),
-  tar_render(rmd_final_phenotype_list, "analysis/final_phenotype_list.Rmd"),
-  tar_render(rmd_phenotype_selection, "analysis/index.Rmd")
-
-
-
-#   traits_corr4 = sex_het_filter(traits_corr3$to_run, sex_het_summary, traits_to_calc_het, !!num_IVs_threshold),
-#   write_traits_corr3 = write.csv(traits_corr4$non_filtered, file_out("output/tables/3.household_correlations.numIVs_filter.csv"), row.names=F),
-#   write_traits_corr4 = write.csv(traits_corr4$to_run, file_out("output/tables/4.household_correlations.sexhet_filter.csv"), row.names=F),
-#   write_traits_corr5 = write.csv(traits_corr5, file_out("output/tables/6.household_correlations.nonbinary_filter.csv"), row.names=F)
-
+  )
 
 
 

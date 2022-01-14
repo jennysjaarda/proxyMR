@@ -4552,7 +4552,7 @@ run_proxyMR_comparison_SNPmeta <- function(exposure_info, household_MR_summary_B
 }
 
 
-adj_yiyp_xIVs <- function(exposure_info, household_harmonised_data, household_MR_summary_BF_sig){
+adj_yiyp_xIVs_sex_specific <- function(exposure_info, household_harmonised_data, household_MR_summary_BF_sig){
 
   outcome_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
   ## only run this for those where omega is significant and where exposure and outcome ID are different.
@@ -5092,7 +5092,7 @@ summarize_proxyMR_comparison <- function(proxyMR_comparison, traits_corr2_filled
 
 }
 
-summarize_proxyMR_comparison_joint <- function(proxyMR_comparison, traits_corr2_filled){
+summarize_proxyMR_comparison_SNPmeta <- function(proxyMR_comparison, traits_corr2_filled){
 
   comparison_result <- bind_rows(lapply(proxyMR_comparison, function(x) {x[[2]]}))
 
