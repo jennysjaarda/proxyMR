@@ -812,7 +812,7 @@ list(
     proxyyMR_IV_overlap,
     {
       path_summ_stats
-      find_proxyMR_IV_overlap(exposure_info, proxyMR_MR_paths_summary)
+      find_proxyMR_IV_overlap(exposure_info, proxyMR_paths_summary)
     },
     map(exposure_info)
 
@@ -855,7 +855,7 @@ list(
   ),
 
   tar_target(
-    proxyMR_comparison_summary_yiyp_adj_SNPmeta,
+    proxyMR_comparison_summary_yiyp_adj_SNPmeta, ## compare the effects
     summarize_proxyMR_comparison_SNPmeta(proxyMR_comparison_yiyp_adj_SNPmeta, traits_corr2_filled)
   ),
 
