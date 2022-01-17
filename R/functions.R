@@ -5130,9 +5130,12 @@ create_proxy_prod_comparison_fig_ind <- function(data, exposure_sex, x, y, overl
   # x <- "gam_beta"
   # y <- "omega_beta"
 
-  if(exposure_sex!="meta"){
-    fig_data <- data[which(data[["exposure_sex"]]==exposure_sex),]
-  } else fig_data <- data[which(data[["exposure_sex"]]=="male"),]
+  if(!is.na(exposure_sex)){
+    if(exposure_sex!="meta"){
+      fig_data <- data[which(data[["exposure_sex"]]==exposure_sex),]
+    } else fig_data <- data[which(data[["exposure_sex"]]=="male"),]
+  } else fig_data <- data
+
 
   fig_data <- fig_data %>% rename(x := !!x) %>% rename(y := !!y) %>% rename(overlay_var := !!overlay_var) %>%
     mutate(x_plot = case_when(x < 0 ~ abs(x), TRUE ~ x)) %>%
@@ -5260,7 +5263,7 @@ create_proxy_sex_comparison_fig_ind <- function(data, var, count){
 
 }
 
-create_proxy_prod_comparison_fig <- function(proxyMR_figure_data){
+create_proxy_prod_comparison_fig_all <- function(proxyMR_figure_data){
 
   figures <- list()
 
@@ -5299,6 +5302,57 @@ create_proxy_prod_comparison_fig <- function(proxyMR_figure_data){
   }
 
   figures_grid <- plot_grid(plotlist = figures, nrow=3, ncol = 3, byrow = F, labels="AUTO", rel_heights = c(1, 1, 1))
+
+  figures_grid_plus_legend <- plot_grid(figures_grid, legend, ncol = 1, nrow =2, rel_heights = c(1, 0.05))
+
+
+  return(figures_grid_plus_legend)
+}
+
+
+create_proxy_prod_comparison_fig <- function(proxyMR_figure_data){
+
+  figures <- list()
+
+  count <- 1
+  for(panel in 1:4){
+
+    if(panel==1){
+      x_start <- "gam"
+      y_start <- "omega"
+      overlay_var_start <- "omega_vs_gam_BF_sig"
+    }
+    if(panel==2){
+      x_start <- "rho"
+      y_start <- "omega"
+      overlay_var_start <- "omega_vs_rho_BF_sig"
+    }
+    if(panel==3){
+      x_start <- "gam"
+      y_start <- "rho"
+      overlay_var_start <- "gam_vs_rho_BF_sig"
+    }
+
+    if(panel==4){
+      x_start <- "gam_rho"
+      y_start <- "omega"
+      overlay_var_start <- "omega_vs_gam_rho_BF_sig"
+    }
+
+    #for(sex in c("male", "female", "meta")){
+
+    fig_temp <- create_proxy_prod_comparison_fig_ind(proxyMR_figure_data, exposure_sex=NA, x = paste0(x_start, "_beta"), y = paste0(y_start, "_beta"), overlay_var = paste0(overlay_var_start), count)
+
+    figures[[count]] <- fig_temp[["fig_no_legend"]]
+    if(count==1) {legend <- fig_temp[["legend"]]}
+    count <- count + 1
+
+    #}
+
+
+  }
+
+  figures_grid <- plot_grid(plotlist = figures, nrow=2, ncol = 2, byrow = F, labels="AUTO", rel_heights = c(1, 1, 1))
 
   figures_grid_plus_legend <- plot_grid(figures_grid, legend, ncol = 1, nrow =2, rel_heights = c(1, 0.05))
 
