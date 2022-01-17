@@ -740,15 +740,15 @@ list(
   ),
 
 
-  tar_target(
-    household_MVMR_SNPmeta,
-    {
-      path_household_GWAS_filter
-      path_outcome_stats_filter
-      run_household_MVMR_SNPmeta(exposure_info, outcomes_to_run)
-    },
-    pattern = map(exposure_info), iteration = "list"
-  ),
+  # tar_target(
+  #   household_MVMR_SNPmeta,
+  #   {
+  #     path_household_GWAS_filter
+  #     path_outcome_stats_filter
+  #     run_household_MVMR_SNPmeta(exposure_info, outcomes_to_run)
+  #   },
+  #   pattern = map(exposure_info), iteration = "list"
+  # ),
 
   tar_target(
     household_MVMR_summary_MRmeta,
