@@ -902,10 +902,11 @@ list(
     create_proxy_prod_comparison_fig(proxyMR_comparison_summary_yiyp_adj_SNPmeta)
   ),
 
-  tar_target(
-    proxyMR_sex_comparison_fig_yiyp_adj,
-    create_proxy_sex_comparison_fig(proxyMR_comparison_summary_yiyp_adj_SNPmeta)
-  ),
+  ## Input needs to be a sex-specific result.
+  # tar_target(
+  #   proxyMR_sex_comparison_fig_yiyp_adj,
+  #   create_proxy_sex_comparison_fig(proxyMR_comparison_summary_yiyp_adj_SNPmeta)
+  # ),
 
   # Run a GWAS of PCs
   # Based on results of PC correlation decided not to pursue this analysis.
