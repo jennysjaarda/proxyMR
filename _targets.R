@@ -617,9 +617,9 @@ list(
     path_household_MR_binned,
     {
       path_MR_dirs
-      write_household_MR(exposure_info, outcomes_to_run, household_MR_binned_meta)
+      write_household_MR(exposure_info, outcomes_to_run, household_MR_binned_SNPmeta)
     },
-    pattern = map(exposure_info, household_MR_binned_meta), format = "file"
+    pattern = map(exposure_info, household_MR_binned_SNPmeta), format = "file"
   ),
 
   tar_target(
