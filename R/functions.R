@@ -6850,7 +6850,7 @@ create_MR_binned_AM_figs <- function(household_harmonised_data_meta_reverse_filt
               XY_sex_sidebyside_time_together_bins_fig = XY_sex_sidebyside_time_together_even_bins_fig,
 
               XY_age_bins_fig = XY_age_even_bins_fig,
-              XY_time_together_bins_fig = XY_time_together_even_bins_fig,
+              XY_time_together_bins_fig = XY_time_together_even_bins_fig
 
               #FP_sex_specific_age_bins_fig = FP_sex_specific_age_even_bins_fig,
               #FP_sex_specific_time_together_bins_fig = FP_sex_specific_time_together_even_bins_fig,
