@@ -5638,11 +5638,11 @@ plink_clump <- function(bfile, filename, clump_p1 = 1, clump_p2 = 1, prune_thres
   return(a_out)
 }
 
-find_proxyMR_IV_overlap <- function(exposure_info, proxyMR_MR_paths_summary, LD_threshold = 0.9){
+find_proxyMR_IV_overlap <- function(exposure_info, proxyMR_paths_summary, LD_threshold = 0.9){
 
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
   ## only run this for those where omega is significant and where exposure and outcome ID are different.
-  MR_sub <- proxyMR_MR_paths_summary %>% filter(exposure_ID==!!exposure_ID)
+  MR_sub <- proxyMR_paths_summary %>% filter(exposure_ID==!!exposure_ID)
   MR_sub$YiXi_IV_sig_overlap <- NA
   MR_sub$YiXi_IV_exact_overlap <- NA
 
@@ -5654,7 +5654,7 @@ find_proxyMR_IV_overlap <- function(exposure_info, proxyMR_MR_paths_summary, LD_
     for(i in 1:dim(MR_sub)[1]){
 
       outcome_ID <-  MR_sub$outcome_ID[i]
-      exposure_sex <- MR_sub$exposure_sex[i]
+      exposure_sex <- "male" #MR_sub$exposure_sex[i]
 
       if(outcome_ID!=outcome_ID_prev){
 

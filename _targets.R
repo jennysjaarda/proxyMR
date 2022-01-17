@@ -573,6 +573,12 @@ list(
 
   ## Household MR
 
+  ## Household MR is run in the following groups:
+  ## (1) binned, sex-specific, (2) binned, joint - MR results meta-analyzed across sexes [from (1)], (3) binned, joint - SNP-effects meta-analyzed across sexes,
+  ## (4) non-binned, sex-specific, (5) non-binned, joint - MR results meta-analyed acrsos sexes [from (4)], (6) non-binned, joint - SNP-effect meta-analyzed across sexes.
+
+  ## Notes:
+  ## Results 4-6 also have MR figures
   tar_target(
     path_MR_dirs,
     {
@@ -658,7 +664,7 @@ list(
   ),
 
   tar_target(
-    ## summarize into one table, ignore leave-1-out analyses for now, meta-analyze across sexes and calculate heterogeneity statistic between sexes.
+    ## summarize into one table, ignore leave-1-out analyses for now.
     household_MR_summary_SNPmeta,
     summarize_household_MR_comprehensive_SNPmeta(household_MR_SNPmeta, corr_mat_traits),
     pattern = map(household_MR_SNPmeta)
