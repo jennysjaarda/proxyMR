@@ -895,18 +895,24 @@ list(
   #   map(MV_z_corr_filter, z_summ_stats)
   # ),
 
-  ## Create some summary figures
+  ## Create some summary figures - input for the below figures needs to be a sex-specific result.
+
+  # tar_target(
+  #   proxyMR_prod_comparison_fig_yiyp_adj_all,
+  #   # creates a 3x3 grid of results
+  #   # gam vs rho, rho vs omega, gam vs. omega in M, F and joint
+  #   create_proxy_prod_comparison_fig_all(proxyMR_comparison_summary_yiyp_adj_SNPmeta)
+  # ),
+
+  # tar_target(
+  #   proxyMR_sex_comparison_fig_yiyp_adj,
+  #   create_proxy_sex_comparison_fig(proxyMR_comparison_summary_yiyp_adj_SNPmeta)
+  # ),
 
   tar_target(
     proxyMR_prod_comparison_fig_yiyp_adj,
     create_proxy_prod_comparison_fig(proxyMR_comparison_summary_yiyp_adj_SNPmeta)
   ),
-
-  ## Input needs to be a sex-specific result.
-  # tar_target(
-  #   proxyMR_sex_comparison_fig_yiyp_adj,
-  #   create_proxy_sex_comparison_fig(proxyMR_comparison_summary_yiyp_adj_SNPmeta)
-  # ),
 
   # Run a GWAS of PCs
   # Based on results of PC correlation decided not to pursue this analysis.
