@@ -3829,7 +3829,7 @@ run_household_MVMR_SNPmeta <- function(exposure_info, outcomes_to_run){
 
       GWAS_file_xIVs_1 <- paste0("analysis/traitMR/standard_GWAS_rev_filter/", exposure_ID, "/", exposure_ID, "_vs_", exposure_ID, "_GWAS.csv")
       xi_XIV_GWAS_results <- fread(GWAS_file_xIVs_1, data.table = F) %>% filter(sex == "meta")
-      xi_XIV_GWAS_results_both <- fread(GWAS_file_xIVs_1, data.table = F) %>% filter(sex == "both_sexes")
+      #xi_XIV_GWAS_results_both <- fread(GWAS_file_xIVs_1, data.table = F) %>% filter(sex == "both_sexes")
       ## this will pull the standard GWAS results for phenotype `exposure_ID` for IVs from `exposure_ID`, i.e. the effect of G on Xi for only X IVs.
 
       GWAS_file_XIVs_2 <- paste0("analysis/traitMR/standard_GWAS_rev_filter/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
@@ -3841,9 +3841,9 @@ run_household_MVMR_SNPmeta <- function(exposure_info, outcomes_to_run){
 
       if(exposure_ID!=exposure_ID_prev | outcome_ID!=outcome_ID_prev){
 
-        snps <- c(xi_YIV_GWAS_results_both$SNP, xi_XIV_GWAS_results_both$SNP)
-        chr <- c(xi_YIV_GWAS_results_both$chr, xi_XIV_GWAS_results_both$chr)
-        pvals <- c(xi_YIV_GWAS_results_both$pval, xi_XIV_GWAS_results_both$pval)
+        snps <- c(xi_YIV_GWAS_results$SNP, xi_XIV_GWAS_results$SNP)
+        chr <- c(xi_YIV_GWAS_results$chr, xi_XIV_GWAS_results$chr)
+        pvals <- c(xi_YIV_GWAS_results$pval, xi_XIV_GWAS_results$pval)
 
 
         to_prune_mat <- tibble(SNP = snps,
