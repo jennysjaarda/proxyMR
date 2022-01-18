@@ -4284,7 +4284,7 @@ find_non_corr_household_MR_summary <- function(household_MR_summary_joint, corr_
 
 find_sig_household_MR_summary <- function(household_MR_summary_corr_filter){
 
-  denom <- dim(household_MR_summary_corr_filter)[1] #divide by 2 because each meta result is there twice (one row/sex)
+  denom <- dim(household_MR_summary_corr_filter)[1]
   sig_only <- household_MR_summary_corr_filter %>% filter(IVW_pval < 0.05/denom)
   return(sig_only)
 }
@@ -5167,15 +5167,17 @@ create_proxy_prod_comparison_fig_ind <- function(data, exposure_sex, x, y, overl
   fig <- ggplot(fig_data, aes(x=x_plot, y=y_plot, label=exposure_description, label2=outcome_description, label3=exposure_sex, color=overlay_var)) +
     geom_point(alpha = 3/4) +
     geom_smooth(mapping = aes(x = x_plot, y = y_plot),inherit.aes = FALSE, method=lm, formula=y~0+x, se=FALSE, color = custom_col[4], fullrange=TRUE) +
-    geom_smooth(data = overlay_data, mapping = aes(x = x_plot, y = y_plot),inherit.aes = FALSE, method=lm, formula=y~0+x, se=FALSE, color = custom_col[2], fullrange=TRUE) +
+    #geom_smooth(data = overlay_data, mapping = aes(x = x_plot, y = y_plot),inherit.aes = FALSE, method=lm, formula=y~0+x, se=FALSE, color = custom_col[2], fullrange=TRUE) +
 
     theme_half_open(12) +
     scale_fill_manual(values = custom_col) +
-    scale_colour_manual(values = custom_col, labels=c("Non-BF significant\ndifference","BF significant\ndifference")) +
+    scale_colour_manual(values = custom_col, labels=c("Non-BF significant difference","BF significant difference")) +
 
     geom_point(data = overlay_data, aes(x=x_plot, y=y_plot), color = custom_col[2]) +
     theme(legend.position="top") + geom_abline(slope=1, intercept=0) + theme(legend.title = element_blank()) +
-    xlab(paste0(x_label, " ", exposure_sex)) + ylab(paste0(y_label, " ", exposure_sex)) +
+    #xlab(paste0(x_label, " ", exposure_sex)) + ylab(paste0(y_label, " ", exposure_sex)) +
+    xlab(paste0(x_label)) + ylab(paste0(y_label)) +
+
     scale_x_continuous(breaks = seq(0, xmax, by = 0.2), limits = c(0, xmax)) +
     scale_y_continuous(breaks = seq(-2, ymax, by = 0.5)[seq(-2, ymax, by = 0.5) > ylim], limits = c(ylim, ymax))
 

@@ -685,7 +685,7 @@ list(
 
   ## Household MR analyses for only same trait (AM = assortative mating)
 
-  tar_target( ### FIX THIS TARGET
+  tar_target(
     household_MR_binned_AM_figs,
     create_MR_binned_AM_figs(household_harmonised_data_meta_reverse_filter, household_harmonised_data_reverse_filter, household_MR_binned_SNPmeta, household_MR_binned_MRmeta, custom_col),
     pattern = map(household_harmonised_data_meta_reverse_filter, household_harmonised_data_reverse_filter, household_MR_binned_SNPmeta, household_MR_binned_MRmeta), iteration = "list"
