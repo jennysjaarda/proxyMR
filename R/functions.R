@@ -3240,6 +3240,30 @@ compare_mr_raw_corr <- function(exposure_info, household_MR_binned_joint_std, tr
 
 }
 
+find_potential_trait_confounders <- function(Neale_pheno_ID, Neale_pheno_ID_corr, household_MR_summary_SNPmeta, traits_corr, num_tests_by_PCs){
+
+  Neale_pheno_ID
+  phes_ID <- gsub("_irnt", "", Neale_pheno_ID)
+
+  pheno_i_MR <- household_MR_summary_SNPmeta %>% filter(outcome_ID==Neale_pheno_ID) %>% filter(!same_trait)
+
+  ## correlation due to confounding
+  pheno_i_MR <- pheno_i_MR %>% mutate(exposure_phes_ID = gsub("_irnt", "", exposure_ID)) %>%
+    left_join(traits_corr, by = c("exposure_phes_ID" = "ID")) %>% mutate_at("r2", as.numeric) %>%
+    mutate(corr_due_to_confounding = IVW_beta^2*r2) %>%
+    mutate(corr_due_to_confounding_ratio = corr_due_to_confounding/Neale_pheno_ID_corr) %>%
+    mutate(sig_confounder = ifelse(IVW_pval < 0.05/num_tests_by_PCs, TRUE, FALSE))
+
+  output <- pheno_i_MR %>%
+    dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, IVW_beta, IVW_se, IVW_se, r2, corr_due_to_confounding, corr_due_to_confounding_ratio) %>%
+    rename(couple_r2_exposure_ID = r2) %>%
+    mutate(couple_r2_outcome_ID = Neale_pheno_ID_corr)
+
+  return(output)
+
+}
+
+
 meta_binned_household_MR <- function(exposure_info, outcomes_to_run, household_MR_binned){
 
   exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
@@ -6957,20 +6981,3 @@ create_household_MR_AM_FvsM_fig <- function(household_MR_binned_het, custom_col)
 
 }
 
-
-pull_AM_het_stats <- function(household_MR_SNPmeta){
-
-  names_data <- names(household_MR_SNPmeta)
-
-  for(j in 1:length(names_data)){
-    outcome_ID <- unlist(str_split(names_data[j], "_vs_"))[1]
-    exposure_ID <- unlist(str_split(unlist(str_split(names_data[j], "_vs_"))[2], "_MR_complete"))[1]
-    if(outcome_ID==exposure_ID){
-      index_same_trait <- j
-    }
-  }
-
-  het_index <- household_MR_SNPmeta[[index_same_trait]][["MR_summary"]][["Het_IVW_Qpval_round"]]
-
-
-}

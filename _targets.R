@@ -620,6 +620,18 @@ list(
   ),
 
   tar_target(
+    couple_MR_vs_trait_corr_sig,
+    couple_MR_vs_trait_corr %>%
+      filter(diff_p < 0.05/num_tests_by_PCs)
+    ),
+
+  tar_target(
+    corr_potential_trait_confounders,
+    find_potential_trait_confounders(Neale_pheno_ID=couple_MR_vs_trait_corr_sig$exposure_ID, Neale_pheno_ID_corr=couple_MR_vs_trait_corr_sig$couple_r2, couple_MR_vs_trait_corr, traits_corr),
+    pattern = map(couple_MR_vs_trait_corr_sig)
+  ),
+
+  tar_target(
     path_household_MR_binned,
     {
       path_MR_dirs
