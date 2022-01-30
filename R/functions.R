@@ -2291,6 +2291,11 @@ household_GWAS_bin <- function(exposure_info, summ_stats, pheno_data, outcome_ID
 
     genetic_IDs <- tibble(IID = as.character(rownames(IV_geno)))
 
+    ### SHOULD REALLY USE THIS FORM OF GENETIC_IDs where IIDs are numeric.
+    ### male ID 4e6 does not merge with pheno_cov when IID is a character.
+    ## see dim(pheno_cov) vs. dim(temp1)
+    #genetic_IDs <- tibble(IID = as.numeric(rownames(IV_geno)))
+
     # to reduce to only genetic IDs with good genetic data
     temp1 <- merge(pheno_cov,genetic_IDs, by.x=index, by.y="IID")
     # to reudce to only IDs with phenotype data
@@ -3225,8 +3230,8 @@ compare_mr_raw_corr <- function(exposure_info, household_MR_binned_joint_std, tr
   MR_result$couple_r <- couple_r
   MR_result$couple_r_se <- r_se
 
-  MR_result$diff_z <- z.test(MR_result[["IVW_beta"]], MR_result[["IVW_se"]], MR_result[["couple_r"]], MR_result[["couple_r_se"]])$statistic
-  MR_result$diff_p <- z.test(MR_result[["IVW_beta"]], MR_result[["IVW_se"]], MR_result[["couple_r"]], MR_result[["couple_r_se"]])$p
+  MR_result$diff_z <- z.test(abs(MR_result[["IVW_beta"]]), MR_result[["IVW_se"]], abs(MR_result[["couple_r"]]), MR_result[["couple_r_se"]], alternative = "less")$statistic
+  MR_result$diff_p <- z.test(abs(MR_result[["IVW_beta"]]), MR_result[["IVW_se"]], abs(MR_result[["couple_r"]]), MR_result[["couple_r_se"]], alternative = "less")$p
 
   MR_result$correlation_larger <- ifelse(MR_result$couple_r > MR_result$IVW_beta, TRUE, FALSE)
 
@@ -6949,5 +6954,23 @@ create_household_MR_AM_FvsM_fig <- function(household_MR_binned_het, custom_col)
                   y = paste("AM MR estimate (male to female)"))
 
   return(list(plot_male_to_female = plot, plot_female_to_male = plot2))
+
+}
+
+
+pull_AM_het_stats <- function(household_MR_SNPmeta){
+
+  names_data <- names(household_MR_SNPmeta)
+
+  for(j in 1:length(names_data)){
+    outcome_ID <- unlist(str_split(names_data[j], "_vs_"))[1]
+    exposure_ID <- unlist(str_split(unlist(str_split(names_data[j], "_vs_"))[2], "_MR_complete"))[1]
+    if(outcome_ID==exposure_ID){
+      index_same_trait <- j
+    }
+  }
+
+  het_index <- household_MR_SNPmeta[[index_same_trait]][["MR_summary"]][["Het_IVW_Qpval_round"]]
+
 
 }
