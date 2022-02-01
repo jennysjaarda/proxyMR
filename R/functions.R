@@ -3242,22 +3242,56 @@ compare_mr_raw_corr <- function(exposure_info, household_MR_binned_joint_std, tr
 
 find_potential_trait_confounders <- function(Neale_pheno_ID, Neale_pheno_ID_corr, household_MR_summary_SNPmeta, traits_corr, num_tests_by_PCs){
 
-  Neale_pheno_ID
+  # here `Neale_pheno_ID` is used as the outcome_ID, because we are trying to find potential confounders that have an impact on this `Neale_pheno_ID`.
   phes_ID <- gsub("_irnt", "", Neale_pheno_ID)
 
   pheno_i_MR <- household_MR_summary_SNPmeta %>% filter(outcome_ID==Neale_pheno_ID) %>% filter(!same_trait)
 
+  AM_MR <- household_MR_summary_SNPmeta %>% filter(same_trait) %>% dplyr::select(exposure_ID, IVW_beta, IVW_se) %>%
+    rename(exposure_ID_AM_IVW_beta = IVW_beta) %>%
+    rename(exposure_ID_AM_IVW_se = IVW_se)
+
   ## correlation due to confounding
-  pheno_i_MR <- pheno_i_MR %>% mutate(exposure_phes_ID = gsub("_irnt", "", exposure_ID)) %>%
-    left_join(traits_corr, by = c("exposure_phes_ID" = "ID")) %>% mutate_at("r2", as.numeric) %>%
-    mutate(corr_due_to_confounding = IVW_beta^2*r2) %>%
+  output <- pheno_i_MR %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, IVW_beta, IVW_se, IVW_pval) %>%
+    left_join(AM_MR, by = c("exposure_ID" = "exposure_ID")) %>%
+    mutate(corr_due_to_confounding = IVW_beta^2*exposure_ID_AM_IVW_beta) %>%
     mutate(corr_due_to_confounding_ratio = corr_due_to_confounding/Neale_pheno_ID_corr) %>%
     mutate(sig_confounder = ifelse(IVW_pval < 0.05/num_tests_by_PCs, TRUE, FALSE))
 
-  output <- pheno_i_MR %>%
-    dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, IVW_beta, IVW_se, IVW_se, r2, corr_due_to_confounding, corr_due_to_confounding_ratio) %>%
-    rename(couple_r2_exposure_ID = r2) %>%
-    mutate(couple_r2_outcome_ID = Neale_pheno_ID_corr)
+  return(output)
+
+}
+
+find_potential_PC_confounders <- function(Neale_pheno_ID, Neale_pheno_ID_corr, PC_trait_corr, PCs_corr, path_pheno_data){
+
+
+  ###########################################################
+  ## Get the number of pairs in the correlation between the
+  ## trait `Neale_pheno_ID` and PCs
+  ## to use in the SE calculation
+  ###########################################################
+
+  phes_ID <- gsub("_irnt", "", Neale_pheno_ID)
+
+  male_pheno_file <- path_pheno_data[which(endsWith(path_pheno_data, paste0("/phesant/", Neale_pheno_ID, "_male.txt")))]
+  female_pheno_file <- path_pheno_data[which(endsWith(path_pheno_data, paste0("/phesant/", Neale_pheno_ID, "_female.txt")))]
+  male_pheno_data <- fread(male_pheno_file, header=TRUE, select=c("IID","sex","age", phes_ID))
+  female_pheno_data <- fread(female_pheno_file, header=TRUE, select=c("IID","sex","age", phes_ID))
+
+  joint_data <- rbind(male_pheno_data, female_pheno_data)
+
+  trait_PC_n_pairs <- dim(joint_data)[1] # represents number of pairs in the correlation between the PCs and trait of interest
+
+  output <- bind_rows(PC_trait_corr) %>% filter(Neale_pheno_ID == !!Neale_pheno_ID) %>%
+    dplyr::select(Neale_pheno_ID, PC, corr_both_sexes) %>%
+    rename(trait_PC_corr = corr_both_sexes) %>%
+    mutate(trait_PC_n_pairs = trait_PC_n_pairs) %>%
+    left_join(PCs_corr, by = c("PC" = "description")) %>% mutate_at("r2", as.numeric) %>%
+    mutate(PC_couple_corr = sqrt(r2)) %>%
+    dplyr::select(-ID, -ID_sub, -r2) %>%
+    rename(PC_couple_n_pairs = N_pairs) %>%
+    mutate(corr_due_to_confounding = trait_PC_corr^2*PC_couple_corr) %>%
+    mutate(corr_due_to_confounding_ratio = corr_due_to_confounding/Neale_pheno_ID_corr)
 
   return(output)
 
