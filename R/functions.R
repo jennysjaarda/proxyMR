@@ -3240,12 +3240,12 @@ compare_mr_raw_corr <- function(exposure_info, household_MR_binned_joint_std, tr
 
 }
 
-find_potential_trait_confounders <- function(Neale_pheno_ID, Neale_pheno_ID_corr, household_MR_summary_SNPmeta, traits_corr, num_tests_by_PCs){
+find_potential_trait_confounders <- function(Neale_pheno_ID, Neale_pheno_ID_corr, standard_MR_summary_SNPmeta, household_MR_summary_SNPmeta, traits_corr, num_tests_by_PCs){
 
   # here `Neale_pheno_ID` is used as the outcome_ID, because we are trying to find potential confounders that have an impact on this `Neale_pheno_ID`.
   phes_ID <- gsub("_irnt", "", Neale_pheno_ID)
 
-  pheno_i_MR <- household_MR_summary_SNPmeta %>% filter(outcome_ID==Neale_pheno_ID) %>% filter(!same_trait)
+  pheno_i_MR <- standard_MR_summary_SNPmeta %>% filter(outcome_ID==Neale_pheno_ID)
 
   AM_MR <- household_MR_summary_SNPmeta %>% filter(same_trait) %>% dplyr::select(exposure_ID, IVW_beta, IVW_se) %>%
     rename(exposure_ID_AM_IVW_beta = IVW_beta) %>%

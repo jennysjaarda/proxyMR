@@ -627,13 +627,14 @@ list(
 
   tar_target(
     corr_potential_trait_confounders,
-    find_potential_trait_confounders(Neale_pheno_ID=couple_MR_vs_trait_corr_sig$exposure_ID, Neale_pheno_ID_corr=sqrt(couple_MR_vs_trait_corr_sig$couple_r2), household_MR_summary_SNPmeta, traits_corr, num_tests_by_PCs),
+    find_potential_trait_confounders(Neale_pheno_ID=couple_MR_vs_trait_corr_sig$exposure_ID, Neale_pheno_ID_corr=couple_MR_vs_trait_corr_sig$couple_r,
+                                     standard_MR_summary_SNPmeta, household_MR_summary_SNPmeta, traits_corr, num_tests_by_PCs),
     pattern = map(couple_MR_vs_trait_corr_sig)
   ),
 
   tar_target(
     corr_potential_PC_confounders,
-    find_potential_PC_confounders(Neale_pheno_ID=couple_MR_vs_trait_corr_sig$exposure_ID, Neale_pheno_ID_corr=sqrt(couple_MR_vs_trait_corr_sig$couple_r2),
+    find_potential_PC_confounders(Neale_pheno_ID=couple_MR_vs_trait_corr_sig$exposure_ID, Neale_pheno_ID_corr=couple_MR_vs_trait_corr_sig$couple_r,
                                   PC_trait_corr, PCs_corr, path_pheno_data),
     pattern = map(couple_MR_vs_trait_corr_sig)
   ),
