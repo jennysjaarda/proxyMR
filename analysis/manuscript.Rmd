@@ -302,7 +302,7 @@ figs[[9]]
 
 ```
 
-# Heterogeneity stats 
+# Heterogeneity stats.
 
 - In the single trait analysis, we also decided to investigate Cochran’s heterogeneity Q-stat to identify traits with high heterogeneity.
 - This would indicate that associations between the index genotype and partner’s phenotype may not only act indirectly through causal relationship between the traits, but some direct effect is present. 
@@ -545,5 +545,19 @@ boxplot <- data_boxplot %>%
 
 
 boxplot
+
+```
+
+## Paths summary.
+
+A summary of the $\omega$, $\rho$, $\gamma$ and $\rho_{resid} + \gamma$ estimates are summarized in the table below. Those with BF-significant differences between the estimates (according to a Z-test, p < 0.05/`r dim(data)[1]`) are given as T/F in the last three columns. 
+
+```{r paths_summary, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
+
+paths_summary <- data %>% dplyr::select(exposure_description, outcome_description, gam_beta, rho_beta, omega_beta, gam_rho_resid, gam_vs_rho_BF_sig, omega_vs_rho_BF_sig, omega_vs_gam_BF_sig)
+
+format_round_cols <- colnames(dplyr::select_if(paths_summary, is.numeric))
+
+DT::datatable(paths_summary, width = "100%") %>% formatRound(columns=format_round_cols, digits = 3)
 
 ```
