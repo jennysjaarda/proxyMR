@@ -554,7 +554,7 @@ A summary of the $\omega$, $\rho$, $\gamma$ and $\rho_{resid} + \gamma$ estimate
 
 ```{r paths_summary, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
 
-paths_summary <- data %>% dplyr::select(exposure_description, outcome_description, gam_beta, rho_beta, omega_beta, gam_rho_resid, gam_vs_rho_BF_sig, omega_vs_rho_BF_sig, omega_vs_gam_BF_sig)
+paths_summary <- data %>% dplyr::select(exposure_description, outcome_description, gam_beta, rho_beta, omega_beta, gam_rho_resid, gam_vs_rho_pval, omega_vs_rho_pval, omega_vs_gam_pval)
 
 format_round_cols <- colnames(dplyr::select_if(paths_summary, is.numeric))
 
