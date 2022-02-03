@@ -545,7 +545,6 @@ boxplot <- data_boxplot %>%
 
 
 boxplot
-
 ```
 
 ## Paths summary.
@@ -558,6 +557,13 @@ paths_summary <- data %>% dplyr::select(exposure_description, outcome_descriptio
 
 format_round_cols <- colnames(dplyr::select_if(paths_summary, is.numeric))
 
-DT::datatable(paths_summary, width = "100%") %>% formatRound(columns=format_round_cols, digits = 3)
+format_round_cols <- c(colnames(dplyr::select(paths_summary, ends_with("_beta"))), "gam_rho_resid")
+format_signif_cols <- colnames(dplyr::select(paths_summary, ends_with("_pval")))
+
+
+DT::datatable(paths_summary, width = "100%") %>% formatRound(columns=format_round_cols, digits = 3) %>%
+  formatSignif(columns = format_signif_cols, digits = 3)
+
+  
 
 ```
