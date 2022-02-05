@@ -628,7 +628,7 @@ list(
   tar_target(
     corr_potential_trait_confounders,
     find_potential_trait_confounders(Neale_pheno_ID=couple_MR_vs_trait_corr_sig$exposure_ID, Neale_pheno_ID_corr=couple_MR_vs_trait_corr_sig$couple_r,
-                                     standard_MR_summary_SNPmeta, household_MR_summary_SNPmeta, traits_corr, num_tests_by_PCs, corr_mat_traits),
+                                     standard_MR_summary_SNPmeta, household_MR_summary_SNPmeta, traits_corr, num_tests_by_PCs, corr_mat_traits, corr_trait_threshold),
     pattern = map(couple_MR_vs_trait_corr_sig)
   ),
 
