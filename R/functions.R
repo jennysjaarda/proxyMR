@@ -3240,9 +3240,12 @@ compare_mr_raw_corr <- function(exposure_info, household_MR_binned_joint_std, tr
 
 }
 
-find_potential_trait_confounders <- function(Neale_pheno_ID, Neale_pheno_ID_corr, standard_MR_summary_SNPmeta, household_MR_summary_SNPmeta, traits_corr, num_tests_by_PCs){
+find_potential_trait_confounders <- function(Neale_pheno_ID, Neale_pheno_ID_corr, standard_MR_summary_SNPmeta,
+                                             household_MR_summary_SNPmeta, traits_corr, num_tests_by_PCs, corr_mat_traits, corr_trait_threshold){
 
   # here `Neale_pheno_ID` is used as the outcome_ID, because we are trying to find potential confounders that have an impact on this `Neale_pheno_ID`.
+  # `Neale_pheno_ID_corr` refers to the couple correlation for `Neale_pheno_ID`.
+
   phes_ID <- gsub("_irnt", "", Neale_pheno_ID)
 
   pheno_i_MR <- standard_MR_summary_SNPmeta %>% filter(outcome_ID==Neale_pheno_ID)
@@ -3251,14 +3254,49 @@ find_potential_trait_confounders <- function(Neale_pheno_ID, Neale_pheno_ID_corr
     rename(exposure_ID_AM_IVW_beta = IVW_beta) %>%
     rename(exposure_ID_AM_IVW_se = IVW_se)
 
-  ## correlation due to confounding
+  corr_mat_traits_sub <- as.data.frame(corr_mat_traits) %>% dplyr::select(!!phes_ID) %>% rownames_to_column(var = "exposure_ID") %>% as_tibble() %>%
+    dplyr::rename(between_trait_correlation = !!phes_ID)
+
+  ## calculate correlation due to confounding
+  ## filter to only confounders with correlation with index trait < `corr_trait_threshold`
+  ## filter to only confounders with
   output <- pheno_i_MR %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, IVW_beta, IVW_se, IVW_pval) %>%
     left_join(AM_MR, by = c("exposure_ID" = "exposure_ID")) %>%
     mutate(corr_due_to_confounding = IVW_beta^2*exposure_ID_AM_IVW_beta) %>%
     mutate(corr_due_to_confounding_ratio = corr_due_to_confounding/Neale_pheno_ID_corr) %>%
-    mutate(sig_confounder = ifelse(IVW_pval < 0.05/num_tests_by_PCs, TRUE, FALSE))
+    mutate(sig_confounder = ifelse(IVW_pval < 0.05/num_tests_by_PCs, TRUE, FALSE)) %>%
+    mutate(exposure_ID_phes = gsub("_irnt", "", exposure_ID)) %>%
+    left_join(corr_mat_traits_sub, by = c("exposure_ID_phes" = "exposure_ID")) %>%
+    filter(abs(between_trait_correlation) < corr_trait_threshold) %>% arrange(-corr_due_to_confounding_ratio) %>%
+    filter(sig_confounder)
 
-  return(output)
+  # prune remaining by prioritizing those with highest `corr_due_to_confounding_ratio`
+
+  output_pruned <- output
+  counter <- 1
+  while (counter < dim(output_pruned)[1]){
+
+    index_trait <- output_pruned$exposure_ID[counter]
+    index_trait_phes_ID <- gsub("_irnt", "", index_trait)
+
+    corr_mat_traits_index_trait <- as.data.frame(corr_mat_traits) %>% dplyr::select(!!index_trait_phes_ID) %>% rownames_to_column(var = "exposure_ID") %>% as_tibble() %>%
+      dplyr::rename(index_vs_trait_correlation = !!index_trait_phes_ID)
+
+    temp <- output_pruned %>% left_join(corr_mat_traits_index_trait, by = c("exposure_ID_phes" = "exposure_ID"))
+
+    remove_rows <- which(temp[["index_vs_trait_correlation"]] >= corr_trait_threshold)[-1]
+
+    if(length(remove_rows)!=0){
+      output_pruned <- temp[-remove_rows,]
+    }
+
+    counter <- 1 + counter
+
+  }
+
+  output_pruned <- output_pruned %>% dplyr::select(-index_vs_trait_correlation)
+
+  return(output_pruned)
 
 }
 
@@ -5178,6 +5216,65 @@ summarize_proxyMR_comparison_SNPmeta <- function(proxyMR_comparison, traits_corr
   return(comparison_result_plus_cat)
 
 }
+
+prune_proxyMR_comparison_SNPmeta <- function(proxyMR_comparison_summary_yiyp_adj_SNPmeta, household_MR_summary_BF_sig, corr_mat_traits, corr_trait_threshold){
+
+  data <- proxyMR_comparison_summary_yiyp_adj_SNPmeta
+  data <- data %>%
+    mutate(omega_pval = pnorm(-abs(omega_beta/omega_se))*2) %>%
+    mutate(gam_pval = pnorm(-abs(gam_beta/gam_se))*2) %>%
+    mutate(rho_pval = pnorm(-abs(rho_beta/rho_se))*2) %>%
+    mutate(gam_rho_pval = pnorm(-abs(gam_rho_beta/gam_rho_se))*2) %>%
+    left_join(household_MR_summary_BF_sig %>% dplyr::select(exposure_ID, outcome_ID, corr_traits),  by = c("exposure_ID" = "exposure_ID", "outcome_ID" = "outcome_ID")) %>%
+    arrange(omega_pval)
+
+  ## prune as follows:
+  ## if there is a pair A-B and C-D and if max(corr(A,C)*corr(B,D),corr(A,D)*corr(B,C)) > 0.8
+
+  output_pruned <- data
+  counter <- 1
+
+  corr_traits_long <- corr_mat_traits %>% cor_gather()
+
+  while (counter < dim(output_pruned)[1]){
+
+    index_trait_A <- output_pruned$exposure_ID[counter]
+    index_trait_B <- output_pruned$outcome_ID[counter]
+
+    index_trait_A_phes_ID <- gsub("_irnt", "", index_trait_A)
+    index_trait_B_phes_ID <- gsub("_irnt", "", index_trait_B)
+
+    corr_trait_A <- corr_traits_long %>% filter(var1 == index_trait_A_phes_ID) %>% dplyr::select(var2, cor)
+    corr_trait_B <- corr_traits_long %>% filter(var1 == index_trait_B_phes_ID) %>% dplyr::select(var2, cor)
+
+    temp <- output_pruned
+    temp <- temp %>%
+      mutate(exposure_ID_phes = gsub("_irnt", "", exposure_ID)) %>%
+      mutate(outcome_ID_phes = gsub("_irnt", "", outcome_ID)) %>%
+      left_join(corr_trait_A, by = c("exposure_ID_phes" = "var2")) %>% rename(cor_A_C = cor) %>%
+      left_join(corr_trait_A, by = c("outcome_ID_phes" = "var2")) %>% rename(cor_A_D = cor) %>%
+      left_join(corr_trait_B, by = c("exposure_ID_phes" = "var2")) %>% rename(cor_B_C = cor) %>%
+      left_join(corr_trait_B, by = c("outcome_ID_phes" = "var2")) %>% rename(cor_B_D = cor) %>%
+      mutate(cor_A_C_by_cor_B_D = cor_A_C * cor_B_D) %>%
+      mutate(cor_A_D_by_cor_B_C = cor_A_D * cor_B_C) %>%
+      mutate(max_cor = pmax(cor_A_C_by_cor_B_D, cor_A_D_by_cor_B_C))
+
+    remove_rows <- which(temp[["max_cor"]] >= corr_trait_threshold)[-1]
+
+    if(length(remove_rows)!=0){
+      output_pruned <- output_pruned[-remove_rows,]
+    }
+
+    counter <- 1 + counter
+
+  }
+
+  return(output_pruned)
+
+
+}
+
+
 
 create_proxy_prod_comparison_fig_ind <- function(data, exposure_sex, x, y, overlay_var, count){
 

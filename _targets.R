@@ -16,7 +16,7 @@ tar_option_set(
   ),
   packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR",
                "ggplot2", "purrr", "rmeta", "PASWR2", "cowplot", "meta", "strex", "RColorBrewer",
-               "forestplot", "R.utils", "MendelianRandomization"),
+               "forestplot", "R.utils", "MendelianRandomization", "rstatix"),
   error = "workspace",
   memory = "transient",
   storage = "worker",
@@ -628,7 +628,7 @@ list(
   tar_target(
     corr_potential_trait_confounders,
     find_potential_trait_confounders(Neale_pheno_ID=couple_MR_vs_trait_corr_sig$exposure_ID, Neale_pheno_ID_corr=couple_MR_vs_trait_corr_sig$couple_r,
-                                     standard_MR_summary_SNPmeta, household_MR_summary_SNPmeta, traits_corr, num_tests_by_PCs),
+                                     standard_MR_summary_SNPmeta, household_MR_summary_SNPmeta, traits_corr, num_tests_by_PCs, corr_mat_traits),
     pattern = map(couple_MR_vs_trait_corr_sig)
   ),
 
@@ -883,6 +883,11 @@ list(
   tar_target(
     proxyMR_comparison_summary_yiyp_adj_SNPmeta, ## compare the effects
     summarize_proxyMR_comparison_SNPmeta(proxyMR_comparison_yiyp_adj_SNPmeta, traits_corr2_filled)
+  ),
+
+  tar_target(
+    proxyMR_comparison_summary_yiyp_adj_SNPmeta_prune, ##  if there is a pair A-B and C-D and if max(corr(A,C)*corr(B,D),corr(A,D)*corr(B,C)) > `corr_trait_threshold` [0.8]
+    prune_proxyMR_comparison_SNPmeta(proxyMR_comparison_summary_yiyp_adj_SNPmeta, household_MR_summary_BF_sig, corr_mat_traits, corr_trait_threshold)
   ),
 
   ## Add z's to proxyMR
