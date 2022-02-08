@@ -5213,7 +5213,32 @@ summarize_proxyMR_comparison_SNPmeta <- function(proxyMR_comparison, traits_corr
   comparison_result_plus_cat <- left_join(comparison_result, traits_corr2_filled %>% dplyr::select(Neale_pheno_ID, category) %>% rename(exposure_category = category) %>% unique(), by = c("exposure_ID" = "Neale_pheno_ID")) %>%
     left_join(traits_corr2_filled %>% dplyr::select(Neale_pheno_ID, category) %>% rename(outcome_category = category) %>% unique(), by = c("outcome_ID" = "Neale_pheno_ID"))
 
-  return(comparison_result_plus_cat)
+  data <- comparison_result_plus_cat
+
+  model <- lm(rho_beta ~ gam_beta, data = data)
+
+  data$rho_resid <- resid(model)
+
+  a <- summary(model)$coefficients[2,1]
+  b <- summary(model)$coefficients[1,1]
+  # below is the same thing as `data$rho_resid`
+  # rho_resid <- data$rho_beta - data$gam_beta*a - b
+  data$gam_rho_resid <- data$rho_resid + data$gam_beta
+
+  cor_rho_gamma <- cor(data$rho_beta,data$gam_beta)
+
+  data$rho_var <- data$rho_se^2
+  data$gam_var <- data$gam_se^2
+
+  data$gam_rho_resid <- data$rho_resid + data$gam_beta
+  data$gam_rho_resid_var <- data$rho_var + data$gam_var *(1-a)^2 + 2*data$rho_se*(1-a)*data$gam_se*cor_rho_gamma
+  data$gam_rho_resid_se <- sqrt(data$gam_rho_resid_var)
+
+  output <- data %>% mutate(omega_vs_gam_rho_resid_pval = z.test_p(gam_rho_resid, gam_rho_resid_se, omega_beta, omega_se)) %>%
+    mutate(omega_vs_gam_rho_resid_BF_sig = case_when(TRUE ~ omega_vs_gam_rho_resid_pval < 0.05/num_result,
+                                           TRUE ~ TRUE))
+
+  return(output)
 
 }
 
@@ -5308,6 +5333,7 @@ create_proxy_prod_comparison_fig_ind <- function(data, exposure_sex, x, y, overl
   if(x == "gam_beta" | x == "gam_meta_beta"){x_label <- "\u03B3"}
   if(x == "rho_beta" | x == "rho_meta_beta"){x_label <- "\u03C1"}
   if(x == "gam_rho_beta" | x == "gam_rho_meta_beta"){x_label <- "\u03B3 + \u03C1"}
+  if(x == "gam_rho_resid_beta"){x_label <- expression( paste(rho ["resid"], " + ", gamma))}
 
   if(y == "omega_beta" | y == "omega_meta_beta"){y_label <- "\u03C9"}
   if(y == "rho_beta" | y == "rho_meta_beta"){y_label <- "\u03C1"}
@@ -5326,12 +5352,12 @@ create_proxy_prod_comparison_fig_ind <- function(data, exposure_sex, x, y, overl
 
   fig <- ggplot(fig_data, aes(x=x_plot, y=y_plot, label=exposure_description, label2=outcome_description, label3=exposure_sex, color=overlay_var)) +
     geom_point(alpha = 3/4) +
-    geom_smooth(mapping = aes(x = x_plot, y = y_plot),inherit.aes = FALSE, method=lm, formula=y~0+x, se=FALSE, color = custom_col[4], fullrange=TRUE) +
+    #geom_smooth(mapping = aes(x = x_plot, y = y_plot),inherit.aes = FALSE, method=lm, formula=y~0+x, se=FALSE, color = custom_col[4], fullrange=TRUE) +
     #geom_smooth(data = overlay_data, mapping = aes(x = x_plot, y = y_plot),inherit.aes = FALSE, method=lm, formula=y~0+x, se=FALSE, color = custom_col[2], fullrange=TRUE) +
 
     theme_half_open(12) +
     scale_fill_manual(values = custom_col) +
-    scale_colour_manual(values = custom_col, labels=c("Non-BF significant difference","BF significant difference")) +
+    scale_colour_manual(values = custom_col, labels=c("Non-BF significant\ndifference","BF significant difference")) +
 
     geom_point(data = overlay_data, aes(x=x_plot, y=y_plot), color = custom_col[2]) +
     theme(legend.position="top") + geom_abline(slope=1, intercept=0) + theme(legend.title = element_blank()) +
@@ -5476,6 +5502,7 @@ create_proxy_prod_comparison_fig <- function(proxyMR_figure_data){
 
   figures <- list()
 
+  proxyMR_figure_data %>% rename(gam_rho_resid_beta = gam_rho_resid)
   count <- 1
   for(panel in 1:4){
 
@@ -5496,9 +5523,9 @@ create_proxy_prod_comparison_fig <- function(proxyMR_figure_data){
     }
 
     if(panel==4){
-      x_start <- "gam_rho"
+      x_start <- "gam_rho_resid"
       y_start <- "omega"
-      overlay_var_start <- "omega_vs_gam_rho_BF_sig"
+      overlay_var_start <- "omega_vs_gam_rho_resid_BF_sig"
     }
 
     #for(sex in c("male", "female", "meta")){
