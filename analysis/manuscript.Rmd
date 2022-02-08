@@ -28,8 +28,8 @@ library(broom)
 ```
 
 ```{r load_targets, include = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
-tar_load(couple_MR_vs_trait_corr)
 
+tar_load(couple_MR_vs_trait_corr)
 tar_load(corr_impact_by_PCs)
 tar_load(corr_impact_by_traits)
 tar_load(corr_impact_by_coords)
@@ -142,8 +142,10 @@ DT::datatable(plot_data.DT, width = "100%") %>% formatRound(columns=format_round
 2. For each of these traits, find the traits which have a causal effect on this trait (MR p-val < 0.05/[number of effective tests]).
 3. Calculate the correlation due to confounding as: $C = (\alpha_{z\rightarrow x})^2 * \alpha_{z_i\rightarrow z_p}$.
 4. Calculate the ratio of this correlation ($C$) and the correlation of $X$ in partners ($C/r_x$). 
+5. Remove any `potential_counders` with correlation with `trait_ID` > `r corr_trait_threshold`.
+6. For each `trait_ID` prune remaining `potential_counders` so that all have correlations <  `r corr_trait_threshold`, prioritized by their `corr_due_to_confounding_ratio`. 
 
-A summary of the these results can be seen below: 
+A summary of the top 5 confounders for each `trait_ID` can be seen below: 
 
 ```{r confounder_summary, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
 
@@ -157,20 +159,67 @@ non_sig_confounders <- corr_potential_trait_confounders %>% filter(!sig_confound
   dplyr::rename(trait_ID = outcome_ID) 
 
 sig_confounders <- corr_potential_trait_confounders %>% filter(sig_confounder) %>% group_by(outcome_ID) %>%
+  arrange(-corr_due_to_confounding_ratio) %>%
+  mutate(total_potential_confounders = n()) %>%
+  slice_head(n = 5) %>%
   #mutate(potential_confounders = paste0(exposure_description, collapse = "; ")) %>%
-  dplyr::summarize(description = outcome_description[1], n = n(), 
+  dplyr::summarize(description = outcome_description[1],
+                   total_potential_confounders = total_potential_confounders[1],
                    potential_confounders = paste0(exposure_description, collapse = "; "), 
-                   mean_C_ratio = mean(corr_due_to_confounding_ratio)) %>%
+                   max_C_ratio = max(corr_due_to_confounding_ratio), 
+                   min_C_ratio = min(corr_due_to_confounding_ratio)) %>%
   dplyr::rename(trait_ID = outcome_ID)
 
-confounder_summary <- rbind(non_sig_confounders, sig_confounders)
+#confounder_summary <- rbind(non_sig_confounders, sig_confounders)
 
-format_round_cols <- colnames(dplyr::select_if(confounder_summary, is.numeric))
+format_round_cols <- colnames(dplyr::select_if(sig_confounders, is.numeric))
 
-DT::datatable(confounder_summary, width = "100%") %>% formatRound(columns=format_round_cols, digits = 3)
+DT::datatable(sig_confounders, width = "100%") %>% formatRound(columns=format_round_cols, digits = 3)
 
 ```
 
+```{r confounder_effect_plot, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE} 
+
+
+plot_data <- corr_potential_trait_confounders %>% filter(sig_confounder) %>% group_by(outcome_ID) %>%
+  arrange(-corr_due_to_confounding_ratio) %>%
+  mutate(total_potential_confounders = n()) %>%
+  slice_head(n = 1) %>%
+  mutate(corr_minus_MR_est = abs(between_trait_correlation)- abs(IVW_beta))
+
+
+# plot <- ggplot2::ggplot(data = plot_data, ggplot2::aes(x = Correlation,
+#                                                        y = MR_est, 
+#                                                        label = Phenotype, 
+#                                                        color = factor(diff_p_sig)),) +
+#   geom_point(alpha = 1.2) +
+#   scale_color_manual(values = custom_col[c(1,2)], labels=c("Non-significant","BF-signifncant difference")) +
+#   #geom_text(show.legend = FALSE) +
+#   geom_abline(slope=1, intercept=0) +
+#   
+#   ggplot2::geom_errorbar(
+#     ggplot2::aes(ymin = MR_est - IVW_se, ymax = MR_est + IVW_se),
+#     colour = "grey",
+#     width = 0
+#   ) +
+#   ggplot2::geom_errorbar(
+#     ggplot2::aes(xmin = Correlation - couple_r_se, xmax = Correlation + couple_r_se),
+#     colour = "grey",
+#     width = 0
+#   ) +
+#   
+#   theme_minimal() +
+#   ggplot2::labs(x = paste0("Couple correlation"),
+#                 y = paste("Standardized MR effect")) +
+#   theme(legend.position="bottom") + theme(legend.title=element_blank()) +
+#   geom_text_repel(data = subset(plot_data, label_phenos==TRUE),
+#                   nudge_y = -0.25 - subset(plot_data, label_phenos==TRUE)$MR_est, size = 2,
+#                   direction = "x") 
+
+
+
+
+```
 # Effect of sex, age and time together on causal effects in couples.
 
 ```{r AM_data_prep, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE, include = FALSE}
@@ -549,9 +598,18 @@ boxplot
 
 ## Paths summary.
 
-A summary of the $\omega$, $\rho$, $\gamma$ and $\rho_{resid} + \gamma$ estimates are summarized in the table below. Those with BF-significant differences between the estimates (according to a Z-test, p < 0.05/`r dim(data)[1]`) are given as T/F in the last three columns. 
+A summary of the $\omega$, $\rho$, $\gamma$ and $\rho_{resid} + \gamma$ estimates are summarized in the table below. The differences between the estimates (according to a Z-test) are given in the last three columns. Trait pairs were pruned such that:  if there is a pair A-B and C-D and if [max(corr(A,C)*corr(B,D),corr(A,D)*corr(B,C))] > `r corr_trait_threshold` then one pair is dropped. Pairs were prioritized based on the $\omega$ p-value. 
+
+
 
 ```{r paths_summary, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
+
+tar_load(proxyMR_comparison_summary_yiyp_adj_SNPmeta_prune)
+
+data <- proxyMR_comparison_summary_yiyp_adj_SNPmeta_prune
+data$rho_resid <- resid(lm(rho_beta ~ gam_beta, data = data))
+data$gam_rho_resid <- data$rho_resid + data$gam_beta
+
 
 paths_summary <- data %>% dplyr::select(exposure_description, outcome_description, gam_beta, rho_beta, omega_beta, gam_rho_resid, gam_vs_rho_pval, omega_vs_rho_pval, omega_vs_gam_pval)
 
