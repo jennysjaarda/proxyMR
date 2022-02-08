@@ -5502,7 +5502,7 @@ create_proxy_prod_comparison_fig <- function(proxyMR_figure_data){
 
   figures <- list()
 
-  proxyMR_figure_data %>% rename(gam_rho_resid_beta = gam_rho_resid)
+  proxyMR_figure_data <- proxyMR_figure_data %>% rename(gam_rho_resid_beta = gam_rho_resid)
   count <- 1
   for(panel in 1:4){
 
