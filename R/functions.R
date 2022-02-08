@@ -5333,7 +5333,7 @@ create_proxy_prod_comparison_fig_ind <- function(data, exposure_sex, x, y, overl
   if(x == "gam_beta" | x == "gam_meta_beta"){x_label <- "\u03B3"}
   if(x == "rho_beta" | x == "rho_meta_beta"){x_label <- "\u03C1"}
   if(x == "gam_rho_beta" | x == "gam_rho_meta_beta"){x_label <- "\u03B3 + \u03C1"}
-  if(x == "gam_rho_resid_beta"){x_label <- expression( paste(rho ["resid"], " + ", gamma))}
+  if(x == "gam_rho_resid_beta"){x_label <- expression(paste(rho ["resid"], " + ", gamma))}
 
   if(y == "omega_beta" | y == "omega_meta_beta"){y_label <- "\u03C9"}
   if(y == "rho_beta" | y == "rho_meta_beta"){y_label <- "\u03C1"}
@@ -5362,7 +5362,7 @@ create_proxy_prod_comparison_fig_ind <- function(data, exposure_sex, x, y, overl
     geom_point(data = overlay_data, aes(x=x_plot, y=y_plot), color = custom_col[2]) +
     theme(legend.position="top") + geom_abline(slope=1, intercept=0) + theme(legend.title = element_blank()) +
     #xlab(paste0(x_label, " ", exposure_sex)) + ylab(paste0(y_label, " ", exposure_sex)) +
-    xlab(paste0(x_label)) + ylab(paste0(y_label)) +
+    xlab(x_label) + ylab(paste0(y_label)) +
 
     scale_x_continuous(breaks = seq(0, xmax, by = 0.2), limits = c(0, xmax)) +
     scale_y_continuous(breaks = seq(-2, ymax, by = 0.5)[seq(-2, ymax, by = 0.5) > ylim], limits = c(ylim, ymax))
