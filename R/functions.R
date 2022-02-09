@@ -3402,6 +3402,8 @@ run_MVMR_potential_trait_confounders <- function(corr_potential_trait_confounder
 
   outcome_ID <- corr_potential_trait_confounders$outcome_ID[1]
 
+  cat(paste0("Running MVMR for `", outcome_ID, "` with all potential confounders.\n\n"))
+
   ## pull the IVs for all potential trait confounders to include in the MVMR
 
   snps <- numeric()

@@ -658,7 +658,7 @@ list(
       path_outcome_stats_filter
       run_MVMR_potential_trait_confounders(corr_potential_trait_confounders, prune_threshold)
     },
-    pattern = map(corr_potential_trait_confounders)
+    pattern = map(corr_potential_trait_confounders), iteration= "list"
   ),
 
 
