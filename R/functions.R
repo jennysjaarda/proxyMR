@@ -2265,24 +2265,17 @@ calc_binned_pheno_corrs <- function(exposure_info, grouping_var, household_time_
     left_join(pheno_data_full, by= c("HOUSEHOLD_MEMBER2"="IID")) %>%
     rename(HOUSEHOLD_MEMBER2_pheno = outcome)
 
-
-  data %>% group_by(time_together_even_bins) %>% filter(!is.na(time_together_even_bins)) %>%
-    summarize(n = n(), correlation=cor(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs"))
-
-
   corr_summary <- numeric()
   lm_summary <- numeric()
   for(group in grouping_var){
 
     summary_group <- data %>% rename(bin = !!group) %>%
       group_by(bin) %>%
-      filter(!is.na(bin)) %>%
+      filter(!is.na(bin)) %>% drop_na() %>%
       summarize(n = n(),
                 correlation=cor(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs"),
                 correlation_pval=cor.test(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs")$p.value) %>%
       mutate(group = !!group) %>% mutate(trait = !!exposure_ID) %>% dplyr::select(trait, group, everything())
-
-    corr_summary <- rbind(corr_summary, summary_group)
 
     ## calculate linear regression within bin
 
@@ -3402,6 +3395,121 @@ find_potential_PC_confounders <- function(Neale_pheno_ID, Neale_pheno_ID_corr, P
     mutate(corr_due_to_confounding_ratio = corr_due_to_confounding/Neale_pheno_ID_corr)
 
   return(output)
+
+}
+
+run_MVMR_potential_trait_confounders <- function(corr_potential_trait_confounders, prune_threshold){
+
+  outcome_ID <- corr_potential_trait_confounders$outcome_ID[1]
+
+  ## pull the IVs for all potential trait confounders to include in the MVMR
+
+  snps <- numeric()
+  chr <- numeric()
+  pvals <- numeric()
+  betas <- numeric()
+  ses <- numeric()
+
+  for(i in 1:dim(corr_potential_trait_confounders)[1]){
+
+    exposure_ID <- corr_potential_trait_confounders$exposure_ID[i]
+
+    GWAS_file_xIVs <- paste0("analysis/traitMR/standard_GWAS_rev_filter/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
+    yi_XIV_GWAS_results <- fread(GWAS_file_xIVs, data.table = F) %>% filter(sex == "meta")
+    ## this will pull the standard GWAS results for phenotype `outcome_ID` for IVs from `exposure_ID`, i.e. the effect of Gi on Yi for only X IVs.
+
+    snps <- c(snps, yi_XIV_GWAS_results$SNP)
+    chr <- c(chr, yi_XIV_GWAS_results$chr)
+    pvals <- c(pvals, yi_XIV_GWAS_results$pval)
+
+    betas <- c(betas, yi_XIV_GWAS_results$beta)
+    ses <- c(ses, yi_XIV_GWAS_results$se)
+
+  }
+
+  to_prune_mat <- tibble(SNP = snps,
+                         chr = chr,
+                         pval = pvals) %>% unique()
+
+  pruned_mat <- IV_clump(to_prune_mat, prune_threshold)
+
+
+  GWAS_beta_mat <- numeric()
+  GWAS_se_mat <- numeric()
+
+  for(i in 1:dim(corr_potential_trait_confounders)[1]){
+
+    exposure_ID_i <- corr_potential_trait_confounders$exposure_ID[i]
+    GWAS_beta_i <- numeric()
+    GWAS_se_i <- numeric()
+
+    for(j in 1:dim(corr_potential_trait_confounders)[1]){
+
+      outcome_ID_j <- corr_potential_trait_confounders$exposure_ID[j]
+
+      ## because the folder here `analysis/traitMR/standard_GWAS_rev_filter/` is filtered based on reverse causality and we selected SNPs based on no-reverse causality with our `outcome_ID`
+      ## we need to select from an un-filtered set to ensure we include all SNPs from the `pruned_mat`.
+
+      ## the folder here: `analysis/traitMR/standard_GWAS/` is from Neale's original both-sex file whereas the above is meta-analyzed across sexes in house...
+
+
+      GWAS_file_xIVs <- paste0("analysis/traitMR/standard_GWAS/", outcome_ID_j, "/", outcome_ID_j, "_vs_", exposure_ID_i, "_GWAS.csv")
+      ## this will pull the standard GWAS results for phenotype `outcome_ID` for IVs from `exposure_ID`, i.e. the effect of Gi on Yi for only X IVs.
+
+      beta_name <- paste0("beta_", outcome_ID_j)
+      se_name <- paste0("se_", outcome_ID_j)
+
+      yi_XIV_GWAS_results <- fread(GWAS_file_xIVs, data.table = F) %>% filter(sex == "both_sexes") %>% filter(SNP %in% pruned_mat$SNP)
+
+      beta_j <- yi_XIV_GWAS_results %>% dplyr::select(SNP, beta) %>%
+        rename(!!beta_name := beta)
+      se_j <- yi_XIV_GWAS_results %>% dplyr::select(SNP, se) %>%
+        rename(!!se_name := se)
+
+      if(j == 1){
+        GWAS_beta_i <- beta_j
+        GWAS_se_i <- se_j
+      }
+      if(j != 1){
+        GWAS_beta_i <- merge(GWAS_beta_i, beta_j)
+        GWAS_se_i <- merge(GWAS_se_i, se_j)
+      }
+
+    }
+
+    GWAS_beta_mat <- rbind(GWAS_beta_mat, GWAS_beta_i)
+    GWAS_se_mat <- rbind(GWAS_se_mat, GWAS_se_i)
+
+  }
+
+  GWAS_beta_mat <- GWAS_beta_mat %>% unique()
+  GWAS_se_mat <- GWAS_se_mat %>% unique()
+
+  by_mat <-  tibble(SNP = snps,
+                    beta = betas,
+                    se = ses) %>% unique()
+
+  by_mat_pruned <- by_mat  %>% filter(SNP %in% pruned_mat$SNP)
+
+  bx_mat <- as.matrix(GWAS_beta_mat[,-1])
+  bxse_mat <- as.matrix(GWAS_se_mat[,-1])
+
+  mv_data_format <- mr_mvinput(bx = bx_mat, bxse = bxse_mat,
+                               by = by_mat_pruned[["beta"]], byse = by_mat_pruned[["se"]])
+
+
+
+  mv_result <- mr_mvivw(mv_data_format) # see `str(mv_result)` to know how to access the results
+  mvmvr_betas <- mv_result@Estimate
+  mvmr_ses <- mv_result@StdError
+  mvmr_pvalues <- mv_result@Pvalue
+
+  result_mat <-  tibble(exposure = corr_potential_trait_confounders$exposure_ID,
+                    beta = mvmvr_betas,
+                    se = mvmr_ses,
+                    pval = mvmr_pvalues)
+
+  return(result_mat)
 
 }
 

@@ -652,6 +652,30 @@ list(
   ),
 
   tar_target(
+    potential_trait_confounders_MVMR,
+    {
+      path_outcome_stats
+      path_outcome_stats_filter
+      run_MVMR_potential_trait_confounders(corr_potential_trait_confounders, prune_threshold)
+    },
+    pattern = map(corr_potential_trait_confounders)
+  ),
+
+
+  # tar_target(
+  #   proxyMR_yiyp_adj_SNPmeta,
+  #   {
+  #     path_household_GWAS_filter
+  #     path_outcome_stats_filter
+  #     adj_yiyp_xIVs_SNPmeta(exposure_info, household_harmonised_data_meta_reverse_filter, household_MR_summary_BF_sig)
+  #   },
+  #   map(exposure_info, household_harmonised_data_meta_reverse_filter)
+  # ),
+  #
+  #
+
+
+  tar_target(
     path_household_MR_binned,
     {
       path_MR_dirs
