@@ -2277,6 +2277,8 @@ calc_binned_pheno_corrs <- function(exposure_info, grouping_var, household_time_
                 correlation_pval=cor.test(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs")$p.value) %>%
       mutate(group = !!group) %>% mutate(trait = !!exposure_ID) %>% dplyr::select(trait, group, everything())
 
+    corr_summary <- rbind(corr_summary, summary_group)
+
     ## calculate linear regression within bin
 
     summary_group <- summary_group %>% separate(bin, c("bin_start_temp", "bin_stop_temp"), ",", remove = F) %>% mutate(bin_start = substring(bin_start_temp, 2)) %>%
@@ -2294,6 +2296,8 @@ calc_binned_pheno_corrs <- function(exposure_info, grouping_var, household_time_
       mutate(group = !!group) %>% mutate(trait = !!exposure_ID) %>% dplyr::select(trait, group, everything())
 
     lm_summary <- rbind(lm_summary, lm_summary_group)
+
+
   }
 
   return(list(corr_summary = corr_summary, lm_summary = lm_summary))
