@@ -454,6 +454,18 @@ list(
     pattern = map(summ_stats)
   ),
 
+  ## raw phenotypic correlation in different bins
+
+  tar_target(
+    binned_pheno_corrs,
+    {
+      path_pheno_data
+      calc_binned_pheno_corrs(exposure_info, grouping_var, household_time_munge)
+    },
+    iteration = "list",
+    pattern = map(exposure_info)
+  ),
+
   ## household MR prep
 
   tar_target(
@@ -462,7 +474,7 @@ list(
       path_pheno_data
       path_outcome_dirs
       run_household_GWAS(exposure_info, summ_stats, outcomes_to_run, traits_corr2_filled,
-                                  IV_genetic_data, joint_model_adjustments, grouping_var, household_time_munge)
+                         IV_genetic_data, joint_model_adjustments, grouping_var, household_time_munge)
     },
     pattern = map(exposure_info, summ_stats, IV_genetic_data), format = "file"
   ),

@@ -2236,6 +2236,77 @@ define_models <- function(traits){
 
 }
 
+
+calc_binned_pheno_corrs <- function(exposure_info, grouping_var, household_time_munge){
+
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+  expousre_phes_ID <- exposure_info %>% filter(Value=="phes_ID") %>% pull(Info)
+
+  pheno_dir <- paste0("analysis/traitMR")
+
+  cat(paste0("\nCalculating raw phenotypic correlations for phenotype `", exposure_ID, "`.\n\n"))
+
+  male_file <- paste0(pheno_dir,"/pheno_files/phesant/", exposure_ID, "_male.txt")
+  female_file <- paste0(pheno_dir,"/pheno_files/phesant/", exposure_ID, "_female.txt")
+
+  male_pheno_data <- fread( male_file,header=T, data.table=F)
+  female_pheno_data <- fread( female_file,header=T, data.table=F)
+
+  pheno_data <- list(unrelated_male_data = male_pheno_data, unrelated_female_data = female_pheno_data)
+
+  household_time_data <- household_time_munge %>% dplyr::select(HOUSEHOLD_MEMBER1, HOUSEHOLD_MEMBER2, !!grouping_var)
+
+  pheno_data_full <- rbind(pheno_data[[1]], pheno_data[[2]]) %>% dplyr::select(IID, !!expousre_phes_ID) %>%
+    rename(outcome = !!expousre_phes_ID)
+
+
+  data <- household_time_data %>% left_join(pheno_data_full, by= c("HOUSEHOLD_MEMBER1"="IID")) %>%
+    rename(HOUSEHOLD_MEMBER1_pheno = outcome) %>%
+    left_join(pheno_data_full, by= c("HOUSEHOLD_MEMBER2"="IID")) %>%
+    rename(HOUSEHOLD_MEMBER2_pheno = outcome)
+
+
+  data %>% group_by(time_together_even_bins) %>% filter(!is.na(time_together_even_bins)) %>%
+    summarize(n = n(), correlation=cor(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs"))
+
+
+  corr_summary <- numeric()
+  lm_summary <- numeric()
+  for(group in grouping_var){
+
+    summary_group <- data %>% rename(bin = !!group) %>%
+      group_by(bin) %>%
+      filter(!is.na(bin)) %>%
+      summarize(n = n(),
+                correlation=cor(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs"),
+                correlation_pval=cor.test(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs")$p.value) %>%
+      mutate(group = !!group) %>% mutate(trait = !!exposure_ID) %>% dplyr::select(trait, group, everything())
+
+    corr_summary <- rbind(corr_summary, summary_group)
+
+    ## calculate linear regression within bin
+
+    summary_group <- summary_group %>% separate(bin, c("bin_start_temp", "bin_stop_temp"), ",", remove = F) %>% mutate(bin_start = substring(bin_start_temp, 2)) %>%
+      mutate(bin_stop = str_sub(bin_stop_temp,1,nchar(bin_stop_temp)-1)) %>% rowwise() %>%
+      mutate(bin_median = median(c(as.numeric(bin_start), as.numeric(bin_stop))))
+
+
+    bin_lm <- lm(correlation ~ bin_median, data = summary_group)
+
+    lm_summary_group <- summary(bin_lm)$coefficients["bin_median",c(1,2,4)]
+
+    names(lm_summary_group) <- c("bin_slope_beta", "bin_slope_se", "bin_slope_pval")
+
+    lm_summary_group <- as.data.frame(t(lm_summary_group)) %>% as_tibble() %>%
+      mutate(group = !!group) %>% mutate(trait = !!exposure_ID) %>% dplyr::select(trait, group, everything())
+
+    lm_summary <- rbind(lm_summary, lm_summary_group)
+  }
+
+  return(list(corr_summary = corr_summary, lm_summary = lm_summary))
+
+}
+
 summarize_gwas <- function(geno, outcome, covar, variable_type, tempdir = "/data/sgg2/jenny"){
 
   temp_file <- tempfile(tmpdir = tempdir)
@@ -2373,7 +2444,6 @@ household_GWAS_group <- function(exposure_info, summ_stats, pheno_data, outcome_
   return(output)
 
 }
-
 
 run_household_GWAS <- function(exposure_info, summ_stats, outcomes_to_run, traits_corr2_filled,
                                IV_genetic_data, joint_model_adjustments, grouping_var_list, household_time_munge){
@@ -5338,7 +5408,7 @@ create_proxy_prod_comparison_fig_ind <- function(data, exposure_sex, x, y, overl
   if(y == "omega_beta" | y == "omega_meta_beta"){y_label <- "\u03C9"}
   if(y == "rho_beta" | y == "rho_meta_beta"){y_label <- "\u03C1"}
 
-  xmax <- 1.3
+  xmax <- 1.0
   #if(x == "rho_beta" | x == "rho_meta_beta"){xmax = 0.9}
 
 
@@ -5357,7 +5427,10 @@ create_proxy_prod_comparison_fig_ind <- function(data, exposure_sex, x, y, overl
 
     theme_half_open(12) +
     scale_fill_manual(values = custom_col) +
-    scale_colour_manual(values = custom_col, labels=c("Non-BF significant\ndifference","BF significant difference")) +
+    scale_colour_manual(values = custom_col, labels=c("Non-BF significant difference","BF significant difference")) +
+    theme(
+      legend.text=element_text(size=11,
+                               margin = margin(r = 0.5, unit = 'cm'))) +
 
     geom_point(data = overlay_data, aes(x=x_plot, y=y_plot), color = custom_col[2]) +
     theme(legend.position="top") + geom_abline(slope=1, intercept=0) + theme(legend.title = element_blank()) +
@@ -5500,26 +5573,30 @@ create_proxy_prod_comparison_fig_all <- function(proxyMR_figure_data){
 
 create_proxy_prod_comparison_fig <- function(proxyMR_figure_data){
 
-  figures <- list()
 
   proxyMR_figure_data <- proxyMR_figure_data %>% rename(gam_rho_resid_beta = gam_rho_resid)
+
+  figures <- list()
+
   count <- 1
   for(panel in 1:4){
 
     if(panel==1){
       x_start <- "gam"
+      y_start <- "rho"
+      overlay_var_start <- "gam_vs_rho_BF_sig"
+    }
+
+    if(panel==2){
+      x_start <- "gam"
       y_start <- "omega"
       overlay_var_start <- "omega_vs_gam_BF_sig"
     }
-    if(panel==2){
+
+    if(panel==3){
       x_start <- "rho"
       y_start <- "omega"
       overlay_var_start <- "omega_vs_rho_BF_sig"
-    }
-    if(panel==3){
-      x_start <- "gam"
-      y_start <- "rho"
-      overlay_var_start <- "gam_vs_rho_BF_sig"
     }
 
     if(panel==4){
