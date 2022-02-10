@@ -536,6 +536,16 @@ list(
     pattern = map(exposure_info, standard_harmonised_data), iteration = "list"
   ),
 
+  tar_target(
+    path_standard_harmonised_data_meta,
+    {
+      path_outcome_dirs
+      write_outcome_stats_meta(exposure_info, outcomes_to_run, standard_harmonised_data_meta, summ_stats)
+    }
+    pattern = map(exposure_info, standard_harmonised_data_meta, summ_stats), format = "file"
+  ),
+
+
   ## Filter SNPs for evidence of reverse-causality based on same-person two-trait MR (`standard_MR`)
 
   tar_target(
@@ -665,7 +675,6 @@ list(
     },
     pattern = map(corr_potential_trait_confounders), iteration= "list"
   ),
-
 
 
   # tar_target(

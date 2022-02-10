@@ -308,6 +308,18 @@ compute_trait_corr <- function(phesant_directory,UKBB_directory,pairs_filter){
     {tsv_data <- fread(current_file, header=TRUE, sep='\t',data.table=F)}
     r2 <- NA
     pairs_filter_copy <- pairs_filter
+    pairs_filter_copy <- pairs_filter
+    pairs_filter_copy <- pairs_filter_copy %>%
+      mutate(HOUSEHOLD_MEMBER1_M = case_when(HOUSEHOLD_MEMBER1_sex == 1 ~ HOUSEHOLD_MEMBER1,
+                                             HOUSEHOLD_MEMBER2_sex == 1 ~ HOUSEHOLD_MEMBER2)) %>%
+
+      mutate(HOUSEHOLD_MEMBER2_F = case_when(HOUSEHOLD_MEMBER1_sex == 0 ~ HOUSEHOLD_MEMBER1,
+                                             HOUSEHOLD_MEMBER2_sex == 0 ~ HOUSEHOLD_MEMBER2)) %>%
+
+      dplyr::select(-HOUSEHOLD_MEMBER1, -HOUSEHOLD_MEMBER2) %>%
+      rename(HOUSEHOLD_MEMBER1 = HOUSEHOLD_MEMBER1_M) %>%
+      rename(HOUSEHOLD_MEMBER2 = HOUSEHOLD_MEMBER2_F)
+
     pairs_filter_copy$trait1 <- tsv_data[[id]][match(pairs_filter_copy[["HOUSEHOLD_MEMBER1"]], tsv_data$userId)]
     pairs_filter_copy$trait2 <- tsv_data[[id]][match(pairs_filter_copy[["HOUSEHOLD_MEMBER2"]], tsv_data$userId)]
     complete_pairs <- pairs_filter_copy[which(complete.cases(pairs_filter_copy$trait1 ,pairs_filter_copy$trait2 )),]
@@ -2747,6 +2759,7 @@ meta_harmonised_household_data <- function(exposure_info, outcomes_to_run, house
   return(output_list)
 }
 
+
 harmonise_standard_data_ind <- function(exposure_info, summ_stats, traits_corr2_filled, outcome_ID, standard_GWAS_result) {
 
   output_list <- list()
@@ -2915,6 +2928,45 @@ meta_harmonised_standard_data <- function(exposure_info, outcomes_to_run, standa
 
   return(output_list)
 
+}
+
+
+write_outcome_stats_meta <- function(exposure_info, outcomes_to_run, standard_harmonised_data_meta, summ_stats){
+
+
+  pheno_dir <- paste0("analysis/traitMR/" )
+
+  file_list <- numeric()
+
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+  snp_chr <- summ_stats[[1]] %>% dplyr::select(rsid, chr)
+
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    outcome_ID <- outcomes_to_run$Neale_pheno_ID[i]
+    GWAS_file_i <- paste0(pheno_dir, "/standard_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS_meta.csv")
+    file_list <- c(GWAS_file_i, file_list)
+
+    dat <- standard_harmonised_data_meta[[i]] %>% dplyr::select(SNP, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
+
+
+    sex <- "meta"
+
+    dat <- get(paste0(sex, "_GWAS"))
+    dat$chr <- snp_chr[match(dat$SNP, snp_chr$rsid), "chr"]
+    dat <- dat %>% dplyr::select(SNP, chr, everything()) %>% mutate(outcome_ID=outcome_ID) %>% mutate(sex = !!sex) %>% mutate(exposure_ID=exposure_ID)
+
+
+    colnames(dat)[match(c("beta.outcome", "se.outcome", "pval.outcome", "other_allele.outcome", "effect_allele.outcome", "eaf.outcome", "samplesize.outcome"), colnames(dat))] <-
+      c("beta", "se", "pval", "other_allele", "effect_allele", "eaf", "samplesize")
+
+    write.csv(dat, GWAS_file_i, row.names = F)
+    cat(paste0("Finished writing standard GWAS statistics for exposure ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+
+  }
+
+  return(file_list)
 }
 
 filter_reverse_SNPs_standard_data <- function(exposure_info, outcomes_to_run, standard_harmonised_data_meta, reverse_MR_threshold){
