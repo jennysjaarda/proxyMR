@@ -333,6 +333,72 @@ compute_trait_corr <- function(phesant_directory,UKBB_directory,pairs_filter){
   return(as.data.frame(trait_corr))
 }
 
+compute_trait_corr_fix <- function(phesant_directory,UKBB_directory,pairs_filter){
+  unique_phes_ids <- unique(phesant_directory[,2])
+  trait_corr <- numeric()
+  prev_file <- ""
+  for (id in unique_phes_ids)
+  {
+    id <- as.character(id)
+    phenotype_sub <- unlist(strsplit (id,"_"))[1]
+
+    UKBB_directory[,"field.showcase"] <- as.character(UKBB_directory[,"field.showcase"])
+    file_with_pheno <- which(UKBB_directory[,"field.showcase"]==id)
+    file_name <- names(which.max(table(as.character(UKBB_directory[file_with_pheno,"file"]))))
+    if(length(file_with_pheno)==0)
+    {
+      file_with_pheno <- which(UKBB_directory[,"field.showcase"]==phenotype_sub)
+      file_name <- names(which.max(table(as.character(UKBB_directory[file_with_pheno,"file"]))))
+    }
+    description <- unlist(strsplit (as.character(UKBB_directory[file_with_pheno[1],"col.name"]),"_datacoding"))[1]
+    current_file <- as.character(phesant_directory[which(phesant_directory[,2]==id),"File"])[1]
+
+    #sgg_file <- sgg_paths[grepl(file_name,current_file)][1]
+    #flow <- gsub(basename(sgg_file),"variable-flow-counts-all.txt", sgg_file)
+    #file_dir <- gsub("/([^/]*)$" , "", sgg_file)
+    #bin_num <- substrRight(file_dir,1)
+    #log <- read.table(paste0(file_dir,"/out_bin",bin_num, "..log"))
+
+    if(prev_file!=current_file)
+    {tsv_data <- fread(current_file, header=TRUE, sep='\t',data.table=F)}
+    r2 <- NA
+    pairs_filter_copy <- pairs_filter
+    pairs_filter_copy <- pairs_filter_copy %>%
+      mutate(HOUSEHOLD_MEMBER1_M = case_when(HOUSEHOLD_MEMBER1_sex == 1 ~ HOUSEHOLD_MEMBER1,
+                                             HOUSEHOLD_MEMBER2_sex == 1 ~ HOUSEHOLD_MEMBER2)) %>%
+
+      mutate(HOUSEHOLD_MEMBER2_F = case_when(HOUSEHOLD_MEMBER1_sex == 0 ~ HOUSEHOLD_MEMBER1,
+                                              HOUSEHOLD_MEMBER2_sex == 0 ~ HOUSEHOLD_MEMBER2)) %>%
+
+      dplyr::select(-HOUSEHOLD_MEMBER1, -HOUSEHOLD_MEMBER2) %>%
+      rename(HOUSEHOLD_MEMBER1 = HOUSEHOLD_MEMBER1_M) %>%
+      rename(HOUSEHOLD_MEMBER2 = HOUSEHOLD_MEMBER2_F)
+
+    pairs_filter_copy$trait1 <- tsv_data[[id]][match(pairs_filter_copy[["HOUSEHOLD_MEMBER1"]], tsv_data$userId)]
+    pairs_filter_copy$trait2 <- tsv_data[[id]][match(pairs_filter_copy[["HOUSEHOLD_MEMBER2"]], tsv_data$userId)]
+    complete_pairs <- pairs_filter_copy[which(complete.cases(pairs_filter_copy$trait1 ,pairs_filter_copy$trait2 )),]
+    n_completed_pairs <- length(pairs_filter_copy[which(complete.cases(pairs_filter_copy$trait2, pairs_filter_copy$trait1)),"trait2"])
+    if(n_completed_pairs>1)
+    {
+      sd1 <- sd(complete_pairs$trait1,na.rm=TRUE)
+      sd2 <- sd(complete_pairs$trait2,na.rm=TRUE)
+      if(sd1!=0 & sd2!=0)
+      {
+
+        r <- cor(pairs_filter_copy$trait1, pairs_filter_copy$trait2, method = c("pearson"),use = "pairwise.complete.obs")
+        r2 <- r^2
+      }
+    }
+
+    prev_file <- current_file
+    trait_row <- cbind(id, phenotype_sub,description, n_completed_pairs,r2)
+    trait_corr <- rbind(trait_corr, trait_row)
+  }
+  colnames(trait_corr) <- c("ID", "ID_sub", "description", "N_pairs","r2")
+  return(as.data.frame(trait_corr))
+
+}
+
 
 ## got below function from: https://github.com/MRCIEU/PHESANT/blob/master/WAS/testContinuous.r
 irnt_phesant <- function(pheno) {

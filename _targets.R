@@ -201,6 +201,11 @@ list(
   # write_traits_corr = write.csv(trait_corrs, file_out( "output/tables/1.household_correlations.csv"), row.names=F),
 
   tar_target(
+    traits_corr_fix,
+    compute_trait_corr_fix(data_phesant_directory,data_UKBB_directory,hh_pairs_filter)
+  ),
+
+  tar_target(
     PCs_corr,
     compute_pc_corr(sqc_munge, hh_pairs_filter, data_id_sex)
   ),
@@ -660,6 +665,7 @@ list(
     },
     pattern = map(corr_potential_trait_confounders), iteration= "list"
   ),
+
 
 
   # tar_target(
