@@ -227,6 +227,7 @@ list(
     write_define_cats(Neale_to_process),
     format = "file"
   ),
+
   tar_target(
     path_download_list,
     write_download_list(Neale_to_process),
@@ -541,7 +542,7 @@ list(
     {
       path_outcome_dirs
       write_outcome_stats_meta(exposure_info, outcomes_to_run, standard_harmonised_data_meta, summ_stats)
-    }
+    },
     pattern = map(exposure_info, standard_harmonised_data_meta, summ_stats), format = "file"
   ),
 
