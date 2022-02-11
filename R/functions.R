@@ -2435,12 +2435,13 @@ household_GWAS_bin <- function(exposure_info, summ_stats, pheno_data, outcome_ID
 
     household_intervals <- levels(household_time[[grouping_var]])
 
-    genetic_IDs <- tibble(IID = as.character(rownames(IV_geno)))
+    #genetic_IDs <- tibble(IID = as.character(rownames(IV_geno)))
 
     ### SHOULD REALLY USE THIS FORM OF GENETIC_IDs where IIDs are numeric.
     ### male ID 4e6 does not merge with pheno_cov when IID is a character.
     ## see dim(pheno_cov) vs. dim(temp1)
-    #genetic_IDs <- tibble(IID = as.numeric(rownames(IV_geno)))
+
+    genetic_IDs <- tibble(IID = as.numeric(rownames(IV_geno)))
 
     # to reduce to only genetic IDs with good genetic data
     temp1 <- merge(pheno_cov,genetic_IDs, by.x=index, by.y="IID")
