@@ -2418,6 +2418,7 @@ household_GWAS_bin <- function(exposure_info, summ_stats, pheno_data, outcome_ID
 
   outcome_traits <- traits_corr2_filled[which(traits_corr2_filled[["Neale_file_sex"]]=="both"),]
   outcome_phes_ID <- as.character(outcome_traits[which(outcome_traits[["Neale_pheno_ID"]]==outcome_ID), "SGG_PHESANT_ID"])
+  outcome_variable_type <- as.character(outcome_traits[which(outcome_traits[["Neale_pheno_ID"]]==outcome_ID), "variable_type"])
 
   for(exposure_sex in c("male", "female")){
 
@@ -2435,26 +2436,37 @@ household_GWAS_bin <- function(exposure_info, summ_stats, pheno_data, outcome_ID
 
     household_intervals <- levels(household_time[[grouping_var]])
 
-    #genetic_IDs <- tibble(IID = as.character(rownames(IV_geno)))
+    genetic_IDs <- tibble(IID = as.character(rownames(IV_geno)))
 
     ### SHOULD REALLY USE THIS FORM OF GENETIC_IDs where IIDs are numeric.
     ### male ID 4e6 does not merge with pheno_cov when IID is a character.
     ## see dim(pheno_cov) vs. dim(temp1)
 
-    genetic_IDs <- tibble(IID = as.numeric(rownames(IV_geno)))
+    genetic_IDs_num <- tibble(IID = as.numeric(rownames(IV_geno)))
 
     # to reduce to only genetic IDs with good genetic data
-    temp1 <- merge(pheno_cov,genetic_IDs, by.x=index, by.y="IID")
+    temp1 <- pheno_cov[which(pheno_cov[[index]] %in% as.numeric(genetic_IDs$IID)),]
+
+
+    # which(!temp1_2$HOUSEHOLD_MEMBER1 %in% temp1$HOUSEHOLD_MEMBER1)
+    # row 30873 in pheno_cov
+    # IID 4000017
+
+    # row 41169 in pheno_cov
+    # IID 4e6, HOUSE_ID=103175
+
     # to reudce to only IDs with phenotype data
-    temp2 <- merge(temp1, pheno_data_sex, by.x=opp_index, by.y="IID")
+    temp2 <- merge(temp1_3, pheno_data_sex, by.x=opp_index, by.y="IID")
+
     # to reduce to only those in a household pair
     temp3 <- merge(temp2, household_time[,c("HOUSEHOLD_MEMBER1",grouping_var)], by="HOUSEHOLD_MEMBER1")
+
     final_data <- temp3
     colnames(final_data) <- c(colnames(pheno_cov), "outcome", grouping_var)
 
     pheno_run <- final_data[,c(grep("_age", names(final_data)),grep("_PC_", names(final_data)), which(names(final_data)=="outcome"))]
 
-    if(variable_type!="binary" | variable_type!="ordinal") {pheno_run$outcome <- scale(pheno_run$outcome)}
+    if(outcome_variable_type!="binary" | outcome_variable_type!="ordinal") {pheno_run$outcome <- scale(pheno_run$outcome)}
 
 
     IIDs_keep <- as.character(format(final_data[[index]], scientific = F))
@@ -2472,10 +2484,12 @@ household_GWAS_bin <- function(exposure_info, summ_stats, pheno_data, outcome_ID
       bin_sub <- final_data[which(final_data[[grouping_var]]==bin),]
       bin_pheno_run <- bin_sub[,c(grep("_age", names(bin_sub)),grep("_PC_", names(bin_sub)), which(names(bin_sub)=="outcome"))]
 
-      if(variable_type!="binary") {pheno_run$outcome <- scale(pheno_run$outcome)}
+      if(outcome_variable_type!="binary" | outcome_variable_type!="ordinal") {bin_pheno_run$outcome <- scale(bin_pheno_run$outcome)}
       bin_pheno_run <- bin_pheno_run[complete.cases(bin_pheno_run),] #if all values are the same then NA's will be produced
 
-      bin_IIDs_keep <- bin_sub[[index]]
+      bin_IIDs_keep <- as.character(format(bin_sub[[index]], scientific = F))
+
+
       bin_geno_data_sub <- IV_geno[as.character(bin_IIDs_keep),]
 
       template <- cbind(exposure_ID, outcome_ID, SNP = colnames(geno_data_sub), grouping_var, bin, exposure_sex, outcome_sex)
