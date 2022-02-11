@@ -73,7 +73,7 @@ Neale_output_dir <- "/data/sgg3/data/neale_files"
 
 ## files
 
-Neale_SGG_dir_file_cp <- "data/Neale_SGG_directory_11_02_2021.csv"
+Neale_SGG_dir_file_cp <- "data/Neale_SGG_directory_11_02_2022.csv"
 PHESANT_file_dir_cp <- paste0("data/PHESANT_file_directory_05_10_2021.txt")
 UKBB_pheno_dir_cp <- paste0("data/UKBB_pheno_directory_05_10_2021.csv")
 
