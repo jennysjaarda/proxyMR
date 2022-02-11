@@ -2456,7 +2456,7 @@ household_GWAS_bin <- function(exposure_info, summ_stats, pheno_data, outcome_ID
     # IID 4e6, HOUSE_ID=103175
 
     # to reudce to only IDs with phenotype data
-    temp2 <- merge(temp1_3, pheno_data_sex, by.x=opp_index, by.y="IID")
+    temp2 <- merge(temp1, pheno_data_sex, by.x=opp_index, by.y="IID")
 
     # to reduce to only those in a household pair
     temp3 <- merge(temp2, household_time[,c("HOUSEHOLD_MEMBER1",grouping_var)], by="HOUSEHOLD_MEMBER1")
@@ -2488,7 +2488,6 @@ household_GWAS_bin <- function(exposure_info, summ_stats, pheno_data, outcome_ID
       bin_pheno_run <- bin_pheno_run[complete.cases(bin_pheno_run),] #if all values are the same then NA's will be produced
 
       bin_IIDs_keep <- as.character(format(bin_sub[[index]], scientific = F))
-
 
       bin_geno_data_sub <- IV_geno[as.character(bin_IIDs_keep),]
 
