@@ -97,6 +97,8 @@ mkdir $project_dir/analysis/traitMR/IVs/Neale
 mkdir $project_dir/analysis/traitMR/household_MR
 mkdir $project_dir/analysis/traitMR/household_GWAS
 mkdir $project_dir/analysis/traitMR/standard_GWAS
+mkdir $project_dir/analysis/traitMR/household_GWAS_rev_filter
+mkdir $project_dir/analysis/traitMR/standard_GWAS_rev_filter
 mkdir $project_dir/analysis/traitMR/standard_MR
 mkdir $project_dir/analysis/traitMR/trait_info
 mkdir $project_dir/analysis/traitMR/pheno_files
