@@ -1328,7 +1328,23 @@ calc_PC_traits <- function(outcomes_to_run, path_pheno_data){
 
   cor_matrix <- calc_corr_mat_traits (outcomes_to_run, path_pheno_data)
 
-  res.pca <- prcomp((cor_matrix), scale = TRUE)
+  ## Change NA's to 0 because the cases where NA is 0 represent independent columns.
+  ## Search Neale spreadsheet for the 3 cases (2887 vs 1249, 20116_0, and 20160).
+
+  # > which(is.na(cor_matrix), arr.ind=T)
+  # row col
+  # 2887     68  12
+  # 2887     68  24
+  # 2887     68  32
+  # 1249     12  68
+  # 20116_0  24  68
+  # 20160    32  68
+
+  t <- cor_matrix
+  t[is.na(t)] <- 0
+
+
+  res.pca <- prcomp((t), scale = TRUE)
   # to visualize the PC results
   # fviz_eig(res.pca)
 
@@ -1336,11 +1352,15 @@ calc_PC_traits <- function(outcomes_to_run, path_pheno_data){
 
 }
 
+
+
 calc_num_tests_by_PCs <- function(prcomp_result, threshold){
 
   num_tests <- which(summary(prcomp_result)$importance[3,] > threshold)[1]
   return(num_tests[[1]])
 }
+
+
 
 calc_pc_trait_corr <- function(Neale_pheno_ID, pheno_data){
 
