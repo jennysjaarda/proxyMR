@@ -673,11 +673,10 @@ list(
       path_outcome_stats
       path_outcome_stats_filter
       path_outcome_stats_meta
-      run_MVMR_potential_trait_confounders(corr_potential_trait_confounders, prune_threshold)
+      run_MVMR_potential_trait_confounders(corr_potential_trait_confounders, household_MR_summary_AM, prune_threshold)
     },
     pattern = map(corr_potential_trait_confounders), iteration= "list"
   ),
-
 
   # tar_target(
   #   proxyMR_yiyp_adj_SNPmeta,

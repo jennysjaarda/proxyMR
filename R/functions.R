@@ -3555,13 +3555,26 @@ find_potential_PC_confounders <- function(Neale_pheno_ID, Neale_pheno_ID_corr, P
 
 }
 
-run_MVMR_potential_trait_confounders <- function(corr_potential_trait_confounders, prune_threshold){
+run_MVMR_potential_trait_confounders <- function(corr_potential_trait_confounders, household_MR_summary_AM, prune_threshold){
 
+  ###########################################
+  ##### STEP 1 ##############################
+  ###########################################
+
+  ## first filter potential Z's to those that have a significant AM result.
   outcome_ID <- corr_potential_trait_confounders$outcome_ID[1]
 
   cat(paste0("Running MVMR for `", outcome_ID, "` with all potential confounders.\n\n"))
 
-  ## pull the IVs for all potential trait confounders to include in the MVMR
+  ptl_cnfdrs <- corr_potential_trait_confounders$exposure_ID
+  ptl_cnfdrs_prune <- household_MR_summary_AM %>% filter(exposure_ID %in% ptl_cnfdrs) %>% filter(IVW_pval < 0.05/length(ptl_cnfdrs)) %>% pull(exposure_ID)
+
+  corr_potential_trait_confounders_prune <- corr_potential_trait_confounders %>% filter(exposure_ID %in% ptl_cnfdrs_prune)
+
+  ###########################################
+  ##### STEP 2 ##############################
+  ###########################################
+  ## Next pull the IVs for all potential trait confounders to include in the MVMR that don't show evidence of reverse causality.
 
   snps <- numeric()
   chr <- numeric()
@@ -3569,9 +3582,9 @@ run_MVMR_potential_trait_confounders <- function(corr_potential_trait_confounder
   betas <- numeric()
   ses <- numeric()
 
-  for(i in 1:dim(corr_potential_trait_confounders)[1]){
+  for(i in 1:dim(corr_potential_trait_confounders_prune)[1]){
 
-    exposure_ID <- corr_potential_trait_confounders$exposure_ID[i]
+    exposure_ID <- corr_potential_trait_confounders_prune$exposure_ID[i]
 
     GWAS_file_xIVs <- paste0("analysis/traitMR/standard_GWAS_rev_filter/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
     yi_XIV_GWAS_results <- fread(GWAS_file_xIVs, data.table = F) %>% filter(sex == "meta")
@@ -3586,25 +3599,93 @@ run_MVMR_potential_trait_confounders <- function(corr_potential_trait_confounder
 
   }
 
-  to_prune_mat <- tibble(SNP = snps,
-                         chr = chr,
-                         pval = pvals) %>% unique()
+  ###########################################
+  ##### STEP 3 ##############################
+  ###########################################
+  ## Create ranked matrix to inform how to prioritze SNPs in clumping
+
+  rank_matrix <- numeric()
+
+  for(i in 1:dim(corr_potential_trait_confounders_prune)[1]){
+
+    exposure_ID_i <- corr_potential_trait_confounders_prune$exposure_ID[i]
+    GWAS_beta_i <- numeric()
+    GWAS_se_i <- numeric()
+
+    temp_i_mat <- numeric()
+
+    for(j in 1:dim(corr_potential_trait_confounders_prune)[1]){
+
+      outcome_ID_j <- corr_potential_trait_confounders_prune$exposure_ID[j]
+
+      GWAS_file_xIVs <- paste0("analysis/traitMR/standard_GWAS/", outcome_ID_j, "/", outcome_ID_j, "_vs_", exposure_ID_i, "_GWAS_meta.csv")
+      yi_XIV_GWAS_results <- fread(GWAS_file_xIVs, data.table = F) %>% filter(sex == "meta")
+      ## this will pull the standard GWAS results for phenotype `outcome_ID` for IVs from `exposure_ID`, i.e. the effect of Gi on Yi for only X IVs.
+
+      new_col_name <- paste0(outcome_ID_j, "_pval")
+
+      outcome_ID_j_result <-yi_XIV_GWAS_results %>% dplyr::select(SNP, chr, pval) %>%
+        rename(!!new_col_name := pval)
+
+      if(j != 1){
+        temp_i_mat <- merge(temp_i_mat, outcome_ID_j_result)
+      } else temp_i_mat <- outcome_ID_j_result
+
+
+    }
+
+    rank_matrix <- rbind(rank_matrix, temp_i_mat)
+
+  }
+
+  cols <- paste0(grep('_pval', names(rank_matrix), value = TRUE), "_rank")
+
+  rank_matrix <- rank_matrix %>% unique() %>% filter(SNP %in% snps) %>%
+    mutate_at(vars(ends_with("_pval")), list(rank = ~dense_rank(.))) %>%
+    rowwise() %>%
+    mutate(min_rank = min(c_across(all_of(cols)))) %>%
+    mutate(min_rank_col =  cols[which.min(c_across(all_of(cols)))]) %>%
+    mutate(min_rank_col2 = min_rank_col) %>%
+    separate(min_rank_col2, c("min_pval_col", "remove"), "_rank") %>% dplyr::select(-remove)
+
+
+  rows <- as.numeric(1:dim(rank_matrix)[1])
+  cols_to_pull <- as.numeric(match(rank_matrix[["min_pval_col"]], colnames(rank_matrix)))
+
+  data_to_add <- as.data.frame(rank_matrix)[cbind(rows, cols_to_pull)]
+
+  rank_matrix$min_rank_pval <- data_to_add
+
+  ###########################################
+  ##### STEP 4 ##############################
+  ###########################################
+  ## Clump SNPs
+
+  to_prune_mat <- tibble(SNP = rank_matrix$SNP,
+                         chr = rank_matrix$chr,
+                         pval = rank_matrix$min_rank_pval) %>% unique()
 
   pruned_mat <- IV_clump(to_prune_mat, prune_threshold)
 
 
+  ###########################################
+  ##### STEP 5 ##############################
+  ###########################################
+  ## Create matrix of Zs (independent variables)
+  ## Model is: X ~ Z1 + Z2 + Z3 (with SNPs from `pruned_mat`)
+
   GWAS_beta_mat <- numeric()
   GWAS_se_mat <- numeric()
 
-  for(i in 1:dim(corr_potential_trait_confounders)[1]){
+  for(i in 1:dim(corr_potential_trait_confounders_prune)[1]){
 
-    exposure_ID_i <- corr_potential_trait_confounders$exposure_ID[i]
+    exposure_ID_i <- corr_potential_trait_confounders_prune$exposure_ID[i]
     GWAS_beta_i <- numeric()
     GWAS_se_i <- numeric()
 
-    for(j in 1:dim(corr_potential_trait_confounders)[1]){
+    for(j in 1:dim(corr_potential_trait_confounders_prune)[1]){
 
-      outcome_ID_j <- corr_potential_trait_confounders$exposure_ID[j]
+      outcome_ID_j <- corr_potential_trait_confounders_prune$exposure_ID[j]
 
       ## because the folder here `analysis/traitMR/standard_GWAS_rev_filter/` is filtered based on reverse causality and we selected SNPs based on no-reverse causality with our `outcome_ID`
       ## we need to select from an un-filtered set to ensure we include all SNPs from the `pruned_mat`.
@@ -3612,13 +3693,13 @@ run_MVMR_potential_trait_confounders <- function(corr_potential_trait_confounder
       ## the folder here: `analysis/traitMR/standard_GWAS/` is from Neale's original both-sex file whereas the above is meta-analyzed across sexes in house...
 
 
-      GWAS_file_xIVs <- paste0("analysis/traitMR/standard_GWAS/", outcome_ID_j, "/", outcome_ID_j, "_vs_", exposure_ID_i, "_GWAS.csv")
+      GWAS_file_xIVs <- paste0("analysis/traitMR/standard_GWAS/", outcome_ID_j, "/", outcome_ID_j, "_vs_", exposure_ID_i, "_GWAS_meta.csv")
       ## this will pull the standard GWAS results for phenotype `outcome_ID` for IVs from `exposure_ID`, i.e. the effect of Gi on Yi for only X IVs.
 
       beta_name <- paste0("beta_", outcome_ID_j)
       se_name <- paste0("se_", outcome_ID_j)
 
-      yi_XIV_GWAS_results <- fread(GWAS_file_xIVs, data.table = F) %>% filter(sex == "both_sexes") %>% filter(SNP %in% pruned_mat$SNP)
+      yi_XIV_GWAS_results <- fread(GWAS_file_xIVs, data.table = F) %>% filter(sex == "meta") %>% filter(SNP %in% pruned_mat$SNP)
 
       beta_j <- yi_XIV_GWAS_results %>% dplyr::select(SNP, beta) %>%
         rename(!!beta_name := beta)
@@ -3663,7 +3744,7 @@ run_MVMR_potential_trait_confounders <- function(corr_potential_trait_confounder
   mvmr_ses <- mv_result@StdError
   mvmr_pvalues <- mv_result@Pvalue
 
-  result_mat <-  tibble(exposure = corr_potential_trait_confounders$exposure_ID,
+  result_mat <-  tibble(exposure = corr_potential_trait_confounders_prune$exposure_ID,
                     beta = mvmvr_betas,
                     se = mvmr_ses,
                     pval = mvmr_pvalues)
