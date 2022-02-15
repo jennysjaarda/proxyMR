@@ -1290,6 +1290,9 @@ calc_corr_mat_traits <- function(outcomes_to_run, path_pheno_data){
 
   cor_matrix <- cor(calc_PC_data, use = "pairwise.complete.obs")
 
+  t <- cor_matrix
+  t[is.na(t)] <- 0
+
   return(cor_matrix)
 
 
@@ -1320,13 +1323,8 @@ calc_corr_mat_traits_all <- function(traits_all, path_pheno_data, sqc, fam, rela
 
   cor_matrix <- cor(calc_PC_data, use = "pairwise.complete.obs")
 
-  return(cor_matrix)
-
-}
-
-calc_PC_traits <- function(outcomes_to_run, path_pheno_data){
-
-  cor_matrix <- calc_corr_mat_traits (outcomes_to_run, path_pheno_data)
+  t <- cor_matrix
+  t[is.na(t)] <- 0
 
   ## Change NA's to 0 because the cases where NA is 0 represent independent columns.
   ## Search Neale spreadsheet for the 3 cases (2887 vs 1249, 20116_0, and 20160).
@@ -1340,9 +1338,13 @@ calc_PC_traits <- function(outcomes_to_run, path_pheno_data){
   # 20116_0  24  68
   # 20160    32  68
 
-  t <- cor_matrix
-  t[is.na(t)] <- 0
+  return(cor_matrix)
 
+}
+
+calc_PC_traits <- function(outcomes_to_run, path_pheno_data){
+
+  cor_matrix <- calc_corr_mat_traits (outcomes_to_run, path_pheno_data)
 
   res.pca <- prcomp((t), scale = TRUE)
   # to visualize the PC results
@@ -2983,7 +2985,6 @@ write_outcome_stats_meta <- function(exposure_info, outcomes_to_run, standard_ha
     file_list <- c(GWAS_file_i, file_list)
 
     dat <- standard_harmonised_data_meta[[i]] %>% dplyr::select(SNP, beta.outcome, se.outcome, pval.outcome, other_allele.outcome, effect_allele.outcome, eaf.outcome, samplesize.outcome)
-
 
     sex <- "meta"
 
