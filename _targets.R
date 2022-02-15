@@ -538,7 +538,7 @@ list(
   ),
 
   tar_target(
-    path_outcome_stats_filter_meta,
+    path_outcome_stats_meta,
     {
       path_outcome_dirs
       write_outcome_stats_meta(exposure_info, outcomes_to_run, standard_harmonised_data_meta, summ_stats)
