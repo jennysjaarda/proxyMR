@@ -1293,7 +1293,7 @@ calc_corr_mat_traits <- function(outcomes_to_run, path_pheno_data){
   t <- cor_matrix
   t[is.na(t)] <- 0
 
-  return(cor_matrix)
+  return(t)
 
 
 }
@@ -1338,7 +1338,7 @@ calc_corr_mat_traits_all <- function(traits_all, path_pheno_data, sqc, fam, rela
   # 20116_0  24  68
   # 20160    32  68
 
-  return(cor_matrix)
+  return(t)
 
 }
 
@@ -1346,7 +1346,7 @@ calc_PC_traits <- function(outcomes_to_run, path_pheno_data){
 
   cor_matrix <- calc_corr_mat_traits (outcomes_to_run, path_pheno_data)
 
-  res.pca <- prcomp((t), scale = TRUE)
+  res.pca <- prcomp((cor_matrix), scale = TRUE)
   # to visualize the PC results
   # fviz_eig(res.pca)
 
