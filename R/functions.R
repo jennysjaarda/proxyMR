@@ -2988,7 +2988,6 @@ write_outcome_stats_meta <- function(exposure_info, outcomes_to_run, standard_ha
 
     sex <- "meta"
 
-    dat <- get(paste0(sex, "_GWAS"))
     dat$chr <- snp_chr[match(dat$SNP, snp_chr$rsid), "chr"]
     dat <- dat %>% dplyr::select(SNP, chr, everything()) %>% mutate(outcome_ID=outcome_ID) %>% mutate(sex = !!sex) %>% mutate(exposure_ID=exposure_ID)
 
@@ -3002,6 +3001,7 @@ write_outcome_stats_meta <- function(exposure_info, outcomes_to_run, standard_ha
   }
 
   return(file_list)
+
 }
 
 filter_reverse_SNPs_standard_data <- function(exposure_info, outcomes_to_run, standard_harmonised_data_meta, reverse_MR_threshold){

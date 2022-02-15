@@ -672,6 +672,7 @@ list(
     {
       path_outcome_stats
       path_outcome_stats_filter
+      path_outcome_stats_meta
       run_MVMR_potential_trait_confounders(corr_potential_trait_confounders, prune_threshold)
     },
     pattern = map(corr_potential_trait_confounders), iteration= "list"
@@ -801,15 +802,15 @@ list(
   ## Decided that this won't work afterall since we don't have additional instruments for X_p, beyond those that are already instruments for X_i. The only way around would be to run a GWAS on X_p, but it's not worth the effort.
   ## If we change our minds the `run_household_MVMR_SNPmeta` needs some minor attention before running.
 
-  tar_target(
-    household_MVMR_sex_specific,
-    {
-      path_household_GWAS
-      path_outcome_stats
-      run_household_MVMR(exposure_info, outcomes_to_run)
-    },
-    pattern = map(exposure_info), iteration = "list"
-  ),
+  # tar_target(
+  #   household_MVMR_sex_specific,
+  #   {
+  #     path_household_GWAS
+  #     path_outcome_stats
+  #     run_household_MVMR(exposure_info, outcomes_to_run)
+  #   },
+  #   pattern = map(exposure_info), iteration = "list"
+  # ),
 
 
   # tar_target(
@@ -822,11 +823,11 @@ list(
   #   pattern = map(exposure_info), iteration = "list"
   # ),
 
-  tar_target(
-    household_MVMR_summary_MRmeta,
-    summarize_household_MVMR(household_MVMR_sex_specific, traits_corr2_filled, corr_mat_traits),
-    pattern = map(household_MVMR_sex_specific)
-  ),
+  # tar_target(
+  #   household_MVMR_summary_MRmeta,
+  #   summarize_household_MVMR(household_MVMR_sex_specific, traits_corr2_filled, corr_mat_traits),
+  #   pattern = map(household_MVMR_sex_specific)
+  # ),
 
   ## Standard MR
 
