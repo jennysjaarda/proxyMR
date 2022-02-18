@@ -2355,8 +2355,9 @@ calc_binned_pheno_corrs <- function(exposure_info, grouping_var, household_time_
   pheno_data <- list(unrelated_male_data = male_pheno_data, unrelated_female_data = female_pheno_data)
 
   household_time_data <- household_time_munge %>% dplyr::select(HOUSEHOLD_MEMBER1, HOUSEHOLD_MEMBER2, !!grouping_var)
+  # in `household_time_munge`, HOUSEHOLD_MEMBER1 is male and HOUSEOHLD_MEMBER2 is female
 
-  pheno_data_full <- rbind(pheno_data[[1]], pheno_data[[2]]) %>% dplyr::select(IID, !!expousre_phes_ID) %>%
+  pheno_data_full <- rbind(pheno_data[[1]], pheno_data[[2]]) %>% dplyr::select(IID, !!expousre_phes_ID, sex) %>%
     rename(outcome = !!expousre_phes_ID)
 
 
@@ -2373,8 +2374,10 @@ calc_binned_pheno_corrs <- function(exposure_info, grouping_var, household_time_
       group_by(bin) %>%
       filter(!is.na(bin)) %>% drop_na() %>%
       summarize(n = n(),
-                correlation=cor(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs"),
-                correlation_pval=cor.test(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs")$p.value) %>%
+                corr_pearson=cor(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs"),
+                corr_pearson_pval=cor.test(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs")$p.value,
+                corr_spearman=cor(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs", method = "spearman"),
+                corr_spearman_pval=cor.test(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs", , method = "spearman")$p.value) %>%
       mutate(group = !!group) %>% mutate(trait = !!exposure_ID) %>% dplyr::select(trait, group, everything())
 
     corr_summary <- rbind(corr_summary, summary_group)
@@ -2386,13 +2389,17 @@ calc_binned_pheno_corrs <- function(exposure_info, grouping_var, household_time_
       mutate(bin_median = median(c(as.numeric(bin_start), as.numeric(bin_stop))))
 
 
-    bin_lm <- lm(correlation ~ bin_median, data = summary_group)
+    bin_lm <- lm(corr_pearson ~ bin_median, data = summary_group)
+    bin_lm_spearman  <- lm(corr_spearman ~ bin_median, data = summary_group)
 
     lm_summary_group <- summary(bin_lm)$coefficients["bin_median",c(1,2,4)]
+    lm_spearman_summary_group <- summary(bin_lm_spearman)$coefficients["bin_median",c(1,2,4)]
 
-    names(lm_summary_group) <- c("bin_slope_beta", "bin_slope_se", "bin_slope_pval")
+    names_lm <- c("bin_slope_beta", "bin_slope_se", "bin_slope_pval")
+    names(lm_summary_group) <- paste0(names_lm, "_pearson")
+    names(lm_spearman_summary_group) <- paste0(names_lm, "_spearman")
 
-    lm_summary_group <- as.data.frame(t(lm_summary_group)) %>% as_tibble() %>%
+    lm_summary_group <- as.data.frame(cbind(t(lm_summary_group), t(lm_spearman_summary_group))) %>% as_tibble() %>%
       mutate(group = !!group) %>% mutate(trait = !!exposure_ID) %>% dplyr::select(trait, group, everything())
 
     lm_summary <- rbind(lm_summary, lm_summary_group)
@@ -3889,14 +3896,14 @@ calc_binned_household_MR_het <- function(exposure_info, outcomes_to_run, househo
         ses <-  as.numeric(group_i_result[[paste0("bin_slope_se", appendage)]])
         bin_slope_sex_het_p = z.test_p(betas[1], ses[1], betas[2], ses[2])
 
-        assign(paste0("bin_slope_sex_het_p", appendage), bin_slope_sex_het_p) #group_i_result$bin_slope_sex_het_pval <- bin_slope_sex_het_p
+        assign(paste0("bin_slope_sex_het_p_", slope), bin_slope_sex_het_p) #group_i_result$bin_slope_sex_het_pval <- bin_slope_sex_het_p
 
 
       }
 
 
-      group_i_result$bin_slope_sex_het_pval <- bin_slope_sex_het_p
-      group_i_result$bin_slope_sex_het_pval_wt <- bin_slope_sex_het_p_wt
+      group_i_result$bin_slope_sex_het_pval <- bin_slope_sex_het_p_unweighted
+      group_i_result$bin_slope_sex_het_pval_wt <- bin_slope_sex_het_p_weighted
 
       exposure_i_result <- rbind(exposure_i_result, group_i_result)
 
