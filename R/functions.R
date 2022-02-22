@@ -1013,7 +1013,9 @@ non_left_side_filter <- function(traits){
 
 non_redundant_filter <- function(traits){
   temp <- non_qual_filter(traits)
-  output <- non_left_side_filter(temp)
+  temp2 <- non_left_side_filter(temp)
+  # remove redundant BMI and weight traits
+  output <- temp2 %>% filter(Neale_pheno_ID!="23104_irnt") %>% filter(Neale_pheno_ID!="23098_irnt")
   return(output)
 }
 
@@ -2376,8 +2378,8 @@ calc_binned_pheno_corrs <- function(exposure_info, grouping_var, household_time_
       summarize(n = n(),
                 corr_pearson=cor(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs"),
                 corr_pearson_pval=cor.test(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs")$p.value,
-                corr_spearman=cor(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs", method = "spearman"),
-                corr_spearman_pval=cor.test(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs", , method = "spearman")$p.value) %>%
+                corr_spearman=cor(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs", method = "spearman", exact=FALSE),
+                corr_spearman_pval=cor.test(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs", , method = "spearman", exact=FALSE)$p.value) %>%
       mutate(group = !!group) %>% mutate(trait = !!exposure_ID) %>% dplyr::select(trait, group, everything())
 
     corr_summary <- rbind(corr_summary, summary_group)
@@ -2581,10 +2583,10 @@ run_household_GWAS <- function(exposure_info, summ_stats, outcomes_to_run, trait
     GWAS_file_i <- paste0(pheno_dir, "/household_GWAS/", outcome_ID, "/", outcome_ID, "_vs_", exposure_ID, "_GWAS.csv")
     output_files <- c(output_files, GWAS_file_i)
 
-    #if(file.exists(GWAS_file_i)) {
-    #  cat(paste0("Skipping `", outcome_ID, "` because GWAS results already exist...\n\n"))
-    #  next
-    #}
+    if(file.exists(GWAS_file_i)) {
+     cat(paste0("Skipping `", outcome_ID, "` because GWAS results already exist...\n\n"))
+     next
+    }
 
     male_file <- paste0(pheno_dir,"/pheno_files/phesant/", outcome_ID, "_male.txt")
     female_file <- paste0(pheno_dir,"/pheno_files/phesant/", outcome_ID, "_female.txt")
