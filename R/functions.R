@@ -2378,9 +2378,11 @@ calc_binned_pheno_corrs <- function(exposure_info, grouping_var, household_time_
       summarize(n = n(),
                 corr_pearson=cor(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs"),
                 corr_pearson_pval=cor.test(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs")$p.value,
-                corr_spearman=cor(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs", method = "spearman", exact=FALSE),
+                corr_spearman=cor.test(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs", method = "spearman", exact=FALSE)$estimate,
                 corr_spearman_pval=cor.test(HOUSEHOLD_MEMBER1_pheno,HOUSEHOLD_MEMBER2_pheno, use="complete.obs", , method = "spearman", exact=FALSE)$p.value) %>%
       mutate(group = !!group) %>% mutate(trait = !!exposure_ID) %>% dplyr::select(trait, group, everything())
+
+
 
     corr_summary <- rbind(corr_summary, summary_group)
 
