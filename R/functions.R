@@ -350,6 +350,20 @@ compute_trait_corr_spearman <- function(phesant_directory,UKBB_directory,pairs_f
   unique_phes_ids <- unique(phesant_directory[,2])
   trait_corr <- numeric()
   prev_file <- ""
+
+  pairs_filter_copy <- pairs_filter
+  pairs_filter_copy <- pairs_filter_copy %>%
+    mutate(HOUSEHOLD_MEMBER1_M = case_when(HOUSEHOLD_MEMBER1_sex == 1 ~ HOUSEHOLD_MEMBER1,
+                                           HOUSEHOLD_MEMBER2_sex == 1 ~ HOUSEHOLD_MEMBER2)) %>%
+
+    mutate(HOUSEHOLD_MEMBER2_F = case_when(HOUSEHOLD_MEMBER1_sex == 0 ~ HOUSEHOLD_MEMBER1,
+                                           HOUSEHOLD_MEMBER2_sex == 0 ~ HOUSEHOLD_MEMBER2)) %>%
+
+    dplyr::select(-HOUSEHOLD_MEMBER1, -HOUSEHOLD_MEMBER2) %>%
+    rename(HOUSEHOLD_MEMBER1 = HOUSEHOLD_MEMBER1_M) %>%
+    rename(HOUSEHOLD_MEMBER2 = HOUSEHOLD_MEMBER2_F)
+
+
   for (id in unique_phes_ids)
   {
     id <- as.character(id)
@@ -375,18 +389,6 @@ compute_trait_corr_spearman <- function(phesant_directory,UKBB_directory,pairs_f
     if(prev_file!=current_file)
     {tsv_data <- fread(current_file, header=TRUE, sep='\t',data.table=F)}
     r2 <- NA
-    pairs_filter_copy <- pairs_filter
-    pairs_filter_copy <- pairs_filter
-    pairs_filter_copy <- pairs_filter_copy %>%
-      mutate(HOUSEHOLD_MEMBER1_M = case_when(HOUSEHOLD_MEMBER1_sex == 1 ~ HOUSEHOLD_MEMBER1,
-                                             HOUSEHOLD_MEMBER2_sex == 1 ~ HOUSEHOLD_MEMBER2)) %>%
-
-      mutate(HOUSEHOLD_MEMBER2_F = case_when(HOUSEHOLD_MEMBER1_sex == 0 ~ HOUSEHOLD_MEMBER1,
-                                             HOUSEHOLD_MEMBER2_sex == 0 ~ HOUSEHOLD_MEMBER2)) %>%
-
-      dplyr::select(-HOUSEHOLD_MEMBER1, -HOUSEHOLD_MEMBER2) %>%
-      rename(HOUSEHOLD_MEMBER1 = HOUSEHOLD_MEMBER1_M) %>%
-      rename(HOUSEHOLD_MEMBER2 = HOUSEHOLD_MEMBER2_F)
 
     pairs_filter_copy$trait1 <- tsv_data[[id]][match(pairs_filter_copy[["HOUSEHOLD_MEMBER1"]], tsv_data$userId)]
     pairs_filter_copy$trait2 <- tsv_data[[id]][match(pairs_filter_copy[["HOUSEHOLD_MEMBER2"]], tsv_data$userId)]
@@ -398,7 +400,7 @@ compute_trait_corr_spearman <- function(phesant_directory,UKBB_directory,pairs_f
       sd2 <- sd(complete_pairs$trait2,na.rm=TRUE)
       if(sd1!=0 & sd2!=0)
       {
-        r <- cor.test(pairs_filter_copy$trait1, pairs_filter_copy$trait2, method = c("spearman"), use = "pairwise.complete.obs", exact = FALSE)$estimate
+        r <- cor(pairs_filter_copy$trait1, pairs_filter_copy$trait2, method = c("spearman"), use = "pairwise.complete.obs")
         r2 <- r^2
       }
     }
