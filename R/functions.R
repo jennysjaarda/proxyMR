@@ -408,8 +408,7 @@ compute_trait_corr_spearman <- function(phesant_directory,UKBB_directory,pairs_f
     trait_corr <- rbind(trait_corr, trait_row)
   }
   colnames(trait_corr) <- c("ID", "ID_sub", "description", "N_pairs","r2")
-  cat(paste0("Household phenotypic correlations successfully computed, and saved to:\n",
-             "'output/tables/1.household_correlations.csv'.\n"))
+
   return(as.data.frame(trait_corr))
 }
 
