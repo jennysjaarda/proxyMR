@@ -345,7 +345,8 @@ compute_trait_corr <- function(phesant_directory,UKBB_directory,pairs_filter){
   return(as.data.frame(trait_corr))
 }
 
-compute_trait_corr_fix <- function(phesant_directory,UKBB_directory,pairs_filter){
+
+compute_trait_corr_spearman <- function(phesant_directory,UKBB_directory,pairs_filter){
   unique_phes_ids <- unique(phesant_directory[,2])
   trait_corr <- numeric()
   prev_file <- ""
@@ -375,12 +376,13 @@ compute_trait_corr_fix <- function(phesant_directory,UKBB_directory,pairs_filter
     {tsv_data <- fread(current_file, header=TRUE, sep='\t',data.table=F)}
     r2 <- NA
     pairs_filter_copy <- pairs_filter
+    pairs_filter_copy <- pairs_filter
     pairs_filter_copy <- pairs_filter_copy %>%
       mutate(HOUSEHOLD_MEMBER1_M = case_when(HOUSEHOLD_MEMBER1_sex == 1 ~ HOUSEHOLD_MEMBER1,
                                              HOUSEHOLD_MEMBER2_sex == 1 ~ HOUSEHOLD_MEMBER2)) %>%
 
       mutate(HOUSEHOLD_MEMBER2_F = case_when(HOUSEHOLD_MEMBER1_sex == 0 ~ HOUSEHOLD_MEMBER1,
-                                              HOUSEHOLD_MEMBER2_sex == 0 ~ HOUSEHOLD_MEMBER2)) %>%
+                                             HOUSEHOLD_MEMBER2_sex == 0 ~ HOUSEHOLD_MEMBER2)) %>%
 
       dplyr::select(-HOUSEHOLD_MEMBER1, -HOUSEHOLD_MEMBER2) %>%
       rename(HOUSEHOLD_MEMBER1 = HOUSEHOLD_MEMBER1_M) %>%
@@ -396,8 +398,7 @@ compute_trait_corr_fix <- function(phesant_directory,UKBB_directory,pairs_filter
       sd2 <- sd(complete_pairs$trait2,na.rm=TRUE)
       if(sd1!=0 & sd2!=0)
       {
-
-        r <- cor(pairs_filter_copy$trait1, pairs_filter_copy$trait2, method = c("pearson"),use = "pairwise.complete.obs")
+        r <- cor.test(pairs_filter_copy$trait1, pairs_filter_copy$trait2, method = c("spearman"), use = "pairwise.complete.obs", exact = FALSE)$estimate
         r2 <- r^2
       }
     }
@@ -407,9 +408,11 @@ compute_trait_corr_fix <- function(phesant_directory,UKBB_directory,pairs_filter
     trait_corr <- rbind(trait_corr, trait_row)
   }
   colnames(trait_corr) <- c("ID", "ID_sub", "description", "N_pairs","r2")
+  cat(paste0("Household phenotypic correlations successfully computed, and saved to:\n",
+             "'output/tables/1.household_correlations.csv'.\n"))
   return(as.data.frame(trait_corr))
-
 }
+
 
 
 ## got below function from: https://github.com/MRCIEU/PHESANT/blob/master/WAS/testContinuous.r

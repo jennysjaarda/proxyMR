@@ -11,7 +11,7 @@ options(clustermq.scheduler = "slurm", clustermq.template = "slurm_clustermq.tmp
 tar_option_set(
   resources = tar_resources(
     clustermq = tar_resources_clustermq(template = list(num_cores = 1, account = "sgg",
-                                                        ntasks = 4, partition = "sgg",
+                                                        ntasks = 1, partition = "sgg",
                                                         log_file="/data/sgg2/jenny/projects/proxyMR/proxymr_%a_clustermq.out"))
   ),
   packages = c("tidyverse", "data.table", "cutr", "ukbtools", "rbgen", "bigsnpr", "TwoSampleMR",
@@ -201,8 +201,8 @@ list(
   # write_traits_corr = write.csv(trait_corrs, file_out( "output/tables/1.household_correlations.csv"), row.names=F),
 
   tar_target(
-    traits_corr_fix,
-    compute_trait_corr_fix(data_phesant_directory,data_UKBB_directory,hh_pairs_filter)
+    traits_corr_spearman,
+    compute_trait_corr_spearman(data_phesant_directory,data_UKBB_directory,hh_pairs_filter)
   ),
 
   tar_target(
