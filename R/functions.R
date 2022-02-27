@@ -3499,7 +3499,7 @@ prune_pheno_table <- function(data_to_prune, Neale_ID_col, corr_mat_traits, corr
 
   }
 
-  output_pruned <- output_pruned %>% rename(!!Neale_ID_col := Neale_ID) %>% dplyr::select(-Neale_ID_phes, -index_vs_trait_correlation)
+  output_pruned <- output_pruned %>% dplyr::rename(!!Neale_ID_col := Neale_ID) %>% dplyr::select(-Neale_ID_phes, -index_vs_trait_correlation)
   return(output_pruned)
 
 }
