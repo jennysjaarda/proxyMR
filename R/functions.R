@@ -3475,6 +3475,35 @@ compare_mr_raw_corr <- function(exposure_info, household_MR_binned_joint_std, tr
 
 }
 
+
+prune_pheno_table <- function(data_to_prune, Neale_ID_col, corr_mat_traits, corr_trait_threshold){
+
+  output_pruned <- data_to_prune %>% rename(Neale_ID := !!Neale_ID_col) %>% mutate(Neale_ID_phes = gsub("_irnt", "", Neale_ID))
+  counter <- 1
+  while (counter < dim(output_pruned)[1]){
+
+    index_trait_phes_ID <- output_pruned$Neale_ID_phes[counter]
+
+    corr_mat_traits_index_trait <- as.data.frame(corr_mat_traits) %>% dplyr::select(!!index_trait_phes_ID) %>% rownames_to_column(var = "exposure_ID") %>% as_tibble() %>%
+      dplyr::rename(index_vs_trait_correlation = !!index_trait_phes_ID)
+
+    temp <- output_pruned %>% left_join(corr_mat_traits_index_trait, by = c("Neale_ID_phes" = "exposure_ID"))
+
+    remove_rows <- which(temp[["index_vs_trait_correlation"]] >= corr_trait_threshold)[-1]
+
+    if(length(remove_rows)!=0){
+      output_pruned <- temp[-remove_rows,]
+    }
+
+    counter <- 1 + counter
+
+  }
+
+  output_pruned <- output_pruned %>% rename(!!Neale_ID_col := Neale_ID) %>% dplyr::select(-Neale_ID_phes, -index_vs_trait_correlation)
+  return(output_pruned)
+
+}
+
 find_potential_trait_confounders <- function(Neale_pheno_ID, Neale_pheno_ID_corr, standard_MR_summary_SNPmeta,
                                              household_MR_summary_SNPmeta, traits_corr, num_tests_by_PCs, corr_mat_traits, corr_trait_threshold){
 
