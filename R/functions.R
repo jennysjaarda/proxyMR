@@ -3478,7 +3478,7 @@ compare_mr_raw_corr <- function(exposure_info, household_MR_binned_joint_std, tr
 
 prune_pheno_table <- function(data_to_prune, Neale_ID_col, corr_mat_traits, corr_trait_threshold){
 
-  output_pruned <- data_to_prune %>% rename(Neale_ID := !!Neale_ID_col) %>% mutate(Neale_ID_phes = gsub("_irnt", "", Neale_ID))
+  output_pruned <- data_to_prune %>% dplyr::rename(Neale_ID := !!Neale_ID_col) %>% mutate(Neale_ID_phes = gsub("_irnt", "", Neale_ID))
   counter <- 1
   while (counter < dim(output_pruned)[1]){
 
