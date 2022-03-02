@@ -4824,8 +4824,8 @@ summarize_standard_MR_comprehensive_SNPmeta <- function(standard_MR_joint){
 replace_Neale_ID <- function(data, traits_corr2_filled, data_Neale_ID_col, output_column){
 
   descriptions <- traits_corr2_filled[match(data[[data_Neale_ID_col]], traits_corr2_filled$Neale_pheno_ID), "description"]
-  data[[data_Neale_ID_col]] <- descriptions
-  colnames(data)[which(colnames(data)==data_Neale_ID_col)] <- output_column
+  data[[output_column]] <- descriptions
+  #colnames(data)[which(colnames(data)==data_Neale_ID_col)] <- output_column
   return(data)
 
 }
