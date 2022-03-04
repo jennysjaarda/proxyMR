@@ -747,7 +747,7 @@ list(
 
   tar_target(
     household_MR_summary_BF_sig,
-    find_sig_household_MR_summary(household_MR_summary_corr_filter, num_tests_by_PCs)
+    find_sig_household_MR_summary(household_MR_summary_SNPmeta, num_tests_by_PCs)
   ),
 
 
