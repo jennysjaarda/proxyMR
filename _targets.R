@@ -1064,7 +1064,11 @@ list(
 
   tar_target(
     confounder_traits, # Neale IDs of confounder traits to test. Running this differently than coor/PC analysis because there is no summing across traits.
-    c("738", "845", "189_irnt", "20016_irnt") # household income, age completed education, townsend deprivation index, Fluid intelligence score
+    c("738", "845", "189_irnt", "20016_irnt", "6160_1", "6147_1", "1180")
+    # household income, age completed education, townsend deprivation index, Fluid intelligence score
+    # Leisure/social activities: Sports club or gym, Reason for glasses/contact lenses: For short-sightedness, i.e. only or mainly for distance viewing such as driving, cinema etc (called 'myopia')
+    # Morning/evening person (chronotype)
+
   ),
 
   tar_target(
