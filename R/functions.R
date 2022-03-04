@@ -4845,9 +4845,9 @@ find_non_corr_household_MR_summary <- function(household_MR_summary_joint, corr_
   return(output)
 }
 
-find_sig_household_MR_summary <- function(household_MR_summary_corr_filter){
+find_sig_household_MR_summary <- function(household_MR_summary_corr_filter, num_tests_by_PCs){
 
-  denom <- dim(household_MR_summary_corr_filter)[1]
+  denom <- num_tests_by_PCs^2
   sig_only <- household_MR_summary_corr_filter %>% filter(IVW_pval < 0.05/denom)
   return(sig_only)
 }

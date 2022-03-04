@@ -743,17 +743,19 @@ list(
     pattern = map(household_MR_SNPmeta)
   ),
 
-  ## Filter Household MR for correlation and significance
-
-  tar_target(
-    household_MR_summary_corr_filter,
-    find_non_corr_household_MR_summary(household_MR_summary_SNPmeta, corr_trait_threshold)
-  ),
+  ## Filter Household MR for significance and correlation
 
   tar_target(
     household_MR_summary_BF_sig,
-    find_sig_household_MR_summary(household_MR_summary_corr_filter)
+    find_sig_household_MR_summary(household_MR_summary_corr_filter, num_tests_by_PCs)
   ),
+
+
+  tar_target(
+    household_MR_summary_corr_filter,
+    find_non_corr_household_MR_summary(household_MR_summary_BF_sig, corr_trait_threshold)
+  ),
+
 
 
   ## Household MR analyses for only same trait (AM = assortative mating)
@@ -865,37 +867,37 @@ list(
   ## Compute rho, omega and gamma (without adjusting for $X_i$ SNPs)
   ## [We don't use these results because we only consider those from the adjusted model.]
 
-  tar_target(
-    proxyMR_comparison_sex_specific,
-    run_proxyMR_comparison(exposure_info, household_MR_summary_BF_sig, household_MR_summary_MRmeta, standard_MR_summary_MRmeta, household_MR_summary_AM_MRmeta),
-    map(exposure_info, household_MR_summary_MRmeta, standard_MR_summary_MRmeta), iteration = "list"
-  ),
-
-  tar_target(
-    proxyMR_comparison_SNPmeta,
-    run_proxyMR_comparison_SNPmeta(exposure_info, household_MR_summary_BF_sig, household_MR_summary_SNPmeta, standard_MR_summary_SNPmeta, household_MR_summary_AM),
-    map(exposure_info, household_MR_summary_SNPmeta, standard_MR_summary_SNPmeta), iteration = "list"
-  ),
-
-  tar_target(
-    proxyMR_paths_summary, ## summarize the different MR paths in each Xi -> Yp
-    summarize_proxyMR_paths(proxyMR_comparison_SNPmeta)
-  ),
-
-  tar_target(
-    proxyMR_comparison_summary, ## would need to reformat the function slightly for the sex-specific results
-    summarize_proxyMR_comparison(proxyMR_comparison_SNPmeta, traits_corr2_filled)
-  ),
-
-  tar_target(
-    proxyyMR_IV_overlap,
-    {
-      path_summ_stats
-      find_proxyMR_IV_overlap(exposure_info, proxyMR_paths_summary)
-    },
-    map(exposure_info)
-
-  ),
+  # tar_target(
+  #   proxyMR_comparison_sex_specific,
+  #   run_proxyMR_comparison(exposure_info, household_MR_summary_corr_filter, household_MR_summary_MRmeta, standard_MR_summary_MRmeta, household_MR_summary_AM_MRmeta),
+  #   map(exposure_info, household_MR_summary_MRmeta, standard_MR_summary_MRmeta), iteration = "list"
+  # ),
+  #
+  # tar_target(
+  #   proxyMR_comparison_SNPmeta,
+  #   run_proxyMR_comparison_SNPmeta(exposure_info, household_MR_summary_corr_filter, household_MR_summary_SNPmeta, standard_MR_summary_SNPmeta, household_MR_summary_AM),
+  #   map(exposure_info, household_MR_summary_SNPmeta, standard_MR_summary_SNPmeta), iteration = "list"
+  # ),
+  #
+  # tar_target(
+  #   proxyMR_paths_summary, ## summarize the different MR paths in each Xi -> Yp
+  #   summarize_proxyMR_paths(proxyMR_comparison_SNPmeta)
+  # ),
+  #
+  # tar_target(
+  #   proxyMR_comparison_summary, ## would need to reformat the function slightly for the sex-specific results
+  #   summarize_proxyMR_comparison(proxyMR_comparison_SNPmeta, traits_corr2_filled)
+  # ),
+  #
+  # tar_target(
+  #   proxyyMR_IV_overlap,
+  #   {
+  #     path_summ_stats
+  #     find_proxyMR_IV_overlap(exposure_info, proxyMR_paths_summary)
+  #   },
+  #   map(exposure_info)
+  #
+  # ),
 
   ## Adj $Y_p \sim Y_i$ associations for $X_i$ and reperform proxyMR
 
@@ -904,7 +906,7 @@ list(
     {
       path_outcome_stats_filter
       path_household_GWAS_filter
-      adj_yiyp_xIVs_sex_specific(exposure_info, household_harmonised_data_reverse_filter, household_MR_summary_BF_sig)
+      adj_yiyp_xIVs_sex_specific(exposure_info, household_harmonised_data_reverse_filter, household_MR_summary_corr_filter)
     },
     map(exposure_info, household_harmonised_data_reverse_filter)
   ),
@@ -914,7 +916,7 @@ list(
     {
       path_household_GWAS_filter
       path_outcome_stats_filter
-      adj_yiyp_xIVs_SNPmeta(exposure_info, household_harmonised_data_meta_reverse_filter, household_MR_summary_BF_sig)
+      adj_yiyp_xIVs_SNPmeta(exposure_info, household_harmonised_data_meta_reverse_filter, household_MR_summary_corr_filter)
     },
     map(exposure_info, household_harmonised_data_meta_reverse_filter)
   ),
@@ -924,7 +926,7 @@ list(
 
   tar_target(
     proxyMR_comparison_yiyp_adj_SNPmeta,
-    run_proxyMR_comparison_adj_yiyp_SNPmeta(exposure_info, household_MR_summary_BF_sig, household_MR_summary_SNPmeta, standard_MR_summary_SNPmeta, household_MR_summary_AM, proxyMR_yiyp_adj_SNPmeta),
+    run_proxyMR_comparison_adj_yiyp_SNPmeta(exposure_info, household_MR_summary_corr_filter, household_MR_summary_SNPmeta, standard_MR_summary_SNPmeta, household_MR_summary_AM, proxyMR_yiyp_adj_SNPmeta),
     map(exposure_info, household_MR_summary_SNPmeta, standard_MR_summary_SNPmeta), iteration = "list"
   ),
 
@@ -940,7 +942,7 @@ list(
 
   tar_target(
     proxyMR_comparison_summary_yiyp_adj_SNPmeta_prune, ##  if there is a pair A-B and C-D and if max(corr(A,C)*corr(B,D),corr(A,D)*corr(B,C)) > `corr_trait_threshold` [0.8]
-    prune_proxyMR_comparison_SNPmeta(proxyMR_comparison_summary_yiyp_adj_SNPmeta, household_MR_summary_BF_sig, corr_mat_traits, corr_trait_threshold)
+    prune_proxyMR_comparison_SNPmeta(proxyMR_comparison_summary_yiyp_adj_SNPmeta, household_MR_summary_corr_filter, corr_mat_traits, corr_trait_threshold)
   ),
 
   ## Add z's to proxyMR
