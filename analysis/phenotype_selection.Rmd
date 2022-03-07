@@ -59,7 +59,7 @@ Limited to only traits that were processed by Neale and had both sex-specific an
 
 Number remaining after filter = **`r length(unique(Neale_SGG_dir_filt$phenotype))`**.
 
-The traits that *are* in the SGG database but were **not** included due to Neale filtering can be seen below. Can compare with the [Neale Manifest](https://docs.google.com/spreadsheets/d/1kvPoupSzsSFBNSztMzl04xMoSC3Kcx3CrjVf4yBmESU/edit?ts=5b5f17db#gid=178908679) (search by ID) to get a sense of why traits were excluded (likely there is not a GWAS file for `both_sexes`, `male` and `female`).
+The traits that *are* in the SGG database but were **not** included due to Neale filtering can be seen below. Can compare with the [Neale Manifest](https://docs.google.com/spreadsheets/d/1kvPoupSzsSFBNSztMzl04xMoSC3Kcx3CrjVf4yBmESU/edit?ts=5b5f17db#gid=178908679) (search by ID) to get a sense of why traits were excluded (likely there is not a GWAS file for `both_sexes`, `male` and `female`). *Many* are MRI mesaures that Neale did not analyse.
 
 ```{r SGG_Neale_non_link, echo=FALSE}
 
