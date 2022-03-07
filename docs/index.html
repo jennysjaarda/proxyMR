@@ -386,7 +386,7 @@ div.tocify {
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2021-09-15
+<strong>Last updated:</strong> 2022-03-07
 </p>
 <p>
 <strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 2 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
@@ -417,16 +417,16 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtree49882d8b5288f731e09d0334b5f7b9c5a997a2d8targetblank49882d8a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/jennysjaarda/proxyMR/tree/49882d8b5288f731e09d0334b5f7b9c5a997a2d8" target="_blank">49882d8</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtree2f29983d257882c3ee1d9664dcedeba310eb4f12targetblank2f29983a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/jennysjaarda/proxyMR/tree/2f29983d257882c3ee1d9664dcedeba310eb4f12" target="_blank">2f29983</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtree49882d8b5288f731e09d0334b5f7b9c5a997a2d8targetblank49882d8a" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomjennysjaardaproxyMRtree2f29983d257882c3ee1d9664dcedeba310eb4f12targetblank2f29983a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://github.com/jennysjaarda/proxyMR/tree/49882d8b5288f731e09d0334b5f7b9c5a997a2d8" target="_blank">49882d8</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://github.com/jennysjaarda/proxyMR/tree/2f29983d257882c3ee1d9664dcedeba310eb4f12" target="_blank">2f29983</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -436,22 +436,23 @@ Ignored files:
     Ignored:    .DS_Store
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
-    Ignored:    fig_test.RData
-    Ignored:    household_MR_exhaustive_summary.rds
-    Ignored:    proxyMR_comparison.RData
     Ignored:    proxyMR_figure_data.RData
     Ignored:    renv/library/
     Ignored:    renv/local/
     Ignored:    renv/staging/
-    Ignored:    traits_corr2_update.rds
 
 Untracked files:
     Untracked:  R/proxyMR_figures.R
     Untracked:  R/proxyMR_hiercharchy.R
+    Untracked:  analysis/project_status.Rmd
 
 Unstaged changes:
     Modified:   R/functions.R
+    Modified:   _targets.R
+    Modified:   analysis/meetings.Rmd
+    Modified:   analysis/phenotype_selection.Rmd
     Modified:   analysis/todo_list.Rmd
+    Modified:   analysis/update_meeting_15_10_2021.Rmd
 
 </code></pre>
 <p>
@@ -490,6 +491,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/jennysjaarda/proxyMR/blob/2f29983d257882c3ee1d9664dcedeba310eb4f12/analysis/index.Rmd" target="_blank">2f29983</a>
+</td>
+<td>
+jennysjaarda
+</td>
+<td>
+2022-03-07
+</td>
+<td>
+wflow_publish(“analysis/index.Rmd”)
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/jennysjaarda/proxyMR/e0e1d69accf578dc94e4dcb03afa630ee20346e8/docs/index.html" target="_blank">e0e1d69</a>
+</td>
+<td>
+jennysjaarda
+</td>
+<td>
+2021-09-15
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -721,13 +756,17 @@ Start workflowr project.
 <p>Current tasks and completed tasks (roughly organized by dates/weeks).</p>
 </div>
 <div id="project-workflow-status" class="section level2 unnumbered">
-<h2 class="unnumbered"><a href="status.html">Project Workflow Status</a></h2>
+<h2 class="unnumbered"><a href="project_status.html">Project Workflow Status</a></h2>
 <p>This notebook displays the computational status of the project, that is, whether everything is up to date. Ironically, this is currently the only notebook that must be run manually, so this notebook only displays the status <strong>when the notebook was last executed</strong> and there is no indication whether the project status has changed since then.</p>
 <p>This project uses the <a href="https://wlandau.github.io/targets/"><code>targets</code></a> and <a href="https://github.com/jdblischak/workflowr"><code>workflowr</code></a> packages for managing the workflow of the project (making sure that the dependencies between computational steps are satisfied).</p>
 </div>
 <div id="meetings" class="section level2 unnumbered">
 <h2 class="unnumbered"><a href="meetings.html">Meetings</a></h2>
 <p>Weekly meeting were held roughly once per week or every other week.</p>
+</div>
+<div id="manuscript" class="section level2 unnumbered">
+<h2 class="unnumbered"><a href="manuscript.html">Manuscript</a></h2>
+<p>Document with a final summary of the analyses and tables for the manuscript.</p>
 <hr />
 </div>
 </div>
@@ -795,7 +834,7 @@ Start workflowr project.
 </div>
 <div id="acknowledgements" class="section level1 unnumbered">
 <h1 class="unnumbered">Acknowledgements</h1>
-<p>Primary analysis performed by: <a href="jennysjaarda@gmail.com">Jenny Sjaarda</a>.</p>
+<p>Primary analysis performed by: <a href="https://wp.unil.ch/sgg/people/jenny-sjaarda/">Jenny Sjaarda</a>.</p>
 <p>Project supervisor: <a href="https://wp.unil.ch/sgg/people/zoltan/">Professor Zoltan Kutalik</a>.</p>
 <p>This work has been supported by the <a href="http://www.snf.ch/en/funding/Pages/default.aspx">Swiss National Science Foundation</a>.</p>
 </div>
