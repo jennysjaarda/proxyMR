@@ -34,7 +34,7 @@ later project or manuscript development.
 
 Current tasks and completed tasks (roughly organized by dates/weeks).
 
-## [Project Workflow Status](status.html) {.unnumbered}
+## [Project Workflow Status](project_status.html) {.unnumbered}
 
 This notebook displays the computational status of the project, that is, whether everything is up to date. Ironically, this is currently the only notebook that must be run manually, so this notebook only displays the status **when the notebook was last executed** and there is no indication whether the project status has changed since then.
 
@@ -43,6 +43,10 @@ This project uses the [`targets`](https://wlandau.github.io/targets/) and [`work
 ## [Meetings](meetings.html) {.unnumbered}
 
 Weekly meeting were held roughly once per week or every other week. 
+
+## [Manuscript](manuscript.html) {.unnumbered}
+
+Document with a final summary of the analyses and tables for the manuscript. 
 
 ------------------------------------------------------------------------
 
@@ -101,7 +105,7 @@ Final list of phenotypes for analysis in pipeline and some basic characteristics
 
 # Acknowledgements {.unnumbered}
 
-Primary analysis performed by: [Jenny Sjaarda](jennysjaarda@gmail.com).
+Primary analysis performed by: [Jenny Sjaarda](https://wp.unil.ch/sgg/people/jenny-sjaarda/).
 
 Project supervisor: [Professor Zoltan Kutalik](https://wp.unil.ch/sgg/people/zoltan/).
 
