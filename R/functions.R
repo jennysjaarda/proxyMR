@@ -3538,7 +3538,7 @@ find_potential_trait_confounders <- function(Neale_pheno_ID, Neale_pheno_ID_corr
 
   # prune remaining by prioritizing those with highest `corr_due_to_confounding_ratio`
 
-  output_pruned <- output
+  output_pruned <- output %>% mutate(index_vs_trait_correlation = NA)
   counter <- 1
   while (counter < dim(output_pruned)[1]){
 
