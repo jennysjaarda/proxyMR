@@ -1689,7 +1689,7 @@ calc_corr_impact_by_traits_causal <- function( trait_interest, standard_MR_summa
   trait_interest_phes_ID <- gsub("_irnt", "", trait_interest)
   trait_interest_couple_r2 <- as.numeric(traits_corr[which(traits_corr$ID==trait_interest_phes_ID),"r2"])
   trait_interest_couple_r <- sqrt(trait_interest_couple_r2)
-  trait_interest_n_pairs <- as.numeric(traits_corr[which(traits_corr$ID==phes_ID),"N_pairs"])
+  trait_interest_n_pairs <- as.numeric(traits_corr[which(traits_corr$ID==trait_interest_phes_ID),"N_pairs"])
   trait_interest_couple_r_se <- sqrt((1-trait_interest_couple_r^2)/(trait_interest_n_pairs-2))
 
   AM_MR <- household_MR_summary_SNPmeta %>% filter(same_trait) %>% dplyr::select(exposure_ID, IVW_beta, IVW_se, IVW_pval) %>%
@@ -1698,7 +1698,7 @@ calc_corr_impact_by_traits_causal <- function( trait_interest, standard_MR_summa
     dplyr::rename(exposure_ID_AM_IVW_se = IVW_se) %>%
     dplyr::rename(exposure_ID_AM_IVW_pval = IVW_pval)
 
-  output <- standard_MR_summary_SNPmeta %>% filter(exposure_ID==trait_interest_phes_ID) %>%
+  output <- standard_MR_summary_SNPmeta %>% filter(exposure_ID==trait_interest) %>%
     left_join(AM_MR, by = "exposure_ID") %>%
     mutate(corr_due_to_confounding = IVW_beta^2*exposure_ID_AM_IVW_beta) %>%
     mutate(outcome_ID_phes = gsub("_irnt", "", outcome_ID)) %>%
