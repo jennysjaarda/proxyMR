@@ -1061,7 +1061,9 @@ list(
   #   pattern = map(path_bgenie_pcs), format = "file"
   # ),
 
-  ## Confounder analysis
+  ## Assessing the impact of some potential / important confounders braodly
+
+  ## We did this by calculating the correlation due to confounding with two approachs (1) using the correlation as input and (2) causal effects as input.
 
   tar_target(
     corr_impact_by_PCs,
@@ -1078,7 +1080,7 @@ list(
 
   tar_target(
     confounder_traits, # Neale IDs of confounder traits to test. Running this differently than coor/PC analysis because there is no summing across traits.
-    c("738", "845", "189_irnt", "20016_irnt", "6160_1", "6147_1", "1180")
+    c("738", "845", "189_irnt", "20016_irnt", "6160_1", "6147_1", "1180", "129", "130")
     # household income, age completed education, townsend deprivation index, Fluid intelligence score
     # Leisure/social activities: Sports club or gym, Reason for glasses/contact lenses: For short-sightedness, i.e. only or mainly for distance viewing such as driving, cinema etc (called 'myopia')
     # Morning/evening person (chronotype)
@@ -1089,6 +1091,13 @@ list(
     corr_impact_by_traits,
     calc_corr_impact_by_traits(outcomes_to_run, traits_corr, corr_mat_traits_all, confounder_traits,
                                traits_corr2_filled, path_pheno_data, data_sqc, data_fam, data_relatives),
+    pattern = map(confounder_traits)
+  ),
+
+  tar_target(
+    corr_impact_by_traits_causal,
+    calc_corr_impact_by_traits_causal(confounder_traits, standard_MR_summary_SNPmeta,
+                                      household_MR_summary_SNPmeta, traits_corr),
     pattern = map(confounder_traits)
   )
 

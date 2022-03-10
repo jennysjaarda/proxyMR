@@ -1680,6 +1680,48 @@ calc_corr_impact_by_traits <- function(outcomes_to_run, traits_corr, corr_mat_tr
 }
 
 
+calc_corr_impact_by_traits_causal <- function( trait_interest, standard_MR_summary_SNPmeta,
+           household_MR_summary_SNPmeta, traits_corr){
+
+    # here `Neale_pheno_ID` is used as the outcome_ID, because we are trying to find potential confounders that have an impact on this `Neale_pheno_ID`.
+    # `Neale_pheno_ID_corr` refers to the couple correlation for `Neale_pheno_ID`.
+
+  trait_interest_phes_ID <- gsub("_irnt", "", trait_interest)
+  trait_interest_couple_r2 <- as.numeric(traits_corr[which(traits_corr$ID==trait_interest_phes_ID),"r2"])
+  trait_interest_couple_r <- sqrt(trait_interest_couple_r2)
+  trait_interest_n_pairs <- as.numeric(traits_corr[which(traits_corr$ID==phes_ID),"N_pairs"])
+  trait_interest_couple_r_se <- sqrt((1-trait_interest_couple_r^2)/(trait_interest_n_pairs-2))
+
+  AM_MR <- household_MR_summary_SNPmeta %>% filter(same_trait) %>% dplyr::select(exposure_ID, IVW_beta, IVW_se, IVW_pval) %>%
+    filter(exposure_ID==trait_interest) %>%
+    dplyr::rename(exposure_ID_AM_IVW_beta = IVW_beta) %>%
+    dplyr::rename(exposure_ID_AM_IVW_se = IVW_se) %>%
+    dplyr::rename(exposure_ID_AM_IVW_pval = IVW_pval)
+
+  output <- standard_MR_summary_SNPmeta %>% filter(exposure_ID==trait_interest_phes_ID) %>%
+    left_join(AM_MR, by = "exposure_ID") %>%
+    mutate(corr_due_to_confounding = IVW_beta^2*exposure_ID_AM_IVW_beta) %>%
+    mutate(outcome_ID_phes = gsub("_irnt", "", outcome_ID)) %>%
+    left_join(traits_corr %>% dplyr::select(ID, r2, N_pairs), by = c("outcome_ID_phes" = "ID")) %>%
+    dplyr::rename(outcome_ID_couple_r2 = r2) %>%
+    mutate(outcome_ID_couple_r2 = as.numeric(outcome_ID_couple_r2)) %>%
+    mutate(N_pairs = as.numeric(N_pairs)) %>%
+
+    mutate(outcome_ID_couple_r = sqrt(outcome_ID_couple_r2)) %>%
+    mutate(outcome_ID_couple_r_se = sqrt((1-outcome_ID_couple_r^2)/(N_pairs-2))) %>%
+
+    mutate(corr_due_to_confounding_ratio = corr_due_to_confounding/outcome_ID_couple_r) %>%
+    mutate(IVW_sq_se = sqrt(4*IVW_beta^2*IVW_se^2+2*IVW_se^4)) %>%
+    mutate(corr_due_to_confounding_var = variance_of_product(IVW_beta^2, IVW_sq_se, exposure_ID_AM_IVW_beta, exposure_ID_AM_IVW_se)) %>%
+    mutate(corr_due_to_confounding_se = sqrt(corr_due_to_confounding_var)) %>%
+    dplyr::select(exposure_ID, outcome, outcome_ID_couple_r, outcome_ID_couple_r_se,
+                  corr_due_to_confounding, corr_due_to_confounding_se, corr_due_to_confounding_ratio)
+
+  return(output)
+
+
+}
+
 write_data_prep <- function(traits, traits_to_run, out1, out2){
 
   for(i in 1:dim(traits_to_run)[1]){
