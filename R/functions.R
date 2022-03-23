@@ -1714,7 +1714,7 @@ calc_corr_impact_by_traits_causal <- function( trait_interest, standard_MR_summa
     mutate(IVW_sq_se = sqrt(4*IVW_beta^2*IVW_se^2+2*IVW_se^4)) %>%
     mutate(corr_due_to_confounding_var = variance_of_product(IVW_beta^2, IVW_sq_se, exposure_ID_AM_IVW_beta, exposure_ID_AM_IVW_se)) %>%
     mutate(corr_due_to_confounding_se = sqrt(corr_due_to_confounding_var)) %>%
-    dplyr::select(exposure_ID, outcome, outcome_ID_couple_r, outcome_ID_couple_r_se,
+    dplyr::select(exposure_ID, outcome_ID, outcome_ID_couple_r, outcome_ID_couple_r_se,
                   corr_due_to_confounding, corr_due_to_confounding_se, corr_due_to_confounding_ratio)
 
   return(output)
@@ -2251,6 +2251,43 @@ summarize_mr_result <- function(exposure, outcome, exposure_sex, outcome_sex, ns
                      "IVW_beta", "IVW_se", "IVW_pval", "IVW_summary", "IVW_pval_round",
                      "Egger_beta", "Egger_se", "Egger_pval", "Egger_summary", "Egger_pval_round",
                      "Egger_int_pval", "Het_IVW_Qpval", "Egger_int_pval_round", "Het_IVW_Qpval_round")
+  return(out)
+}
+
+summarize_mr_result_sensitivity <- function(exposure, outcome, exposure_sex, outcome_sex, nsnps, MR_res,n_exposure,n_outcome){
+  out <- cbind(exposure, outcome, exposure_sex, outcome_sex, nsnps, n_exposure,n_outcome)
+  if(nsnps==1)
+  {
+
+    for(method in c("Weighted median","Weighted mode"))
+    {
+      row <- which(MR_res[,"method"]==method)
+      if(any(is.na(MR_res[row,c("b","se","pval")])))
+      {
+        out <- cbind(out, NA, NA, NA, NA, NA)
+      } else {
+        b.ci <- make_beta_95ci(MR_res[row,"b"],MR_res[row,"se"])
+        pval <- pretty_round(MR_res[row,"pval"])
+        out <- cbind(out, MR_res[row,"b"],MR_res[row,"se"], MR_res[row,"pval"], b.ci, pval)
+      }
+    }
+    out <- cbind(out, egger_pval,het_IVW_pval, egger_pval_round, het_IVW_pval_round)
+  }
+  if(nsnps>1)
+  {
+
+    for(method in c("Weighted median","Weighted mode"))
+    {
+      row <- which(MR_res[,"method"]==method)
+      b.ci <- make_beta_95ci(MR_res[row,"b"],MR_res[row,"se"])
+      pval <- pretty_round(MR_res[row,"pval"])
+      out <- cbind(out, MR_res[row,"b"],MR_res[row,"se"], MR_res[row,"pval"], b.ci, pval)
+    }
+
+  }
+  colnames(out) <- c("exposure", "outcome", "exposure_sex","outcome_sex","N_snps", "N_exposure_GWAS", "N_outcome_GWAS",
+                     "wt_median_beta", "wt_median_se", "wt_median_pval", "wt_median_summary", "wt_median_pval_round",
+                     "wt_mode_beta", "wt_mode_se", "wt_mode_pval", "wt_mode_summary", "wt_mode_pval_round")
   return(out)
 }
 
@@ -3507,8 +3544,8 @@ compare_mr_raw_corr <- function(exposure_info, household_MR_binned_joint_std, tr
   MR_result$couple_r <- couple_r
   MR_result$couple_r_se <- r_se
 
-  MR_result$diff_z <- z.test(abs(MR_result[["IVW_beta"]]), MR_result[["IVW_se"]], abs(MR_result[["couple_r"]]), MR_result[["couple_r_se"]])$statistic
-  MR_result$diff_p <- z.test(abs(MR_result[["IVW_beta"]]), MR_result[["IVW_se"]], abs(MR_result[["couple_r"]]), MR_result[["couple_r_se"]])$p
+  MR_result$diff_z <- z.test((MR_result[["IVW_beta"]]), MR_result[["IVW_se"]], (MR_result[["couple_r"]]), MR_result[["couple_r_se"]])$statistic
+  MR_result$diff_p <- z.test((MR_result[["IVW_beta"]]), MR_result[["IVW_se"]], (MR_result[["couple_r"]]), MR_result[["couple_r_se"]])$p
 
   MR_result$correlation_larger <- ifelse(MR_result$couple_r > MR_result$IVW_beta, TRUE, FALSE)
 
@@ -4304,6 +4341,90 @@ run_household_MR_comprehensive_SNPmeta <- function(exposure_info, outcomes_to_ru
   return(output_list)
 
 }
+
+
+household_MR_sensitivity_ind <- function(harmonise_dat){
+
+
+  exposure_ID <- harmonise_dat$exposure_ID[1]
+  outcome_ID <- harmonise_dat$outcome_ID[1]
+  exposure_sex <- harmonise_dat$exposure_sex[1]
+  outcome_sex <- harmonise_dat$outcome_sex[1]
+
+  if(is.null(exposure_sex)){
+    exposure_sex <- NA
+    outcome_sex <- NA
+  }
+
+
+  harmonise_dat <- harmonise_dat %>%
+    mutate(z_score.exposure = beta.exposure / se.exposure) %>%
+    mutate(z_score.outcome = beta.outcome / se.outcome) %>%
+    mutate(std_beta.exposure = z_score.exposure / sqrt(samplesize.exposure)) %>%
+    mutate(std_beta.outcome = z_score.outcome / sqrt(samplesize.outcome)) %>%
+    mutate(std_se.exposure = 1 / sqrt(samplesize.exposure)) %>%
+    mutate(std_se.outcome = 1 / sqrt(samplesize.outcome)) %>%
+    mutate(std_t_stat = (abs(std_beta.exposure) - abs(std_beta.outcome)) /
+             sqrt(std_se.exposure^2 + std_se.outcome^2))
+
+  harmonise_dat <- harmonise_dat %>% dplyr::select(-beta.exposure, -se.exposure, -beta.outcome, -se.outcome) %>%
+    rename(beta.exposure = std_beta.exposure) %>% rename(se.exposure = std_se.exposure) %>%
+    rename(beta.outcome = std_beta.outcome) %>% rename(se.outcome = std_se.outcome)
+
+
+  exposure_description <- harmonise_dat$exposure_description[1]
+  outcome_description <- harmonise_dat$outcome_description[1]
+
+
+  ngwas <- max(harmonise_dat$samplesize.outcome, na.rm=T)
+  nsnps <- dim(harmonise_dat)[1]
+  n_neale <- max(harmonise_dat$samplesize.exposure, na.rm=T)
+
+  # Standard MR
+  original_MR <- mr(harmonise_dat, method=c("mr_weighted_median", "mr_weighted_mode"))
+  MR_res <- include_MR_NA(original_MR)
+
+  temp_summary <- summarize_mr_result_sensitivity (paste0(exposure_ID,"_INDEX"), paste0(outcome_ID,"_HOUSEHOLD"), exposure_sex, outcome_sex, nsnps, MR_res, n_neale, ngwas)
+
+
+  same_trait <- exposure_ID == outcome_ID
+  MR_summary <- cbind(exposure_ID, outcome_ID,exposure_description, outcome_description, same_trait, temp_summary)
+
+  MR_summary <- MR_summary %>% as_tibble() %>% type_convert() %>% mutate_at(c("exposure_ID", "outcome_ID"), as.character)
+
+  return(MR_sensitivity = MR_summary)
+
+}
+
+
+run_household_MR_SNPmeta_sensitivity <- function(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter){
+
+  output_list <- list()
+  exposure_ID <- exposure_info %>% filter(Value=="trait_ID") %>% pull(Info)
+
+  cat(paste0("\nRunning some more sensitivity MR analyses for all outcomes with phenotype `", exposure_ID, "`\nas exposure (i.e. weighted median/mode). \n[This is only being run in full sample, not in individual bins.]\n\n"))
+
+  for(i in 1:dim(outcomes_to_run)[1]){
+
+    outcome_ID <- outcomes_to_run$Neale_pheno_ID[[i]]
+    MR_complete_i <- list()
+
+    harmonised_dat_i <- household_harmonised_data_meta_reverse_filter[[paste0(outcome_ID, "_vs_", exposure_ID, "_harmonised_data_meta_filter")]]
+    harmonised_dat_sub <- harmonised_dat_i %>% filter(grouping_var == "age_even_bins") %>% filter(bin == "all")
+    MR_complete_i <- household_MR_sensitivity_ind(harmonised_dat_sub)
+
+
+    output_list[[paste0(outcome_ID, "_vs_", exposure_ID, "_MR_sensitivity")]] <- MR_complete_i
+
+    cat(paste0("Finished computing full MR results for outcome ", i, " of ", dim(outcomes_to_run)[1], ".\n\n" ))
+
+  }
+
+  output <- bind_rows(output_list)
+  return(output)
+
+}
+
 
 
 run_household_MVMR <- function(exposure_info, outcomes_to_run){
@@ -7588,6 +7709,52 @@ xy_plot_binned_single_sex <- function(harmonised_data, MR_binned, exposure_sex, 
 
 
 }
+
+create_binned_pheno_figs <- function(binned_pheno_corrs, exposure_info, grouping_var){
+
+  trait_description <- as.character(exposure_info[which(exposure_info=="description"), "Info"])
+
+
+  for(group in c("age_even_bins", "time_together_even_bins")){
+
+    fig_data <- binned_pheno_corrs[[1]] %>% filter(group == !!group)  %>% separate(bin, c("bin_start_temp", "bin_stop_temp"), ",", remove = F) %>% mutate(bin_start = substring(bin_start_temp, 2)) %>%
+      mutate(bin_stop = str_sub(bin_stop_temp,1,nchar(bin_stop_temp)-1)) %>% rowwise() %>%
+      mutate(bin_median = median(c(as.numeric(bin_start), as.numeric(bin_stop))))
+
+
+    plot <- ggplot2::ggplot(data = fig_data, ggplot2::aes(x = bin_median,
+                                                          y = corr_pearson)) +
+      geom_smooth(method="lm",formula=y~x, se = F, fullrange = T, color = custom_col[2], linetype = "dashed") +
+      ggplot2::geom_errorbar(ggplot2::aes(ymin = IVW_beta - IVW_se, ymax = IVW_beta + IVW_se),
+                             colour = "grey", width = 0) +
+      ggplot2::geom_point(color = custom_col[2]) +
+      scale_x_continuous(breaks=x_ticks, limits = c(min(x_ticks)-2, max(x_ticks)+2),
+                         labels = x_labels) +
+
+      theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(),
+                         panel.grid.minor = element_blank(), axis.line=element_blank(),
+                         axis.title.x = element_text(margin = unit(c(3, 0, 0, 0), "mm")),
+                         axis.title.y = element_text(margin = unit(c(0, 3, 0, 0), "mm"))) +
+
+      ggplot2::labs(colour = legend_title, x =xlab,
+                    y = paste0("AM MR estimate for\n", tolower(trait_description) ,"\n(meta-analyzed across sexes)"))
+
+
+
+    #xy_sex_spec <- xy_plot_binned_sex_specifc(household_harmonised_data.AM, household_MR_binned_MRmeta.AM, group, custom_col)
+    #xy_meta <- xy_plot_binned_meta(household_harmonised_data_meta.AM, household_MR_binned_SNPmeta.AM, group, custom_col)
+
+
+    #assign(paste0("FP_sex_specific_", group, "_fig"), fp_sex_spec)
+    #assign(paste0("FP_", group, "_fig"), fp_meta)
+    assign(paste0("XY_sex_specific_", group, "_fig"), xy_sex_spec)
+
+    assign(paste0("XY_", group, "_fig"), xy_meta)
+
+  }
+
+}
+
 
 create_MR_binned_AM_figs <- function(household_harmonised_data_meta_reverse_filter, household_harmonised_data_reverse_filter,
                                      household_MR_binned_SNPmeta, household_MR_binned_MRmeta, custom_col){

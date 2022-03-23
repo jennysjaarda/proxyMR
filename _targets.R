@@ -472,6 +472,15 @@ list(
     pattern = map(exposure_info)
   ),
 
+  tar_target(
+    binned_pheno_figs,
+    {
+      create_binned_pheno_figs(binned_pheno_corrs, exposure_info, grouping_var)
+    },
+    iteration = "list",
+    pattern = map(binned_pheno_corrs, exposure_info)
+  ),
+
   ## household MR prep
 
   tar_target(
@@ -635,7 +644,7 @@ list(
   ),
 
   # tar_target(
-  ## No longer run becaus all effects are standardized first.
+  ## No longer run because all effects are standardized first.
   #   household_MR_binned_SNPmeta_std, # MR results run in data meta-analyzed at SNP-level. SNP effects were standardized first.
   #   run_binned_household_MR_SNPmeta_std(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, grouping_var, MR_method_list = MR_method_list),
   #   pattern = map(exposure_info, household_harmonised_data_meta_reverse_filter), iteration = "list"
@@ -738,6 +747,12 @@ list(
   tar_target(
     household_MR_SNPmeta, ## `household_MR_SNPmeta` is run in full sample only, not binned by age / time-together categories (meta-analyzed at SNP-level).
     run_household_MR_comprehensive_SNPmeta(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter, MR_method_list),
+    pattern = map(exposure_info, household_harmonised_data_meta_reverse_filter), iteration = "list"
+  ),
+
+  tar_target(
+    household_MR_SNPmeta_sensitivity, ## `household_MR_SNPmeta_sensitivity` is run in full sample only, not binned by age / time-together categories (meta-analyzed at SNP-level).
+    run_household_MR_SNPmeta_sensitivity(exposure_info, outcomes_to_run, household_harmonised_data_meta_reverse_filter),
     pattern = map(exposure_info, household_harmonised_data_meta_reverse_filter), iteration = "list"
   ),
 
@@ -1080,7 +1095,7 @@ list(
 
   tar_target(
     confounder_traits, # Neale IDs of confounder traits to test. Running this differently than coor/PC analysis because there is no summing across traits.
-    c("738", "845", "189_irnt", "20016_irnt", "6160_1", "6147_1", "1180", "129", "130")
+    c("738", "845", "189_irnt", "20016_irnt", "6160_1", "6147_1", "1180", "129_irnt", "130_irnt")
     # household income, age completed education, townsend deprivation index, Fluid intelligence score
     # Leisure/social activities: Sports club or gym, Reason for glasses/contact lenses: For short-sightedness, i.e. only or mainly for distance viewing such as driving, cinema etc (called 'myopia')
     # Morning/evening person (chronotype)
