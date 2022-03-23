@@ -688,16 +688,18 @@ list(
     pattern = map(couple_MR_vs_trait_corr_sig)
   ),
 
-  tar_target(
-    potential_trait_confounders_MVMR,
-    {
-      path_outcome_stats
-      path_outcome_stats_filter
-      path_outcome_stats_meta
-      run_MVMR_potential_trait_confounders(corr_potential_trait_confounders, household_MR_summary_AM, prune_threshold)
-    },
-    pattern = map(corr_potential_trait_confounders), iteration= "list"
-  ),
+  # decided to scrap the MVMR model with C-sum
+
+  # tar_target(
+  #   potential_trait_confounders_MVMR,
+  #   {
+  #     path_outcome_stats
+  #     path_outcome_stats_filter
+  #     path_outcome_stats_meta
+  #     run_MVMR_potential_trait_confounders(corr_potential_trait_confounders, household_MR_summary_AM, prune_threshold)
+  #   },
+  #   pattern = map(corr_potential_trait_confounders), iteration= "list"
+  # ),
 
 
   # tar_target(
