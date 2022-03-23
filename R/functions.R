@@ -7717,15 +7717,22 @@ create_binned_pheno_figs <- function(binned_pheno_corrs, exposure_info, grouping
 
   for(group in c("age_even_bins", "time_together_even_bins")){
 
+
     fig_data <- binned_pheno_corrs[[1]] %>% filter(group == !!group)  %>% separate(bin, c("bin_start_temp", "bin_stop_temp"), ",", remove = F) %>% mutate(bin_start = substring(bin_start_temp, 2)) %>%
       mutate(bin_stop = str_sub(bin_stop_temp,1,nchar(bin_stop_temp)-1)) %>% rowwise() %>%
-      mutate(bin_median = median(c(as.numeric(bin_start), as.numeric(bin_stop))))
+      mutate(bin_median = median(c(as.numeric(bin_start), as.numeric(bin_stop)))) %>%
+      mutate(corr_pearson_se = sqrt((1-corr_pearson^2)/(n-2)))
 
+
+    x_ticks <- unique(fig_data %>% pull(bin_median))
+    x_labels <- unique(fig_data %>% pull(bin))
+
+    xlab <- ifelse(group == "time_together_even_bins", "Time together in same household (years)", "Median age of couples (years)")
 
     plot <- ggplot2::ggplot(data = fig_data, ggplot2::aes(x = bin_median,
                                                           y = corr_pearson)) +
       geom_smooth(method="lm",formula=y~x, se = F, fullrange = T, color = custom_col[2], linetype = "dashed") +
-      ggplot2::geom_errorbar(ggplot2::aes(ymin = IVW_beta - IVW_se, ymax = IVW_beta + IVW_se),
+      ggplot2::geom_errorbar(ggplot2::aes(ymin = corr_pearson - corr_pearson_se, ymax = corr_pearson + corr_pearson_se),
                              colour = "grey", width = 0) +
       ggplot2::geom_point(color = custom_col[2]) +
       scale_x_continuous(breaks=x_ticks, limits = c(min(x_ticks)-2, max(x_ticks)+2),
@@ -7736,25 +7743,19 @@ create_binned_pheno_figs <- function(binned_pheno_corrs, exposure_info, grouping
                          axis.title.x = element_text(margin = unit(c(3, 0, 0, 0), "mm")),
                          axis.title.y = element_text(margin = unit(c(0, 3, 0, 0), "mm"))) +
 
-      ggplot2::labs(colour = legend_title, x =xlab,
-                    y = paste0("AM MR estimate for\n", tolower(trait_description) ,"\n(meta-analyzed across sexes)"))
+      ggplot2::labs(x =xlab,
+                    y = paste0("Phenotpyics correlation among couples for\n", tolower(trait_description)))
 
-
-
-    #xy_sex_spec <- xy_plot_binned_sex_specifc(household_harmonised_data.AM, household_MR_binned_MRmeta.AM, group, custom_col)
-    #xy_meta <- xy_plot_binned_meta(household_harmonised_data_meta.AM, household_MR_binned_SNPmeta.AM, group, custom_col)
-
-
-    #assign(paste0("FP_sex_specific_", group, "_fig"), fp_sex_spec)
-    #assign(paste0("FP_", group, "_fig"), fp_meta)
-    assign(paste0("XY_sex_specific_", group, "_fig"), xy_sex_spec)
-
-    assign(paste0("XY_", group, "_fig"), xy_meta)
+    assign(paste0("XY_", group, "_fig"), plot)
 
   }
 
-}
 
+  return(list(XY_age_bins_fig = XY_age_even_bins_fig,
+              XY_time_together_bins_fig = XY_time_together_even_bins_fig))
+
+
+}
 
 create_MR_binned_AM_figs <- function(household_harmonised_data_meta_reverse_filter, household_harmonised_data_reverse_filter,
                                      household_MR_binned_SNPmeta, household_MR_binned_MRmeta, custom_col){
