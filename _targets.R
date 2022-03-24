@@ -1128,7 +1128,7 @@ list(
     corr_impact_by_coords_causal,
     calc_corr_impact_by_coords_causal(corr_impact_by_traits_causal),
 
-  ),
+  )
 
 )
 
