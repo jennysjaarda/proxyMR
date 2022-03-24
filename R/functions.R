@@ -1595,6 +1595,20 @@ calc_corr_impact_by_coords <- function(outcomes_to_run, traits_corr, corr_mat_tr
   return(temp)
 }
 
+calc_corr_impact_by_coords_causal <- function(corr_impact_by_traits_causal){
+
+  temp <- corr_impact_by_traits_causal %>%
+
+    filter(exposure_ID == "130_irnt" | exposure_ID == "129_irnt") %>%
+
+    group_by(exposure_ID) %>% mutate(corr_due_to_confounding_all = sum(corr_due_to_confounding)) %>%
+    mutate(corr_due_to_confounding_all_se = sqrt(sum(corr_due_to_confounding_se^2))) %>%
+    filter(exposure_ID != "130_irnt") %>% filter(exposure_ID != "129_irnt") %>%
+    filter(exposure_ID != "22702_irnt") %>% filter(exposure_ID != "22704_irnt")
+
+  return(temp)
+
+}
 
 calc_corr_impact_by_traits <- function(outcomes_to_run, traits_corr, corr_mat_traits, trait_interest,
                                        traits_all, path_pheno_data, sqc, fam, relatives){
@@ -1694,6 +1708,7 @@ calc_corr_impact_by_traits_causal <- function( trait_interest, standard_MR_summa
 
   AM_MR <- household_MR_summary_SNPmeta %>% filter(same_trait) %>% dplyr::select(exposure_ID, IVW_beta, IVW_se, IVW_pval) %>%
     filter(exposure_ID==trait_interest) %>%
+    filter(exposure_ID != "22702_irnt") %>% filter(exposure_ID != "22704_irnt") %>%
     dplyr::rename(exposure_ID_AM_IVW_beta = IVW_beta) %>%
     dplyr::rename(exposure_ID_AM_IVW_se = IVW_se) %>%
     dplyr::rename(exposure_ID_AM_IVW_pval = IVW_pval)
@@ -3583,7 +3598,7 @@ prune_pheno_table <- function(data_to_prune, Neale_ID_col, corr_mat_traits, corr
 
 }
 
-find_potential_trait_confounders <- function(Neale_pheno_ID, Neale_pheno_ID_corr, standard_MR_summary_SNPmeta,
+find_potential_trait_confounders_pos <- function(Neale_pheno_ID, Neale_pheno_ID_corr, standard_MR_summary_SNPmeta,
                                              household_MR_summary_SNPmeta, traits_corr, num_tests_by_PCs, corr_mat_traits, corr_trait_threshold){
 
   # here `Neale_pheno_ID` is used as the outcome_ID, because we are trying to find potential confounders that have an impact on this `Neale_pheno_ID`.
@@ -3613,6 +3628,7 @@ find_potential_trait_confounders <- function(Neale_pheno_ID, Neale_pheno_ID_corr
     left_join(corr_mat_traits_sub, by = c("exposure_ID_phes" = "exposure_ID")) %>%
     filter(abs(between_trait_correlation) < corr_trait_threshold) %>% arrange(-corr_due_to_confounding_ratio) %>%
     filter(sig_confounder) %>%
+    filter(exposure_ID_AM_IVW_beta > 0) %>%
     filter(exposure_ID_AM_IVW_pval < 0.05/n())
 
   # prune remaining by prioritizing those with highest `corr_due_to_confounding_ratio`
