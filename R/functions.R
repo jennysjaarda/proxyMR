@@ -7726,6 +7726,12 @@ xy_plot_binned_single_sex <- function(harmonised_data, MR_binned, exposure_sex, 
 
 }
 
+firstup <- function(x) {
+  substr(x, 1, 1) <- toupper(substr(x, 1, 1))
+  x
+}
+
+
 create_binned_pheno_figs <- function(binned_pheno_corrs, exposure_info, grouping_var){
 
   trait_description <- as.character(exposure_info[which(exposure_info=="description"), "Info"])
@@ -7743,7 +7749,7 @@ create_binned_pheno_figs <- function(binned_pheno_corrs, exposure_info, grouping
     x_ticks <- unique(fig_data %>% pull(bin_median))
     x_labels <- unique(fig_data %>% pull(bin))
 
-    xlab <- ifelse(group == "time_together_even_bins", "Time together in same household (years)", "Median age of couples (years)")
+    xlab <- ifelse(group == "time_together_even_bins", "Time-spent-together (years)", "Median age of couples (years)")
 
     plot <- ggplot2::ggplot(data = fig_data, ggplot2::aes(x = bin_median,
                                                           y = corr_pearson)) +
@@ -7754,13 +7760,19 @@ create_binned_pheno_figs <- function(binned_pheno_corrs, exposure_info, grouping
       scale_x_continuous(breaks=x_ticks, limits = c(min(x_ticks)-2, max(x_ticks)+2),
                          labels = x_labels) +
 
+
       theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(),
                          panel.grid.minor = element_blank(), axis.line=element_blank(),
                          axis.title.x = element_text(margin = unit(c(3, 0, 0, 0), "mm")),
                          axis.title.y = element_text(margin = unit(c(0, 3, 0, 0), "mm"))) +
 
       ggplot2::labs(x =xlab,
-                    y = paste0("Phenotpyics correlation among couples for\n", tolower(trait_description)))
+                    y = "Phenotypic correlation\namong couples") +
+
+      # if you want all the rest of the title lower-case use `firstup(tolower(trait_description)`
+      ggtitle(paste(strwrap(firstup((trait_description)), width = 35), collapse = "\n")) +
+      theme(plot.title = element_text(hjust = 0.5, , size = 12)) +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
     assign(paste0("XY_", group, "_fig"), plot)
 
