@@ -770,10 +770,9 @@ DT::datatable(pheno_corr_pearson_sig.DT, width = "100%") %>% formatRound(columns
 
 ```
 
-```{r, pheno_binned_figs, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE, out.width = "200%", dpi=600}
+```{r, pheno_binned_figs, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE, fig.height=7, dpi=600}
 
 pheno_binned_figures
-
 
 ```
 
