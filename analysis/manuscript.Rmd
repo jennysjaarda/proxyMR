@@ -31,11 +31,13 @@ library(xlsx)
 
 ```{r load_targets, include = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
 
+tar_load(Neale_SGG_dir_filt)
+tar_load(traits_corr_spearman)
 tar_load(couple_MR_vs_trait_corr)
 tar_load(corr_impact_by_PCs)
 tar_load(corr_impact_by_traits)
 tar_load(corr_impact_by_coords)
-tar_load(corr_potential_trait_confounders)
+tar_load(corr_potential_trait_confounders_pos)
 tar_load(traits_corr)
 tar_load(PCs_corr)
 tar_load(traits_corr2_filled)
@@ -51,8 +53,12 @@ tar_load(proxyMR_prod_comparison_fig_yiyp_adj)
 tar_load(proxyMR_comparison_summary_yiyp_adj_SNPmeta)
 tar_load(household_MR_summary_AM)
 tar_load(household_MR_binned_het_SNPmeta)
-tar_load(potential_trait_confounders_MVMR)
+#tar_load(potential_trait_confounders_MVMR)
 tar_load(corr_mat_traits)
+tar_load(corr_impact_by_traits_causal)
+tar_load(household_MR_SNPmeta_sensitivity)
+tar_load(binned_pheno_corrs)
+
 
 ```
 
@@ -66,36 +72,44 @@ tar_load(corr_mat_traits)
 We wanted to ensure that INQT was not significantly impacting the correaltions of each trait, so we also calculated a non-parametric based correaltion (Spearman) and found consistent correlations.  
 
 ```{r pearson_vs_spearman, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE, warning = FALSE}
-tar_load(Neale_SGG_dir_filt)
-tar_load(traits_corr_spearman)
-tar_load(traits_corr)
-
 
 Neale_SGG_dir_filt_unique <- Neale_SGG_dir_filt[,c("phenotype", "phenotype_sub", "sgg_phesant_name", "description", "SGG_available", "variable_type")] %>% unique()
 
-pearson_vs_spearman_dat <- inner_join(traits_corr, unique(Neale_SGG_dir_filt_unique[,c("sgg_phesant_name", "variable_type")]), by = c("ID"="sgg_phesant_name")) %>% dplyr::rename(r2_pearson = r2) %>%
-  inner_join(traits_corr_spearman[,c("ID", "r2")]) %>% dplyr::rename(r2_spearman = r2) %>% 
+## looks at all traits *before* the correlation filter
+
+pearson_vs_spearman_dat <-
+  inner_join(traits_corr,
+             unique(Neale_SGG_dir_filt_unique[, c("sgg_phesant_name", "variable_type")]),
+             by = c("ID" = "sgg_phesant_name")) %>%
+  dplyr::rename(r2_pearson = r2) %>%
+  inner_join(traits_corr_spearman[, c("ID", "r2")]) %>% dplyr::rename(r2_spearman = r2) %>%
   as_tibble() %>% type_convert() %>%
-  mutate(r_pearson = sqrt(r2_pearson)) %>% 
+  mutate(r_pearson = sqrt(r2_pearson)) %>%
   mutate(r_spearman = sqrt(r2_spearman)) 
 
-pearson_vs_spearman_plot <- ggplot2::ggplot(data = pearson_vs_spearman_dat, 
-                                            ggplot2::aes(x = r_pearson,
-                                                         y = r_spearman, 
-                                                         color = factor(variable_type))) + 
+pearson_vs_spearman_plot <-
+  ggplot2::ggplot(data = pearson_vs_spearman_dat,
+                  ggplot2::aes(
+                    x = r_pearson,
+                    y = r_spearman,
+                    color = factor(variable_type)
+                  )) +
   geom_point() +
   theme_minimal() +
   ggplot2::labs(x = paste0("Pearson correlation"),
-                y = paste("Spearman correlation")) + 
-  scale_color_manual(name = "Variable type", values = custom_col[c(1,2,3)], labels=c("Binary","Continuous (IRNT)", "Ordinal"))
+                y = paste("Spearman correlation")) +
+  scale_color_manual(
+    name = "Variable type",
+    values = custom_col[c(1, 2, 3)],
+    labels = c("Binary", "Continuous (IRNT)", "Ordinal")
+  )
 
 pearson_vs_spearman_plot
 ```
 
-
 # Relationship between causal effects and raw phenotypic correlation in couples.
 
-Sought to compare the raw correlation amongst couples vs. the standardized MR effects. There are many traits where the `correlation > MR effects` including some traits of interest such as standing height, place of birth, among many others. 
+We sought to compare the raw correlation amongst couples vs. the standardized MR effects. There are many traits where the `correlation > MR effects` including some traits of interest such as standing height, place of birth, among many others. 
 
 For example, if we take a trait such as place of birth (NC), this is very highly correlated among couples. However, the within-couple MR-estimate is smaller than the observed phenotypic correaltion. This is the case for many such traits. 
 
@@ -151,6 +165,8 @@ pheno_corr_plot <- ggplot2::ggplot(data = pheno_corr_dat, ggplot2::aes(x = trait
 pheno_corr_plot
 
 ```
+
+## Summary of cases where correlation is different from the MR estimate. 
 
 A plot comparing the two effects, and a summary table of the significant effects is shown below. 
 
@@ -243,9 +259,7 @@ corr_vs_MR_effects_sig_dat.DT <- corr_vs_MR_effects_sig_dat %>%
 # Result are pruned to only show traits with correlation < `r corr_trait_threshold`. (The number of traits before pruning was `r dim(corr_vs_MR_effects_sig_dat)[1]` vs `r dim(corr_vs_MR_effects_sig_dat_pruned.DT)[1]` after pruning).
 ```
 
-## Summary of cases where correlation is different from the MR estimate. 
-
-The table below displays the `r dim(corr_vs_MR_effects_sig_dat.DT)[1]` traits that have correlation significantly different from the MR-estimate. Of the significant difference `r table(corr_vs_MR_effects_sig_dat$correlation_larger)[[1]]` have MR-estimates larger than than correlation, suggesting the presence of a negative confounder. 
+The table below displays the `r dim(corr_vs_MR_effects_sig_dat.DT)[1]` traits that have correlation significantly different from the MR-estimate. Of the significant difference `r table(corr_vs_MR_effects_sig_dat$correlation_larger)[[1]]` have MR-estimates larger than than correlation, suggesting the presence of a negative confounder (this table corresponds to "sig_corr_vs_MR" in the excel document).
 
 ```{r corr_vs_MR_effects_table, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE}
 
@@ -257,34 +271,37 @@ DT::datatable(corr_vs_MR_effects_sig_dat.DT %>% dplyr::select(-trait_ID), width 
 
 ## Search for potential confounders to explain cases where correlation differs from MR estimate. 
 
-1. Restrict to only traits that have correlation significantly different from MR-estimate (`r dim(corr_vs_MR_effects_sig_dat)[1]` traits have correlation different from MR_estimate).
-2. For each of these traits, find the traits which have a causal effect on this trait (MR p-val < 0.05/[number of effective tests]).
-3. Calculate the correlation due to confounding as: $C = (\alpha_{z\rightarrow x})^2 * \alpha_{z_i\rightarrow z_p}$.
-4. Calculate the ratio of this correlation ($C$) and the correlation of $X$ in partners ($C/r_x$). 
-5. Remove any `potential_counders` with correlation with `trait_ID` > `r corr_trait_threshold`.
-6. For each `trait_ID` prune remaining `potential_counders` so that all have correlations <  `r corr_trait_threshold`, prioritized by their `corr_due_to_confounding_ratio`. 
+Sought to identify potential confounders (from our list of traits in the pipeline) which may, in part, explain the discrepant estimates, as follows:
 
-A summary of the top 5 confounders for each `trait_ID` can be seen below: 
+1. Restrict to only traits that have correlation significantly different from MR-estimate (`r dim(corr_vs_MR_effects_sig_dat)[1]` traits have correlation different from MR_estimate).
+1. Remove any `potential_counders` with correlation with `trait_ID` > `r corr_trait_threshold`.
+1. For each of the remaining $Z$ `potential_counders` for each trait $X$, find the potential confounders which have a causal effect on trait $X$ ($\alpha_{z\rightarrow x}$ p-val < 0.05/[number of effective tests]).
+1. Split results into those cases where MR-estimate is **greater** than the phenotypic correlation and those that are **less** than the correlation. 
+1. For traits where correlation was less than MR-estimate, we restricted to negative confounders (i.e. negative $\alpha_{z_i\rightarrow z_p}$), and conversely for traits where the correlation was greater than the MR-estimate we restricted to positive confounders (i.e. positive $\alpha_{z_i\rightarrow z_p}$) [note that only one significant MR-effect is negative].  
+1. Of the remaining $Z$, we further filtered to those with a significant within couple MR effect ($\alpha_{z_i\rightarrow z_p}$ p < 0.05/[number of remaining $Z$]). 
+1. Calculate the correlation due to confounding as: $C = (\alpha_{z\rightarrow x})^2 * \alpha_{z_i\rightarrow z_p}$.
+1. Calculate the ratio of this correlation ($C$) and the correlation of $X$ in partners ($C/r_x$). 
+1. For each `trait_ID` prune remaining `potential_counders` so that all have correlations <  `r corr_trait_threshold`, prioritized by their `corr_due_to_confounding_ratio`. 
 
 ```{r simple_C_model, echo = FALSE}
 library(knitr)
 knitr::include_graphics("assets/simple_confounder_model.png", error = FALSE)
-
-
 ```
+
+A summary of the top 5 confounders for each `trait_ID` can be seen below (a variation of this table, include *all* potential confounders is included in the excel sheet titled "sig_confounders"): 
 
 ```{r confounder_summary, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
 
-number_of_potential_confounders <- dim(corr_potential_trait_confounders)[1]/dim(corr_vs_MR_effects_sig_dat)[1]
+number_of_potential_confounders <- dim(corr_potential_trait_confounders_pos)[1]/dim(corr_vs_MR_effects_sig_dat)[1]
 
-non_sig_confounders <- corr_potential_trait_confounders %>% filter(!sig_confounder) %>% group_by(outcome_ID) %>%
+non_sig_confounders <- corr_potential_trait_confounders_pos %>% filter(!sig_confounder) %>% group_by(outcome_ID) %>%
   dplyr::summarize(description = outcome_description[1], n = n()) %>% 
   filter(n==number_of_potential_confounders) %>%
   mutate(n = n-number_of_potential_confounders) %>% mutate(potential_confounders = NA) %>%
   mutate(mean_C_ratio = NA) %>%
   dplyr::rename(trait_ID = outcome_ID) 
 
-sig_confounders <- corr_potential_trait_confounders %>% filter(sig_confounder) %>% group_by(outcome_ID) %>%
+sig_confounders <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %>% group_by(outcome_ID) %>%
   arrange(-corr_due_to_confounding_ratio) %>%
   mutate(total_potential_confounders = n()) %>%
   dplyr::summarize(description = outcome_description[1],
@@ -297,7 +314,7 @@ sig_confounders <- corr_potential_trait_confounders %>% filter(sig_confounder) %
   dplyr::select(trait_description, trait_ID, everything())
 
 
-sig_confounders_top5 <- corr_potential_trait_confounders %>% filter(sig_confounder) %>% group_by(outcome_ID) %>%
+sig_confounders_top5 <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %>% group_by(outcome_ID) %>%
   arrange(-corr_due_to_confounding_ratio) %>%
   mutate(total_potential_confounders = n()) %>%
   slice_head(n = 5) %>%
@@ -322,7 +339,7 @@ We compared the difference in phenotypic estimate and MR-estimates to the maximu
 ```{r max_C_plot, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE} 
 
 
-max_C_data <- corr_potential_trait_confounders %>% filter(sig_confounder) %>% group_by(outcome_ID) %>%
+max_C_data <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %>% group_by(outcome_ID) %>%
   arrange(-corr_due_to_confounding_ratio) %>%
   mutate(total_potential_confounders = n()) %>%
   slice_head(n = 1) %>%
@@ -344,8 +361,7 @@ max_C_data <- corr_potential_trait_confounders %>% filter(sig_confounder) %>% gr
   mutate(Z_prod = Z_sq_beta*Z_AM_beta) %>%
   mutate(Z_prod_var = variance_of_product(Z_sq_beta, Z_sq_se, Z_AM_beta, Z_AM_se)) %>%
   mutate(Z_prod_se = sqrt(Z_prod_var)) %>%
-  mutate(same_trait_corr_minus_MR_est_se = variance_of_sum(outcome_ID_IVW_se, outcome_ID_couple_r_se))
-
+  mutate(same_trait_corr_minus_MR_est_se = sqrt(variance_of_sum(outcome_ID_IVW_se, outcome_ID_couple_r_se)))
 
 
 max_C_plot <- ggplot2::ggplot(data = max_C_data, ggplot2::aes(x = corr_due_to_confounding,
@@ -368,7 +384,7 @@ max_C_plot <- ggplot2::ggplot(data = max_C_data, ggplot2::aes(x = corr_due_to_co
 
   theme_minimal() +
   ggplot2::labs(x = paste0("max C"),
-                y = paste("abs(correlation) - abs(MR-estimate)")) +
+                y = paste("Correlation - MR-estimate")) +
   theme(legend.title=element_blank()) +
   #geom_smooth(method=lm , color="red", fill="#69b3a2", se=TRUE) +
   theme_ipsum()
@@ -378,30 +394,30 @@ max_C_plot
 
 ```
 
-Finally, we computed a MVMR to sum up the effect of all potential confounders as shown in the DAG below and compared these C-statistics to the difference between phenotypic correlation and MR-estimates. 
+Lastly, we attempted to compute a MVMR sum of the effects of all potential confounders as shown in the DAG below and compared these C-statistics to the difference between phenotypic correlation and MR-estimates, however the estimates did not make sense so we decided not to pursue this analysis.
 
 ```{r MVMR_C_model, echo = FALSE}
 library(knitr)
 knitr::include_graphics("assets/MVMR_confounder_model.png", error = FALSE)
 ```
 
-```{r MVMR_C_plot, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE}
+```{r MVMR_C_plot, echo = FALSE, eval = FALSE, message=FALSE}
 
-discrepentant_traits <- unique(corr_potential_trait_confounders$outcome_ID)
+discrepentant_traits <- unique(corr_potential_trait_confounders_pos$outcome_ID)
 
 output <- numeric()
 for(i in 1:length(potential_trait_confounders_MVMR)){
   
   outcome_ID <- discrepentant_traits[i]
 
-  corr_potential_trait_confounders_i <- corr_potential_trait_confounders %>% filter(outcome_ID == !!outcome_ID)
+  corr_potential_trait_confounders_pos_i <- corr_potential_trait_confounders_pos %>% filter(outcome_ID == !!outcome_ID)
   
   MVMR_result_org <- potential_trait_confounders_MVMR[[i]]
   
   
   MVMR_result_org <- MVMR_result_org %>% mutate(beta_2_var = 4*beta^2*se^2+2*se^4) %>%
     mutate(beta_2_se = sqrt(beta_2_var)) %>% 
-    left_join(corr_potential_trait_confounders_i %>% dplyr::select(exposure_ID, exposure_ID_AM_IVW_beta, exposure_ID_AM_IVW_se), by = c("exposure" = "exposure_ID")) %>%
+    left_join(corr_potential_trait_confounders_pos_i %>% dplyr::select(exposure_ID, exposure_ID_AM_IVW_beta, exposure_ID_AM_IVW_se), by = c("exposure" = "exposure_ID")) %>%
     dplyr::rename(MVMR_Z_beta = beta) %>%
     dplyr::rename(MVMR_Z_se = se) %>%
     dplyr::rename(MVMR_Z_pval = pval) %>%
@@ -478,23 +494,27 @@ MVMR_C_plot
 
 ```
 
-# Effect of sex, age and time together on causal effects in couples.
+# Single-trait causal effects in couples. 
 
 ```{r AM_data_prep, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE, include = FALSE}
 
-
-AM_result_sig <- household_MR_summary_AM %>% filter(IVW_pval < 0.05/num_tests_by_PCs) 
-AM_sig_traits <-household_MR_summary_AM %>% filter(IVW_pval < 0.05/num_tests_by_PCs) %>% pull(exposure_ID) %>% unique()
-AM_sex_spec_result_sig <- household_MR_binned_het_sex_spec %>% filter(same_trait ==TRUE) %>% filter(exposure_ID %in% AM_sig_traits) %>% filter(sex_het_pval < 0.05/num_tests_by_PCs_AM_sig)
+AM_result_sig <-
+  household_MR_summary_AM %>% filter(IVW_pval < 0.05 / num_tests_by_PCs)
+AM_sig_traits <-
+  household_MR_summary_AM %>% filter(IVW_pval < 0.05 / num_tests_by_PCs) %>% pull(exposure_ID) %>% unique()
+AM_sex_spec_result_sig <-
+  household_MR_binned_het_sex_spec %>% filter(same_trait == TRUE) %>% filter(exposure_ID %in% AM_sig_traits) %>% filter(sex_het_pval < 0.05 /
+                                                                                                                          num_tests_by_PCs_AM_sig)
 
 ```
 
 - For each trait in the pipeline, we tested the causal effect within couples (i.e. the number of analyses corresponds to the number of traits (`r dim(traits_final)[1]`)). 
 - The significant results after adjusting for multiple hypothesis testing are shown below. 
 - `IVW_meta_beta` and `IVW_meta_pval` corresponds to the beta and p-value of the meta-analyzed MR across sexes, respectively (i.e. MR estimates were computed in each sex-seperately using sex-specific SNP-exposure and SNP-outcome results and then meta-analyzed).  
-- After adjusting for multiple tests (p < `0.05/`r num_tests_by_PCs``), identified `r dim(AM_result_sig)[1]` significant assortative mating (same-trait) MR results (corresponding to the table below)..
+- After adjusting for multiple tests (p < `0.05/`r num_tests_by_PCs``), identified `r dim(AM_result_sig)[1]` significant assortative mating (same-trait) MR results (corresponding to the table below and table "BF_sig_same_trait_MR" in the excel document).
 
-```{r, AM_sig, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE, include = TRUE}
+
+```{r, AM_sig, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE, include = TRUE, message = FALSE}
 
 AM_result_sig.DT <- AM_result_sig %>% dplyr::select(exposure_description, exposure_ID, IVW_beta, IVW_se, IVW_pval) %>% unique() %>% 
   dplyr::rename(trait_description = exposure_description) %>%
@@ -509,7 +529,49 @@ AM_sig_sex_het_nom <- replace_Neale_ID(AM_sig_sex_het_nom, traits_corr2_filled,"
   dplyr::select(trait_description, trait_ID, everything())
 
 AM_result_sig_nom.DT <- AM_sig_sex_het_nom %>% dplyr::select(trait_description, trait_ID, exposure_sex, IVW_beta, IVW_se, IVW_pval, sex_het_pval) %>% unique()
+
+
+AM_sensitivity <- bind_rows(household_MR_SNPmeta_sensitivity) %>% filter(same_trait)
+AM_joint.DT <- left_join(AM_result_sig, AM_sensitivity) %>% 
+  dplyr::rename(trait_description = exposure_description) %>%
+  dplyr::rename(trait_ID = exposure_ID) %>%
+  dplyr::select(trait_description, trait_ID, wt_median_summary, wt_median_pval, wt_mode_summary, wt_mode_pval)
+
+non_sig_MR_mode <- AM_joint.DT %>% filter(wt_mode_pval > 0.05)
+non_sig_MR_median <- AM_joint.DT %>% filter(wt_median_pval > 0.05)
+
 ```
+
+## Heterogeneity stats.
+
+- In the single trait analysis, we also decided to investigate Cochran’s heterogeneity Q-stat to identify traits with high heterogeneity.
+- This would indicate that associations between the index genotype and partner’s phenotype may not only act indirectly through causal relationship between the traits, but some direct effect is present. 
+- Ideally, for the majority of the traits, the heterogeneity would be low, confirming that (despite what Tenesa suggests) there are no direct index genome to partner phenome effects.
+- We tested heterogeneity statistics using the function [mr_heterogeneity](https://mrcieu.github.io/TwoSampleMR/reference/mr_heterogeneity.html) from the [TwoSampleMR](https://mrcieu.github.io/TwoSampleMR/index.html) package. 
+
+```{r, het_stats, include = FALSE}
+sig_het <- household_MR_summary_AM %>% filter(Het_IVW_Qpval_round < 0.05/num_tests_by_PCs)
+```
+
+The number of traits with significant heterogeneity in the MR is: `r dim(sig_het)[1]`.
+
+## Sensitivity follow-up.
+
+Of those traits that had a significant causal-effect among couples by IVW, we tested the MR weighted-mode and MR weighted-median method for consistent findings. 
+
+- We found `r dim(non_sig_MR_mode)[1]` trait(s) which was/were not significant using the weighted-mode approach (p > 0.05). 
+- We found `r dim(non_sig_MR_median)[1]` trait(s) which was/were not significant using the weighted-mode approach (p > 0.05). 
+
+Results can be seen in the table below. 
+
+```{r, AM_sensitivity, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE, include = TRUE}
+
+
+DT::datatable(AM_joint.DT, width = "100%") %>% formatSignif(columns=c('wt_median_pval', 'wt_mode_pval'), digits=3)
+
+```
+
+# Effect of sex, age and time together on causal effects in couples.
 
 ## Sex heterogeneity.
 
@@ -517,7 +579,9 @@ AM_result_sig_nom.DT <- AM_sig_sex_het_nom %>% dplyr::select(trait_description, 
 - Of the `r dim(AM_sig_traits)[1]` significant results shown above, we tested to see if there was any difference in AM MR estimates between sexes. 
 - A similar adjustment for multiple hypothesis testing was applied as above, resulting in `r num_tests_by_PCs_AM_sig` number of effective tests. 
 - After adjusting for multiple hypothesis testing (p < `0.05/`r num_tests_by_PCs_AM_sig``), `r dim(AM_sex_spec_result_sig)[1]` traits showed significant differences amongst sexes.
-- The table below shows the *nominally significant* results at `p < 0.05` (of which there are `r dim(AM_result_sig_nom.DT)[1]/2`).
+- The table below shows the *nominally significant* results at `p < 0.05` (of which there are `r dim(AM_result_sig_nom.DT)[1]/2`) (a slight variation of this table corresponds to "nominally_sig_sex_diff" in the excel document).
+- The $p_{binomial}$ can be calculated as `1 – pbinom(15, 64, 0.05)`, and the fold enrichment as `15/(64*0.05)`.
+- Found that female estimates are on average larger than males (result of the paired t-test shown below).
 
 ```{r AM_sex_het_nom, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
 
@@ -525,6 +589,9 @@ DT::datatable(AM_result_sig_nom.DT, width = "100%") %>% formatSignif(columns=c('
 
 nominally_sig_sex_differences <- AM_result_sig_nom.DT %>% pivot_wider(names_from = exposure_sex, values_from = c(IVW_beta, IVW_se, IVW_pval)) 
 # write.table(nominally_sig_sex_differences, "docs/manuscript_tables/nominally_sig_sex_differences.txt", row.names = F, sep=",", quote = F)
+
+t.test(nominally_sig_sex_differences$IVW_beta_male, nominally_sig_sex_differences$IVW_beta_female, paired = T)
+
 ```
 
 ## MR binned results (exploring effect of age and time-together).
@@ -564,8 +631,6 @@ sex_het_wt_sig_tt <- household_MR_binned_het_sex_spec %>% filter(same_trait) %>%
   filter(grouping_var == "time_together_even_bins") %>% 
   filter(bin_slope_sex_het_pval_wt < 0.05/num_tests_by_PCs_AM_sig)
 
-
-
 ```
 
 - For each AM MR ($X_{p} \sim X_i$), analyses were run in the full sample as well as in 5 roughly equal sized bins according to time couple had been together (`time_together_even_bins`) estimated using [time at household variable](https://biobank.ctsu.ox.ac.uk/showcase/field.cgi?id=699), and median age (`age_even_bins`). 
@@ -573,7 +638,7 @@ sex_het_wt_sig_tt <- household_MR_binned_het_sex_spec %>% filter(same_trait) %>%
 - Specifically, the outcome data set was split into 5 bins, and the SNP-outcome effect was estimated in each bin separately (and each sex seperately). 
 - These outcome-SNP effects were then used to generate bin-specific MR estimates, using the same SNP-exposure effects from Neale. 
 - To estimate the difference among bins, we used two approaches: 
-    1. The Cochran's Q test to test for heterogeneity in meta-analyses *(of which we obtained no significant results, so not presenting in paper)*.
+    1. The Cochran's Q test to test for heterogeneity in meta-analyses *(of which we obtained no significant results, so not presented in paper)*.
     2. Tested the significance of the slope of linear model of median bin (either `age` or `time together`) versus the bin-specific MR estimate.  
 
 ------------------------------------------------------------------------
@@ -646,46 +711,75 @@ figs[[2]][[5]]
 
 ## Phenotypic binned results (exploring effect of age and time-together).
 
-We also tested the phenotypic correlation among the different bins. Below are the traits that show a significant trend either with Pearson's or Spearman's correlation (p < `r 0.05/num_tests_by_PCs`). 
+We also tested the phenotypic correlation among the different bins. Below are the traits that show a significant trend either with Pearson correlation (p < `r 0.05/num_tests_by_PCs`) (the table below corresponds to "pheno_binned_corrs" in the excel document). 
 
 ```{r, pheno_binned_result, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
 
-tar_load(binned_pheno_corrs)
-
 binned_pheno_corr_summary <- bind_rows(lapply(binned_pheno_corrs, function(x) {x[[2]]}))
 
-binned_pheno_corr_sig <- binned_pheno_corr_summary %>% filter(bin_slope_pval_spearman < 0.05/num_tests_by_PCs | bin_slope_pval_pearson < 0.05/num_tests_by_PCs)
+pheno_corr_pearson_sig <- binned_pheno_corr_summary %>% filter(bin_slope_pval_pearson < 0.05/num_tests_by_PCs) %>% arrange(group)
 
-binned_pheno_corr_sig.DT <- replace_Neale_ID(binned_pheno_corr_sig, traits_corr2_filled, "trait", "trait_description") %>%
+pheno_corr_pearson_sig <- replace_Neale_ID(pheno_corr_pearson_sig, traits_corr2_filled, "trait", "trait_description") %>%
   dplyr::rename(trait_ID = trait) %>%
   dplyr::select(trait_description, trait_ID, everything())
 
-  
-format_round_cols <- colnames(dplyr::select_if(binned_pheno_corr_sig.DT, is.numeric))
+## create panel figure 
+pheno_corr_pearson_sig$branches_to_pull <- NA
 
-DT::datatable(binned_pheno_corr_sig.DT, width = "100%") %>% formatRound(columns=format_round_cols, digits = 3)
+for(i in 1:dim(pheno_corr_pearson_sig)[1]){
   
-# write.table(binned_pheno_corr_sig.DT, "docs/manuscript_tables/binned_phenotypic_correlations.txt", row.names = F, sep=",", quote = F)
+  trait <- pheno_corr_pearson_sig[i, "trait_ID"][[1]]
+  for(k in 1:length(exposure_info)){
+  temp <- exposure_info[[k]]
+  if(temp[which(temp$Value=="trait_ID"), "Info"] == trait) {break}
+  }
+
+  pheno_corr_pearson_sig$branches_to_pull[i] <- k
+}
+
+
+figs <- list()
+
+for(i in 1:dim(pheno_corr_pearson_sig)[1]){
+  
+  k <- pheno_corr_pearson_sig$branches_to_pull[i] 
+  binned_pheno_corrs_i <- tar_read(binned_pheno_corrs, branches = k)[[1]]
+  exposure_info_i <- tar_read(exposure_info, branches = k)[[1]]
+  pheno_figs <- create_binned_pheno_figs (binned_pheno_corrs_i, exposure_info_i, grouping_var)
+  
+  name <- paste0("exposure_", i)
+  group <- pheno_corr_pearson_sig[i, "group"][[1]]
+  fig_num <- ifelse(group == "age_even_bins", 1, 2)
+  figs[[name]] <- pheno_figs[[fig_num]] #tar_read(binned_pheno_figs, branches = i)[[1]][[fig_num]]
+
+}
+
+pheno_binned_figures <- plot_grid(plotlist = figs, nrow=2, ncol = 2, byrow = T, labels="AUTO")
+
+## format table 
+pheno_corr_pearson_sig.DT <- pheno_corr_pearson_sig %>% dplyr::select(-branches_to_pull) %>%
+  mutate(bin_type = case_when(group == "age_even_bins" ~ "age", 
+                              group == "time_together_even_bins" ~ "time_together")) %>%
+  dplyr::select(-group) %>% dplyr::select(trait_description, trait_ID, bin_type, everything())
+
+
+format_round_cols <- colnames(dplyr::select_if(pheno_corr_pearson_sig.DT, is.numeric))
+
+DT::datatable(pheno_corr_pearson_sig.DT, width = "100%") %>% formatRound(columns=format_round_cols, digits = 3)
+
 
 ```
 
+```{r, pheno_binned_figs, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE, out.width = "200%", dpi=600}
 
-# Heterogeneity stats.
+pheno_binned_figures
 
-- In the single trait analysis, we also decided to investigate Cochran’s heterogeneity Q-stat to identify traits with high heterogeneity.
-- This would indicate that associations between the index genotype and partner’s phenotype may not only act indirectly through causal relationship between the traits, but some direct effect is present. 
-- Ideally, for the majority of the traits, the heterogeneity would be low, confirming that (despite what Tenesa suggests) there are no direct index genome to partner phenome effects.
-- We tested heterogeneity statistics using the function [mr_heterogeneity](https://mrcieu.github.io/TwoSampleMR/reference/mr_heterogeneity.html) from the [TwoSampleMR](https://mrcieu.github.io/TwoSampleMR/index.html) package. 
 
-```{r, het_stats, include = FALSE}
-sig_het <- household_MR_summary_AM %>% filter(Het_IVW_Qpval_round < 0.05/num_tests_by_PCs)
 ```
-
-The number of traits with significant heterogeneity in the MR is: `r dim(sig_het)[1]`.
 
 # Impact of confounders on couple correlation.
 
-We tested the impact of confounding on genetic PCs, N/E coordinates and the following 4 traits: 
+We tested the impact of confounding on genetic PCs, N/E coordinates and the following traits (however only presenting a selection in paper): 
 
 ```{r confounder_traits, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
 confounder_trait_tibble <- as_tibble(confounder_traits)
@@ -699,7 +793,7 @@ confounder_trait_tibble_descript %>%
 
 We tested the ratio of confounding to correlation for each confounder trait tested. 
 
-```{r corr_due_to_confounding_ratio, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
+```{r corr_due_to_confounding_ratio, eval = FALSE, echo = FALSE}
 
 corr_impact_by_coords_ratio <- corr_impact_by_coords %>% 
   dplyr::select(Neale_pheno_ID, trait_couple_corr, trait_couple_corr_se, corr_due_to_confounding_all, corr_due_to_confounding_all_se) %>%
@@ -736,20 +830,40 @@ corr_impact_ratios_summary %>%
 # write.table(corr_impact_ratios_summary, "docs/manuscript_tables/corr_impact_ratios_summary.txt", row.names = F, sep=",", quote = F)
 ```
 
+```{r corr_due_to_confounding_ratio_causal, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
+
+confounder_traits_sub <- confounder_traits[c(1,2,4,5)]
+
+corr_impact_by_traits_causal_summary <- corr_impact_by_traits_causal %>% group_by(exposure_ID) %>%
+   dplyr::summarise(mean_ratio = mean(corr_due_to_confounding_ratio), median_ratio = median(corr_due_to_confounding_ratio), sd_ratio = sd(corr_due_to_confounding_ratio), number_of_traits = n()) 
+
+corr_impact_by_traits_causal_summary <- replace_Neale_ID(corr_impact_by_traits_causal_summary, traits_corr2_filled, "exposure_ID", "outcome_description") 
+
+corr_impact_by_traits_causal_summary <- corr_impact_by_traits_causal_summary[which(corr_impact_by_traits_causal_summary$exposure_ID %in% confounder_traits_sub),] %>% 
+  dplyr::rename(confounder_trait =  outcome_description) %>% 
+  dplyr::rename(confounder_trait_ID =  exposure_ID) %>% 
+  dplyr::select(confounder_trait, confounder_trait_ID, everything())
+
+corr_impact_by_traits_causal_summary %>%
+  kbl() %>%
+  kable_styling()
+
+```
+
 *A note on the number of traits:* 
 
-We tested the impact of `trait_interest` on couple correlation amongst all traits in our couple MR framework (number of traits = `r dim(household_MR_summary_AM)[1]`) with the exception of home location and birth place coordinates (2 each [N and E] * 2), we also removed the trait itself from the confounder analysis where applicable (in the case of traits `20016_irnt`, `738` and `845`). [Trait `189_irnt` was not included in our final couple MR analysis but could still be evaluated here because no MR-estimates were used.]
+We tested the impact of `trait_interest` on couple correlation amongst all traits in our couple MR framework (number of traits = `r dim(household_MR_summary_AM)[1]`) with the exception of birth place coordinates (2 each [N and E]), we also removed the trait itself from the confounder analysis where applicable (in the case of traits `20016_irnt`, `738` and `845`). [Trait `189_irnt` was not included in our final couple MR analysis but could still be evaluated here because no MR-estimates were used.]
 
 ## Plots.
 
 The figure below shows the 4 traits which showed the greatest impact on couple correlation (mean confounding ratio > 0.01).
 
-```{r confounder_plot, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE}
+```{r confounder_plot, echo = FALSE, eval = FALSE, message=FALSE}
 
+confounder_traits_sub <- confounder_traits[c(1,2,4,5)]
 
 geography_plots <- list()
 
-confounder_traits_sub <- confounder_traits[c(2,3,4,5)]
 
 plots <- list()
 for(i in 1:length(confounder_traits_sub)){
@@ -785,6 +899,8 @@ for(i in 1:length(confounder_traits_sub)){
       width = 0
     ) +
     
+    geom_abline(slope=1, intercept=0) +
+    coord_cartesian(ylim = c(0, NA)) +
     theme_minimal() +
     ggplot2::labs(
       x = paste0("Couple trait correlation"),
@@ -793,6 +909,8 @@ for(i in 1:length(confounder_traits_sub)){
       #title = paste0("Impact of ", trait_description, "\n on couple correlation")
     ) +
     xlim(0, 1.0) +
+    xlim(0, 1.0) +
+    
     theme(plot.title = element_text(size=11, hjust = 0.5)) + theme(axis.title = element_text(size = 10))  
     
   plots[[i]] <- plot 
@@ -804,7 +922,7 @@ figures_grid <- plot_grid(plotlist = plots, nrow=2, ncol = 2, byrow = F, labels=
 figures_grid
 ```
 
-```{r PC_confounder_plot, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE}
+```{r PC_confounder_plot, echo = FALSE, eval = FALSE, message=FALSE}
 
 plot_data <- corr_impact_by_PCs %>% dplyr::select(Neale_pheno_ID, trait_couple_corr, corr_due_to_confounding_all, corr_due_to_confounding_all_se, trait_couple_corr_se, trait_couple_corr_se) %>% unique()
 
@@ -844,7 +962,7 @@ plots[[i]] <- plot_PCs
 
 ```
 
-```{r coord_confounder_plot, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE, out.width = "200%", dpi=600}
+```{r coord_confounder_plot, echo = FALSE, eval = FALSE, message=FALSE, out.width = "200%", dpi=600}
 
 plot_data <- corr_impact_by_coords %>% dplyr::select(Neale_pheno_ID, trait_couple_corr, corr_due_to_confounding_all, corr_due_to_confounding_all_se, trait_couple_corr_se, trait_couple_corr_se) %>% unique()
 
@@ -876,13 +994,77 @@ plot_coords <-
     #title = paste0("Impact of ", trait_description, "\n on couple correlation")
   ) +
   xlim(0, 1.0) +
-  theme(plot.title = element_text(size=11, hjust = 0.5)) + theme(axis.title = element_text(size = 10))  
-
+  theme(plot.title = element_text(size=11, hjust = 0.5)) + theme(axis.title = element_text(size = 10))
 
 i <- 6
 plots[[i]] <- plot_coords 
 
 figures_grid <- plot_grid(plotlist = plots, nrow=3, ncol = 2, byrow = T, labels="AUTO", label_size = 12)
+figures_grid
+
+
+```
+
+```{r causal_confounder_plot, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE, dpi=600, fig.height=7}
+
+confounder_traits_sub <- confounder_traits[c(1,2,4,5)]
+
+
+plots <- list()
+for(i in 1:length(confounder_traits_sub)){
+  
+  trait <- confounder_traits_sub[i]
+  trait_description <- confounder_trait_tibble_descript[which(confounder_trait_tibble_descript[["value"]]==trait),"outcome_description"][[1]]
+
+  
+  
+  if(trait=="738"){trait_description <- "Average total household \nincome before tax"}
+  if(trait=="189_irnt"){trait_description <- "Townsend deprivation index \nat recruitment"}
+  if(trait=="6160_1"){trait_description <- "Sports club or gym user"}
+  
+  
+  plot_data <- corr_impact_by_traits_causal %>% filter(exposure_ID==trait) %>% filter(exposure_ID!=outcome_ID)
+  if(dim(plot_data)[1]==0) next
+  
+  plot_data <- replace_Neale_ID(plot_data, traits_corr2_filled, "outcome_ID", "Phenotype")
+  plot <-
+    ggplot2::ggplot(
+      data = plot_data,
+      ggplot2::aes(x = outcome_ID_couple_r,
+                   y = corr_due_to_confounding, Phenotype = Phenotype)
+    ) +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    geom_point(alpha = 3 / 4) +
+    
+    ggplot2::geom_errorbar(
+      ggplot2::aes(ymin = corr_due_to_confounding - corr_due_to_confounding_se, ymax = corr_due_to_confounding + corr_due_to_confounding_se),
+      colour = "grey",
+      width = 0
+    ) +
+    ggplot2::geom_errorbar(
+      ggplot2::aes(xmin = outcome_ID_couple_r - outcome_ID_couple_r_se, xmax = outcome_ID_couple_r + outcome_ID_couple_r_se),
+      colour = "grey",
+      width = 0
+    ) +
+    
+    theme_minimal() +
+    ggplot2::labs(
+      x = paste0("Couple trait correlation"),
+      y = paste0("Couple correlation \ndue to confounding"),
+      title = paste0(trait_description)
+      #title = paste0("Impact of ", trait_description, "\n on couple correlation")
+    ) +
+    xlim(0, 1.0) +
+    theme(plot.title = element_text(size=11, hjust = 0.5)) + theme(axis.title = element_text(size = 10))  +
+    geom_abline(slope=1, intercept=0) +
+    coord_cartesian(ylim = c(0, NA)) 
+  
+  plots[[i]] <- plot 
+}
+
+i <- 5 
+
+figures_grid <- plot_grid(plotlist = plots, nrow=2, ncol = 2, byrow = F, labels="AUTO")
 figures_grid
 
 
@@ -899,10 +1081,6 @@ knitr::include_graphics("assets/two_trait_model_yiyp_adj.png", error = FALSE)
 
 We sought to compare the different paths from $X_i$ to $Y_p$ using the estimates computed as $\omega$, $\rho$ and $\gamma$. 
 
-```{r proxyMR_figure2, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), out.width = "200%", dpi=600}
-proxyMR_prod_comparison_fig_yiyp_adj
-```
-
 We considered the regression of the following estimates vs $\omega$ with an intercept passing through the origin (i.e. $estimate \sim \omega + 0$:
 
 1. $\rho$
@@ -910,7 +1088,7 @@ We considered the regression of the following estimates vs $\omega$ with an inte
 3. $\rho$ + $\gamma$
 4. $\rho_{resid} + \gamma$, where $\rho$  is residualized for $\gamma$ (i.e. $\rho_{resid} = resid(lm(\rho \sim \gamma))$) 
 
-The results are summarized below: 
+The results are summarized below (and provided in table "omega_regression_estimates" in the excel document): 
 
 ```{r regression_summary, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
 
@@ -934,7 +1112,7 @@ for(outcome in c("rho", "gam", "gam_rho", "gam_rho_resid")){
   
 }
 
-omega_regression_estimates <- result %>% dplyr::select(outcome, everything())
+omega_regression_estimates <- result %>% dplyr::select(outcome, everything()) %>% filter(outcome !="gam_rho")
 
 omega_regression_estimates %>%
   kbl() %>%
@@ -961,9 +1139,7 @@ opp_sign_rows <- unique(opp_sign_rows)
 
 ```
 
-
 To further explore these estimates, performed paired t-tests to find the significant differences between pairs of estimates. We first removed all instances where the sign did not match between any two pairings. In total, of the `r dim(data)[1]` trait pairs under consideration, `r length(opp_sign_rows)` were removed. 
-
 
 ```{r boxplot, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE, warning = FALSE}
 
@@ -980,9 +1156,8 @@ data_boxplot  <- df %>%
                       Omega = "omega_beta")
   )
 
-pairwise.t.test(data_boxplot$beta, data_boxplot$data, p.adjust = "none")
- 
-#cmpr <- list(c("Omega", "Gamma_Rho"), c("Gamma","Gamma_Rho"), c("Gamma_Rho","Gamma_Rho_resid"), c("Rho", "Gamma_Rho"))
+
+cmpr <- list(c("Omega","Rho"), c("Gamma","Rho"), c("Rho", "Gamma_Rho_resid"))
 
 position <- data_boxplot %>% group_by(data) %>% dplyr::summarise(median=median(beta)) %>% 
   arrange(-desc(median)) %>% pull(data)
@@ -990,11 +1165,20 @@ position <- data_boxplot %>% group_by(data) %>% dplyr::summarise(median=median(b
 data_boxplot$data <- factor(data_boxplot$data,levels=position)
 
 data_boxplot <- data_boxplot %>% filter(data != "Gamma_Rho")
+pairwise.t.test(data_boxplot$beta, data_boxplot$data, p.adjust = "none", paired = T)
 
 boxplot <- data_boxplot %>%
   ggplot( aes(x=data, y=beta)) +
   geom_boxplot(outlier.shape = NA) +
-  coord_cartesian(ylim=c(-0.5, 0.5)) +
+
+  stat_compare_means(data = data_boxplot, comparisons = cmpr, label.y = c(0.6, 0.4, 0.5), method = "t.test" , paired =T) + #,
+                     # label = "p.signif",
+                     # symnum.args = list(cutpoints = c(0, 0.05, 1),
+                     #                    symbols = c("*", "ns"))) +
+
+
+
+  coord_cartesian(ylim=c(-0.5, 0.75)) +
   scale_fill_viridis(discrete = TRUE, alpha=0.6, option="A") +
   theme_ipsum() +
   theme(
@@ -1005,28 +1189,22 @@ boxplot <- data_boxplot %>%
   scale_x_discrete(labels=c("Omega" = "\u03C9", 
                             "Gamma" = "\u03B3", "Gamma_Rho_resid" = expression( paste(rho ["resid"], " + ", gamma)), "Rho" = "\u03C1")) +
   theme(axis.title.x=element_blank(),
-        axis.title.y=element_blank())
+        axis.title.y=element_blank()) 
 
-#+ #"Gamma_Rho" = "\u03B3 + \u03C1", 
 
-  # stat_compare_means(comparisons = cmpr, tip.length=0.01,
-  #                    label = "p.signif",
-  #                    symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1),
-  #                                       symbols = c("****", "***", "**", "*", "ns"))) 
-  # 
+```
 
-boxplot
 
-figures_grid <- plot_grid(plotlist = list(proxyMR_prod_comparison_fig_yiyp_adj, boxplot), nrow=1, ncol = 2, byrow = F)
+```{r xy_boxplot_combined, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE, warning = FALSE, fig.height = 10}
+
+figures_grid <- plot_grid(plotlist = list(proxyMR_prod_comparison_fig_yiyp_adj, boxplot), nrow=2, ncol = 1, byrow = T)
 figures_grid
-
 
 ```
 
 ## Paths summary.
 
-A summary of the $\omega$, $\rho$, $\gamma$ and $\rho_{resid} + \gamma$ estimates are summarized in the table below. The differences between the estimates (according to a Z-test) are given in the last three columns. Trait pairs were pruned such that:  if there is a pair A-B and C-D and if [`max(corr(A,C)*corr(B,D),corr(A,D)*corr(B,C))`] > `r corr_trait_threshold` then one pair is dropped. Pairs were prioritized based on the $\omega$ p-value. 
-
+A summary of the $\omega$, $\rho$, $\gamma$ and $\rho_{resid} + \gamma$ estimates are summarized in the table below. The differences between the estimates (according to a Z-test) are given in the last three columns. Trait pairs were pruned such that:  if there is a pair A-B and C-D and if [`max(corr(A,C)*corr(B,D),corr(A,D)*corr(B,C))`] > `r corr_trait_threshold` then one pair is dropped. Pairs were prioritized based on the $\omega$ p-value (this table corresponds to "paths_summary" in the excel document). 
 
 
 ```{r paths_summary, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
@@ -1084,8 +1262,8 @@ write.xlsx_wrapper(corr_vs_MR_effects_sig_dat, file=file_name, sheetName="sig_co
 write.xlsx_wrapper(sig_confounders, file=file_name, sheetName="sig_confounders", append=TRUE, row.names=FALSE)
 write.xlsx_wrapper(AM_result_sig.DT, file=file_name, sheetName="BF_sig_same_trait_MR", append=TRUE, row.names=FALSE)
 write.xlsx_wrapper(nominally_sig_sex_differences, file=file_name, sheetName="nominally_sig_sex_diff", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(binned_pheno_corr_sig.DT, file=file_name, sheetName="pheno_binned_corrs", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(corr_impact_ratios_summary, file=file_name, sheetName="corr_impact_ratios_summary", append=TRUE, row.names=FALSE)
+write.xlsx_wrapper(pheno_corr_pearson_sig.DT, file=file_name, sheetName="pheno_binned_corrs", append=TRUE, row.names=FALSE)
+write.xlsx_wrapper(corr_impact_by_traits_causal_summary, file=file_name, sheetName="corr_impact_ratios_summary", append=TRUE, row.names=FALSE)
 write.xlsx_wrapper(omega_regression_estimates, file=file_name, sheetName="omega_regression_estimates", append=TRUE, row.names=FALSE)
 write.xlsx_wrapper(paths_summary, file=file_name, sheetName="paths_summary", append=TRUE, row.names=FALSE)
 
