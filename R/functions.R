@@ -1708,7 +1708,6 @@ calc_corr_impact_by_traits_causal <- function( trait_interest, standard_MR_summa
 
   AM_MR <- household_MR_summary_SNPmeta %>% filter(same_trait) %>% dplyr::select(exposure_ID, IVW_beta, IVW_se, IVW_pval) %>%
     filter(exposure_ID==trait_interest) %>%
-    filter(exposure_ID != "22702_irnt") %>% filter(exposure_ID != "22704_irnt") %>%
     dplyr::rename(exposure_ID_AM_IVW_beta = IVW_beta) %>%
     dplyr::rename(exposure_ID_AM_IVW_se = IVW_se) %>%
     dplyr::rename(exposure_ID_AM_IVW_pval = IVW_pval)
@@ -1730,7 +1729,9 @@ calc_corr_impact_by_traits_causal <- function( trait_interest, standard_MR_summa
     mutate(corr_due_to_confounding_var = variance_of_product(IVW_beta^2, IVW_sq_se, exposure_ID_AM_IVW_beta, exposure_ID_AM_IVW_se)) %>%
     mutate(corr_due_to_confounding_se = sqrt(corr_due_to_confounding_var)) %>%
     dplyr::select(exposure_ID, outcome_ID, outcome_ID_couple_r, outcome_ID_couple_r_se,
-                  corr_due_to_confounding, corr_due_to_confounding_se, corr_due_to_confounding_ratio)
+                  corr_due_to_confounding, corr_due_to_confounding_se, corr_due_to_confounding_ratio) #%>%
+
+    #filter(outcome_ID != "22702_irnt") %>% filter(outcome_ID != "22704_irnt")
 
   return(output)
 
