@@ -29,6 +29,7 @@ tar_load(num_tests_by_PCs)
 tar_load(num_tests_by_PCs_AM_sig)
 tar_load(exposures_to_run)
 tar_load(household_MR_AM_FvsM_fig)
+tar_load(household_MR_binned_het_sex_spec)
 
 ```
 
@@ -38,19 +39,24 @@ For certain analyses it is worth only looking at MR results between couples wher
 
 ```{r single_trait_fig, echo = FALSE}
 library(knitr)
-knitr::include_graphics("assets/single_trait_MR.png", error = FALSE)
+knitr::include_graphics("assets/single_trait_model.png", error = FALSE)
 ```
 
 # Results 
 
 ```{r AM_data_prep, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE, include = FALSE}
 
-AM_sig_traits <- household_MR_summary_AM %>% filter(IVW_meta_pval < 0.05/num_tests_by_PCs) %>% pull(exposure_ID) %>% unique()
+AM_sig_traits <- household_MR_summary_AM %>% filter(IVW_pval < 0.05/num_tests_by_PCs) %>% pull(exposure_ID) %>% unique()
 AM_result_sig <- household_MR_summary_AM %>% filter(exposure_ID %in% AM_sig_traits)
  
 household_MR_binned_het_temp <- replace_Neale_ID(household_MR_binned_het, traits_corr2_filled, "exposure_ID", "exposure_description")
 household_MR_binned_het_temp2 <- replace_Neale_ID(household_MR_binned_het_temp, traits_corr2_filled, "outcome_ID", "outcome_description")
 household_MR_binned_het_descript <- household_MR_binned_het_temp2
+
+AM_sex_spec_result_sig <-
+  household_MR_binned_het_sex_spec %>% filter(same_trait == TRUE) %>% filter(exposure_ID %in% AM_sig_traits) %>% filter(sex_het_pval < 0.05 /
+                                                                                                                          num_tests_by_PCs_AM_sig)
+
 
 ```
 
@@ -61,8 +67,16 @@ household_MR_binned_het_descript <- household_MR_binned_het_temp2
 
 ```{r AM_overview, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
 
-AM_result_sig.DT <- AM_result_sig %>% dplyr::select(exposure_description, IVW_meta_beta, IVW_meta_pval) %>% unique()
-DT::datatable(AM_result_sig.DT, width = "100%") %>% formatSignif(columns=c('IVW_meta_beta', 'IVW_meta_pval'), digits=3)
+AM_result_sig.DT <- AM_result_sig %>% dplyr::select(exposure_description, IVW_beta, IVW_pval) %>% unique()
+DT::datatable(AM_result_sig.DT, width = "100%") %>% formatSignif(columns=c('IVW_beta', 'IVW_pval'), digits=3)
+
+AM_sig_sex_het_nom <- household_MR_binned_het_sex_spec %>% filter(same_trait) %>% filter(exposure_ID %in% AM_sig_traits) %>% filter(sex_het_pval < 0.05)
+AM_sig_sex_het_nom <- replace_Neale_ID(AM_sig_sex_het_nom, traits_corr2_filled,"exposure_ID", "exposure_description") %>%
+  dplyr::rename(trait_description = exposure_description) %>%
+  dplyr::rename(trait_ID = exposure_ID) %>%
+  dplyr::select(trait_description, trait_ID, everything())
+
+AM_result_sig_nom.DT <- AM_sig_sex_het_nom %>% dplyr::select(trait_description, trait_ID, exposure_sex, IVW_beta, IVW_se, IVW_pval, sex_het_pval) %>% unique()
 
 ```
 
@@ -80,31 +94,29 @@ DT::datatable(AM_result_sig.DT, width = "100%") %>% formatSignif(columns=c('IVW_
 - For each AM MR ($X_{p} \sim X_i$), analyses were run in each sex separately. 
 - Of the `r length(AM_sig_traits)` significant results shown above, we tested to see if there was any difference in AM MR estimates between sexes. 
 - A similar adjustment for multiple hypothesis testing was applied as above, resulting in `r num_tests_by_PCs_AM_sig` number of effective tests. 
-- The table below displays the results that significantly differ among sexes (p < `0.05/`r num_tests_by_PCs_AM_sig``).
+- After adjusting for multiple hypothesis testing (p < `0.05/`r num_tests_by_PCs_AM_sig``), `r dim(AM_sex_spec_result_sig)[1]` traits showed significant differences amongst sexes.
+- The table below shows the *nominally significant* results at `p < 0.05` (of which there are `r dim(AM_result_sig_nom.DT)[1]/2`).
 
-```{r AM_sex_het, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
-
-AM_sig_sex_het <- AM_result_sig %>% filter(IVW_sex_het_pval < 0.05/num_tests_by_PCs_AM_sig)
-
-AM_result_sig.DT <- AM_sig_sex_het %>% dplyr::select(exposure_description, IVW_beta, IVW_pval, IVW_meta_beta, IVW_meta_pval, IVW_sex_het_pval) %>% unique()
-DT::datatable(AM_result_sig.DT, width = "100%") %>% formatSignif(columns=c('IVW_beta', 'IVW_pval', 'IVW_meta_beta', 'IVW_meta_pval', 'IVW_sex_het_pval'), digits=3)
-
-```
-
-Only `r dim(AM_result_sig.DT)[1]/2` was significant after adjustment. The table below shows the results significant at `p < 0.05`.
 
 ```{r AM_sex_het_nom, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
 
-AM_sig_sex_het_nom <- AM_result_sig %>% filter(IVW_sex_het_pval < 0.05)
-AM_result_sig_nom.DT <- AM_sig_sex_het_nom %>% dplyr::select(exposure_description, IVW_beta, IVW_pval, IVW_meta_beta, IVW_meta_pval, IVW_sex_het_pval) %>% unique()
-DT::datatable(AM_result_sig_nom.DT, width = "100%") %>% formatSignif(columns=c('IVW_beta', 'IVW_pval', 'IVW_meta_beta', 'IVW_meta_pval', 'IVW_sex_het_pval'), digits=3)
+
+DT::datatable(AM_result_sig_nom.DT, width = "100%") %>% formatSignif(columns=c('IVW_beta', 'IVW_pval', 'sex_het_pval'), digits=3)
+
+nominally_sig_sex_differences <- AM_result_sig_nom.DT %>% pivot_wider(names_from = exposure_sex, values_from = c(IVW_beta, IVW_se, IVW_pval)) 
+
+t.test(nominally_sig_sex_differences$IVW_beta_male, nominally_sig_sex_differences$IVW_beta_female, paired = T)
 
 ```
 
-In general, the male to female estimate is slightly larger than the female to male estimate, as shown in the figure below. 
+In general, found that female estimates are on average larger than males (result of the paired t-test shown below).
 
-```{r sex_het_fig, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
-household_MR_AM_FvsM_fig
+```{r sex_het_m_vs_f, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
+
+nominally_sig_sex_differences <- AM_result_sig_nom.DT %>% pivot_wider(names_from = exposure_sex, values_from = c(IVW_beta, IVW_se, IVW_pval)) 
+
+t.test(nominally_sig_sex_differences$IVW_beta_male, nominally_sig_sex_differences$IVW_beta_female, paired = T)
+
 ```
 
 ## Binned results
