@@ -1,0 +1,56 @@
+---
+title: "Project status"
+author: "Jenny Sjaarda"
+date: "2021-09-16"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+This notebook displays the status of the project workflow, that is, whether everything is computationally up to date. It displays the status as at the time the notebook is executed, so if the status has changed since this notebook was last executed that fact won't be reflected in this rendered notebook. This notebook is currently intended to be run manually when you feel the need, for example, when returning to the project.
+
+# `{renv}` status
+
+`{renv}` tracks the used `R` packages and their versions.
+```{r renv}
+# Get {targets} to tell {renv} which packages it uses
+targets::tar_renv() 
+renv::status()
+```
+
+# `{targets}` status
+`{targets}` is used to track the computational dependencies between the
+project components and orchestrate recalculation when any components are
+changed.
+
+Each of the meta pipelines has leaves that are reports rendered from
+`Rmd` files that are managed jointly by `{targets}` and `{workflowr}`.
+`{targets}` is aware of the upstream dependencies (data and functions)
+and the `Rmd` file itself. If any of these is invalidated `tar_make()`
+will rebuild the report using `wflow_build()`
+.
+`{targets}` is *not* aware of the rendered meta report files. The
+rendered report files are managed exclusively by `{workflowr}`. This
+means that you can use `{workflowr}` to build and publish the report
+without making `{targets}` think that the report is out of date because
+`{workflowr}` has re-rendered it.
+```{r targets}
+# outline
+targets::tar_glimpse()
+# excruciating detail
+targets::tar_visnetwork()
+```
+
+# `{workflowr}` status
+`{workflowr}` is used to render the *meta* documents
+(`analysis/m_*.Rmd`) and build the project website.
+`{workflowr}` is only concerned with the modification and `git` commit
+dates of the `Rmd` and `HTML` files, whereas `{targets}` is concerned
+with the computational dependencies. Thus, you should rely on the
+`{targets}` status to ensure the meta reports are computationally up to
+date, then rely on the `{workflowr}` status to manage the building and
+publication of the entire website.
+
+```{r workflowr}
+workflowr::wflow_status()
+```
