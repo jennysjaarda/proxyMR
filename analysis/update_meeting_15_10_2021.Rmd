@@ -120,7 +120,7 @@ library(knitr)
 knitr::include_graphics("assets/two_trait_model_yiyp_adj.png", error = FALSE)
 ```
 
-Decided best to also include all $X$ IVs in the model as well. MRMR model is: $Y_p \sim Y_i + X_i$. 
+Decided best to also include all $X$ IVs in the model as well. MVMR model is: $Y_p \sim Y_i + X_i$. 
 
 To ensure a set of independent SNPs, $X$ and $Y$ IVs were clumped using at a threshold of $r^2$ < `r prune_threshold` using the 1000 Genomes European data set. Clumping p-values for priorization of SNPs, were based on the Neale summary statistics with $Y_i$ in both sexes, ensuring the same set of SNPs were selected in the male and female models. 
 
@@ -238,7 +238,6 @@ The table below gives the data in the plot above:
 
 ```{r PC_traits_confounding, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
 
-## merge the list of dataframes 
 corr_impact_by_PCs.DT <- replace_Neale_ID(corr_impact_by_PCs, traits_corr2_filled, "Neale_pheno_ID", "outcome_description")
 format_round_cols <- colnames(dplyr::select_if(corr_impact_by_PCs.DT, is.numeric))
 DT::datatable(corr_impact_by_PCs.DT, width = "100%")  %>% formatRound(columns=format_round_cols, digits = 3)
@@ -277,9 +276,8 @@ The table below gives the data in the plot above:
 - `trait_coordinate_corr` is the correlation of `outcome_description` with `coordinate`.
 -  `corr_due_to_confounding` corresponds to the formula: `cor(X,coord)^2*cor(coord_i,coord_p)`.
 
-```{r coordin_traits_confounding, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
+```{r coord_traits_confounding, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
 
-## merge the list of dataframes 
 corr_impact_by_coords.DT <- replace_Neale_ID(corr_impact_by_coords, traits_corr2_filled, "Neale_pheno_ID", "outcome_description")
 format_round_cols <- colnames(dplyr::select_if(corr_impact_by_coords.DT, is.numeric))
 DT::datatable(corr_impact_by_coords.DT, width = "100%")  %>% formatRound(columns=format_round_cols, digits = 3)
