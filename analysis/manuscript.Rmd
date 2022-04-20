@@ -172,7 +172,7 @@ A plot comparing the two effects, and a summary table of the significant effects
 
 ```{r corr_vs_MR_effects, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE}
 
-interesting_phenotypes <- c("Basal metabolic rate", "Place of birth in UK - north co-ordinate", 
+interesting_phenotypes <- c("Place of birth in UK - north co-ordinate", 
                             "Systolic blood pressure, automated reading", "Standing height", 
                             "Weight", "Forced vital capacity (FVC), Best measure",
                             "Basophill count", "Pulse rate, automated reading")
@@ -208,31 +208,33 @@ corr_vs_MR_effects_plot <- ggplot2::ggplot(data = corr_vs_MR_effects_dat, ggplot
                                                        y = MR_est, 
                                                        label = Phenotype, 
                                                        color = factor(diff_p_sig)),) +
-  geom_point(alpha = 1.2) +
-  scale_color_manual(values = custom_col[c(1,2)], labels=c("Non-significant","BF-signifncant difference")) +
-  #geom_text(show.legend = FALSE) +
-  geom_abline(slope=1, intercept=0) +
   
   ggplot2::geom_errorbar(
-    ggplot2::aes(ymin = MR_est - IVW_se, ymax = MR_est + IVW_se),
+    ggplot2::aes(ymin = MR_est - 1.96*IVW_se, ymax = MR_est + 1.96*IVW_se),
     colour = "grey",
     width = 0
   ) +
   ggplot2::geom_errorbar(
-    ggplot2::aes(xmin = Correlation - couple_r_se, xmax = Correlation + couple_r_se),
+    ggplot2::aes(xmin = Correlation - 1.96*couple_r_se, xmax = Correlation + 1.96*couple_r_se),
     colour = "grey",
     width = 0
   ) +
+  
+  geom_point(alpha = 1.2) +
+  scale_color_manual(values = custom_col[c(1,2)], labels=c("Non-significant","Bonferroni-significant difference")) +
+  #geom_text(show.legend = FALSE) +
+  geom_abline(slope=1, intercept=0) +
+
   
   theme_minimal() +
   theme(legend.text=element_text(size=11)) +
   #geom_text(aes(x=1,y=2,label=""),show.legend=F) +
   ggplot2::labs(x = paste0("Couple correlation"),
-                y = paste("Standardized MR effect")) +
+                y = paste("MR-estimate")) +
   theme(legend.position="bottom") + theme(legend.title=element_blank()) +
   geom_text_repel(data = subset(corr_vs_MR_effects_dat, label_phenos==TRUE),
-                  nudge_y = -0.25 - subset(corr_vs_MR_effects_dat, label_phenos==TRUE)$MR_est, size = 3.25,
-                  direction = "x", show.legend = FALSE ) 
+                  nudge_y = -0.35 - subset(corr_vs_MR_effects_dat, label_phenos==TRUE)$MR_est, size = 3.25,
+                  direction = "x", show.legend = FALSE, box.padding = 0.5 ) 
 
 corr_vs_MR_effects_plot
 
@@ -292,7 +294,7 @@ A summary of the top 5 confounders for each `trait_ID` can be seen below (a vari
 
 ```{r confounder_summary, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
 
-number_of_potential_confounders <- dim(corr_potential_trait_confounders_pos)[1]/dim(corr_vs_MR_effects_sig_dat)[1]
+number_of_potential_confounders <- dim(corr_potential_trait_confounders_pos)[1]/dim(corr_potential_trait_confounders_pos)[1]
 
 non_sig_confounders <- corr_potential_trait_confounders_pos %>% filter(!sig_confounder) %>% group_by(outcome_ID) %>%
   dplyr::summarize(description = outcome_description[1], n = n()) %>% 
@@ -302,28 +304,25 @@ non_sig_confounders <- corr_potential_trait_confounders_pos %>% filter(!sig_conf
   dplyr::rename(trait_ID = outcome_ID) 
 
 sig_confounders <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %>% group_by(outcome_ID) %>%
-  arrange(-corr_due_to_confounding_ratio) %>%
+  arrange(-corr_due_to_confounding) %>%
   mutate(total_potential_confounders = n()) %>%
   dplyr::summarize(description = outcome_description[1],
                    total_potential_confounders = total_potential_confounders[1],
                    potential_confounders = paste0(exposure_description, collapse = "; "), 
-                   max_C = max(corr_due_to_confounding), 
-                   min_C = min(corr_due_to_confounding)) %>%
+                   max_C = max(corr_due_to_confounding)) %>%
   dplyr::rename(trait_ID = outcome_ID) %>%
   dplyr::rename(trait_description = description) %>% 
   dplyr::select(trait_description, trait_ID, everything())
 
-
 sig_confounders_top5 <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %>% group_by(outcome_ID) %>%
-  arrange(-corr_due_to_confounding_ratio) %>%
+  arrange(-corr_due_to_confounding) %>%
   mutate(total_potential_confounders = n()) %>%
   slice_head(n = 5) %>%
   #mutate(potential_confounders = paste0(exposure_description, collapse = "; ")) %>%
   dplyr::summarize(trait_description = outcome_description[1],
                    total_potential_confounders = total_potential_confounders[1],
                    top5_potential_confounders = paste0(exposure_description, collapse = "; "), 
-                   max_C = max(corr_due_to_confounding), 
-                   min_C = min(corr_due_to_confounding)) %>%
+                   max_C = max(corr_due_to_confounding)) %>%
   dplyr::rename(trait_ID = outcome_ID) %>%
   left_join(corr_vs_MR_effects_sig_dat.DT, by = c("trait_description", "trait_ID")) %>%
   dplyr::select(trait_description, trait_ID, couple_r, IVW_beta, IVW_pval,everything())
@@ -336,7 +335,7 @@ DT::datatable(sig_confounders_top5, width = "100%") %>% formatSignif(columns=for
 
 We compared the difference in phenotypic estimate and MR-estimates to the maximum C for each trait, as shown in the figure below: 
 
-```{r max_C_plot, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE} 
+```{r max_C_plot, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE, fig.height=10, dpi=600}
 
 
 max_C_data <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %>% group_by(outcome_ID) %>%
@@ -361,36 +360,63 @@ max_C_data <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %>
   mutate(Z_prod = Z_sq_beta*Z_AM_beta) %>%
   mutate(Z_prod_var = variance_of_product(Z_sq_beta, Z_sq_se, Z_AM_beta, Z_AM_se)) %>%
   mutate(Z_prod_se = sqrt(Z_prod_var)) %>%
-  mutate(same_trait_corr_minus_MR_est_se = sqrt(variance_of_sum(outcome_ID_IVW_se, outcome_ID_couple_r_se)))
+  mutate(same_trait_corr_minus_MR_est_se = sqrt(variance_of_sum(outcome_ID_IVW_se, outcome_ID_couple_r_se))) %>%
+  mutate(Phenotype = outcome_description) %>% 
+  mutate(Phenotype = case_when(Phenotype == "Basal metabolic rate" ~ "BMR",
+                               Phenotype == "Systolic blood pressure, automated reading" ~ "SBP",
+                               Phenotype == "Pulse rate, automated reading" ~ "Pulse rate",
+                               Phenotype == "Body fat percentage" ~ "BFP",
+                               Phenotype == "Standing height" ~ "Height",
+                               Phenotype == "Reticulocyte percentage" ~ "Reticulocyte %",
+      
+                               #Phenotype == "Weight" & outcome_ID == "21002_irnt" ~ "Weight",
+                               Phenotype == "Forced vital capacity (FVC), Best measure" ~ "FVC",
+                               Phenotype == "Red blood cell (erythrocyte) count" ~ "RBC count",
+                               Phenotype == "Place of birth in UK - north co-ordinate" ~ "Place of birth, NC",
+                               TRUE ~ Phenotype)) %>%
+  mutate(label_phenos = case_when(outcome_description %in% interesting_phenotypes ~ TRUE, TRUE ~ FALSE))
 
 
-max_C_plot <- ggplot2::ggplot(data = max_C_data, ggplot2::aes(x = corr_due_to_confounding,
-                                                       y = same_trait_corr_minus_MR_est)) +
+
+max_C_plot <- ggplot2::ggplot(data = max_C_data, 
+                              ggplot2::aes(x = corr_due_to_confounding, 
+                                           y = same_trait_corr_minus_MR_est, 
+                                           label = Phenotype)) +
+  
+  ggplot2::geom_errorbar(
+    ggplot2::aes(ymin = same_trait_corr_minus_MR_est - 1.96*same_trait_corr_minus_MR_est_se, 
+                 ymax = same_trait_corr_minus_MR_est + 1.96*same_trait_corr_minus_MR_est_se),
+    colour = "grey",
+    width = 0
+  ) +
+  ggplot2::geom_errorbar(
+    ggplot2::aes(xmin = corr_due_to_confounding - 1.96*Z_prod_se, 
+                 xmax = corr_due_to_confounding + 1.96*Z_prod_se),
+    colour = "grey",
+    width = 0
+  ) +
+  
   geom_point(alpha = 1.2) +
   #scale_color_manual(values = custom_col[c(1,2)], labels=c("Non-significant","BF-signifncant difference")) +
   #geom_text(show.legend = FALSE) +
   geom_abline(slope=1, intercept=0) +
 
-  ggplot2::geom_errorbar(
-    ggplot2::aes(ymin = same_trait_corr_minus_MR_est - same_trait_corr_minus_MR_est_se, ymax = same_trait_corr_minus_MR_est + same_trait_corr_minus_MR_est_se),
-    colour = "grey",
-    width = 0
-  ) +
-  ggplot2::geom_errorbar(
-    ggplot2::aes(xmin = corr_due_to_confounding - Z_prod_se, xmax = corr_due_to_confounding + Z_prod_se),
-    colour = "grey",
-    width = 0
-  ) +
-
   theme_minimal() +
   ggplot2::labs(x = paste0("max C"),
                 y = paste("Correlation - MR-estimate")) +
   theme(legend.title=element_blank()) +
-  #geom_smooth(method=lm , color="red", fill="#69b3a2", se=TRUE) +
-  theme_ipsum()
+  geom_text_repel(data = subset(max_C_data, label_phenos==TRUE),
+                  nudge_y = -0.25 - subset(max_C_data, label_phenos==TRUE)$same_trait_corr_minus_MR_est, size = 3.25,
+                  direction = "x", show.legend = FALSE, box.padding = 0.5)
 
 
 max_C_plot
+
+## combine `max_C_plot` with `corr_vs_MR_effects_plot`
+
+corr_vs_MR_comb <- plot_grid(plotlist = list(corr_vs_MR_effects_plot, max_C_plot), nrow=2, ncol = 1, byrow = T, labels="AUTO")
+
+corr_vs_MR_comb
 
 ```
 
@@ -588,7 +614,6 @@ DT::datatable(AM_joint.DT, width = "100%") %>% formatSignif(columns=c('wt_median
 DT::datatable(AM_result_sig_nom.DT, width = "100%") %>% formatSignif(columns=c('IVW_beta', 'IVW_pval', 'sex_het_pval'), digits=3)
 
 nominally_sig_sex_differences <- AM_result_sig_nom.DT %>% pivot_wider(names_from = exposure_sex, values_from = c(IVW_beta, IVW_se, IVW_pval)) 
-# write.table(nominally_sig_sex_differences, "docs/manuscript_tables/nominally_sig_sex_differences.txt", row.names = F, sep=",", quote = F)
 
 t.test(nominally_sig_sex_differences$IVW_beta_male, nominally_sig_sex_differences$IVW_beta_female, paired = T)
 
@@ -717,7 +742,7 @@ We also tested the phenotypic correlation among the different bins. Below are th
 
 binned_pheno_corr_summary <- bind_rows(lapply(binned_pheno_corrs, function(x) {x[[2]]}))
 
-pheno_corr_pearson_sig <- binned_pheno_corr_summary %>% filter(bin_slope_pval_pearson < 0.05/num_tests_by_PCs) %>% arrange(group)
+pheno_corr_pearson_sig <- binned_pheno_corr_summary %>% filter(bin_slope_pval_pearson < 0.05/num_tests_by_PCs) %>% arrange(desc(group))
 
 pheno_corr_pearson_sig <- replace_Neale_ID(pheno_corr_pearson_sig, traits_corr2_filled, "trait", "trait_description") %>%
   dplyr::rename(trait_ID = trait) %>%
@@ -794,6 +819,8 @@ We tested the ratio of confounding to correlation for each confounder trait test
 
 ```{r corr_due_to_confounding_ratio, eval = FALSE, echo = FALSE}
 
+## originally ran the confounder analysis using correlations only, but switched to use causal effects. 
+
 corr_impact_by_coords_ratio <- corr_impact_by_coords %>% 
   dplyr::select(Neale_pheno_ID, trait_couple_corr, trait_couple_corr_se, corr_due_to_confounding_all, corr_due_to_confounding_all_se) %>%
   unique() %>%
@@ -812,9 +839,9 @@ corr_impact_by_traits_ratio <- corr_impact_by_traits %>% dplyr::rename(confounde
                 corr_due_to_confounding, corr_due_to_confounding_se) %>% 
   mutate(trait_ratio = corr_due_to_confounding/trait_j_couple_corr) 
 
-corr_impact_by_traits_ratio <- replace_Neale_ID(corr_impact_by_traits_ratio, traits_corr2_filled, "confounder_trait", "confounder_trait_description") %>% ungroup() %>%
+corr_impact_by_traits_ratio <- replace_Neale_ID(corr_impact_by_traits_ratio, traits_corr2_filled, "confounder_trait", "confounder_trait_description") %>% 
+  ungroup() %>%
   dplyr::select(-confounder_trait) %>% dplyr::rename(confounder_trait = confounder_trait_description)
-
 
 corr_impact_ratios <- rbind(corr_impact_by_PCs_ratio, corr_impact_by_coords_ratio, corr_impact_by_traits_ratio)
 
@@ -826,15 +853,16 @@ corr_impact_ratios_summary %>%
   kbl() %>%
   kable_styling()
   
-# write.table(corr_impact_ratios_summary, "docs/manuscript_tables/corr_impact_ratios_summary.txt", row.names = F, sep=",", quote = F)
 ```
 
 ```{r corr_due_to_confounding_ratio_causal, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
 
-confounder_traits_sub <- confounder_traits[c(1,2,4,5)]
+confounder_traits_sub <- confounder_traits[c(1,2,5,10,15)]
 
 corr_impact_by_traits_causal_summary <- corr_impact_by_traits_causal %>% group_by(exposure_ID) %>%
-   dplyr::summarise(mean_ratio = mean(corr_due_to_confounding_ratio), median_ratio = median(corr_due_to_confounding_ratio), sd_ratio = sd(corr_due_to_confounding_ratio), number_of_traits = n()) 
+   dplyr::summarise(mean_ratio = mean(corr_due_to_confounding_ratio), 
+                    median_ratio = median(corr_due_to_confounding_ratio), sd_ratio = sd(corr_due_to_confounding_ratio), 
+                    number_of_traits = n()) 
 
 corr_impact_by_traits_causal_summary <- replace_Neale_ID(corr_impact_by_traits_causal_summary, traits_corr2_filled, "exposure_ID", "outcome_description") 
 
@@ -843,15 +871,34 @@ corr_impact_by_traits_causal_summary <- corr_impact_by_traits_causal_summary[whi
   dplyr::rename(confounder_trait_ID =  exposure_ID) %>% 
   dplyr::select(confounder_trait, confounder_trait_ID, everything())
 
-corr_impact_by_traits_causal_summary %>%
+corr_impact_by_PCs_summary <- corr_impact_by_PCs %>% 
+  dplyr::select(Neale_pheno_ID, trait_couple_corr, trait_couple_corr_se, corr_due_to_confounding_all, corr_due_to_confounding_all_se) %>%
+  unique() %>%
+  mutate(confounder_trait = "PCs") %>%
+  mutate(trait_ratio = corr_due_to_confounding_all/trait_couple_corr) %>%
+  group_by(confounder_trait) %>%
+  dplyr::summarise(mean_ratio = mean(trait_ratio), median_ratio = median(trait_ratio), sd_ratio = sd(trait_ratio), number_of_traits = n()) %>%
+  mutate(confounder_trait_ID = NA) 
+
+
+corr_impact_by_coords_summary <- corr_impact_by_traits_causal %>% filter(exposure_ID=="129_irnt" | exposure_ID=="130_irnt") %>% 
+  filter(!(outcome_ID=="129_irnt" | outcome_ID=="130_irnt"))  %>%
+  group_by(outcome_ID) %>% mutate(corr_due_to_confounding_all = sum(corr_due_to_confounding)) %>%
+  mutate(corr_due_to_confounding_all_se = sqrt(sum(corr_due_to_confounding_se^2))) %>%
+  dplyr::select(outcome_ID, outcome_ID_couple_r, outcome_ID_couple_r_se, corr_due_to_confounding_all, corr_due_to_confounding_all_se) %>% unique() %>%
+  mutate(confounder_trait = "Birth place coordinates") %>%
+  mutate(trait_ratio = corr_due_to_confounding_all/outcome_ID_couple_r) %>%
+  group_by(confounder_trait) %>%
+  dplyr::summarise(mean_ratio = mean(trait_ratio), median_ratio = median(trait_ratio), sd_ratio = sd(trait_ratio), number_of_traits = n()) %>%
+  mutate(confounder_trait_ID = NA) 
+
+corr_impact_summary <- rbind(corr_impact_by_traits_causal_summary, corr_impact_by_coords_summary)
+
+corr_impact_summary %>%
   kbl() %>%
   kable_styling()
 
 ```
-
-*A note on the number of traits:* 
-
-We tested the impact of `trait_interest` on couple correlation amongst all traits in our couple MR framework (number of traits = `r dim(household_MR_summary_AM)[1]`) with the exception of birth place coordinates (2 each [N and E]), we also removed the trait itself from the confounder analysis where applicable (in the case of traits `20016_irnt`, `738` and `845`). [Trait `189_irnt` was not included in our final couple MR analysis but could still be evaluated here because no MR-estimates were used.]
 
 ## Plots.
 
@@ -884,19 +931,21 @@ for(i in 1:length(confounder_traits_sub)){
       ggplot2::aes(x = trait_j_couple_corr,
                    y = corr_due_to_confounding, Phenotype = Phenotype)
     ) +
+        
+    ggplot2::geom_errorbar(
+      ggplot2::aes(ymin = corr_due_to_confounding - 1.96*corr_due_to_confounding_se, ymax = corr_due_to_confounding + 1.96*corr_due_to_confounding_se),
+      colour = "grey",
+      width = 0
+    ) +
+    ggplot2::geom_errorbar(
+      ggplot2::aes(xmin = trait_j_couple_corr - 1.96*trait_j_couple_corr_se, xmax = trait_j_couple_corr + 1.96*trait_j_couple_corr_se),
+      colour = "grey",
+      width = 0
+    ) +
+    
     theme(plot.title = element_text(hjust = 0.5)) +
     geom_point(alpha = 3 / 4) +
-    
-    ggplot2::geom_errorbar(
-      ggplot2::aes(ymin = corr_due_to_confounding - corr_due_to_confounding_se, ymax = corr_due_to_confounding + corr_due_to_confounding_se),
-      colour = "grey",
-      width = 0
-    ) +
-    ggplot2::geom_errorbar(
-      ggplot2::aes(xmin = trait_j_couple_corr - trait_j_couple_corr_se, xmax = trait_j_couple_corr + trait_j_couple_corr_se),
-      colour = "grey",
-      width = 0
-    ) +
+
     
     geom_abline(slope=1, intercept=0) +
     coord_cartesian(ylim = c(0, NA)) +
@@ -921,7 +970,7 @@ figures_grid <- plot_grid(plotlist = plots, nrow=2, ncol = 2, byrow = F, labels=
 figures_grid
 ```
 
-```{r PC_confounder_plot, echo = FALSE, eval = FALSE, message=FALSE}
+```{r PC_confounder_plot, echo = FALSE, eval = TRUE, message=FALSE}
 
 plot_data <- corr_impact_by_PCs %>% dplyr::select(Neale_pheno_ID, trait_couple_corr, corr_due_to_confounding_all, corr_due_to_confounding_all_se, trait_couple_corr_se, trait_couple_corr_se) %>% unique()
 
@@ -932,19 +981,22 @@ plot_PCs <-
                  y = corr_due_to_confounding_all)
   ) +
   theme(plot.title = element_text(hjust = 0.5)) +
+  
+  ggplot2::geom_errorbar(
+    ggplot2::aes(ymin = corr_due_to_confounding_all - 1.96*corr_due_to_confounding_all_se, ymax = corr_due_to_confounding_all + 1.96*corr_due_to_confounding_all_se),
+    colour = "grey",
+    width = 0
+  ) +
+  ggplot2::geom_errorbar(
+    ggplot2::aes(xmin = trait_couple_corr - 1.96*trait_couple_corr_se, xmax = trait_couple_corr + 1.96*trait_couple_corr_se),
+    colour = "grey",
+    width = 0
+  ) +
+  
+  
   geom_point(alpha = 3 / 4) +
   
-  ggplot2::geom_errorbar(
-    ggplot2::aes(ymin = corr_due_to_confounding_all - corr_due_to_confounding_all_se, ymax = corr_due_to_confounding_all + corr_due_to_confounding_all_se),
-    colour = "grey",
-    width = 0
-  ) +
-  ggplot2::geom_errorbar(
-    ggplot2::aes(xmin = trait_couple_corr - trait_couple_corr_se, xmax = trait_couple_corr + trait_couple_corr_se),
-    colour = "grey",
-    width = 0
-  ) +
-  
+
   theme_minimal() +
   ggplot2::labs(
     x = paste0("Couple trait correlation"),
@@ -954,59 +1006,65 @@ plot_PCs <-
   ) +
   
   xlim(0, 1.0) +
-  theme(plot.title = element_text(size=11, hjust = 0.5)) + theme(axis.title = element_text(size = 10))  
+  theme(plot.title = element_text(size=11, hjust = 0.5)) + theme(axis.title = element_text(size = 10))  +
+  geom_abline(slope=1, intercept=0) +
+  coord_cartesian(ylim = c(0, NA)) 
 
-i <- 5
-plots[[i]] <- plot_PCs 
 
 ```
 
-```{r coord_confounder_plot, echo = FALSE, eval = FALSE, message=FALSE, out.width = "200%", dpi=600}
+```{r coord_confounder_plot, echo = FALSE, eval = TRUE, message=FALSE, out.width = "200%", dpi=600}
 
-plot_data <- corr_impact_by_coords %>% dplyr::select(Neale_pheno_ID, trait_couple_corr, corr_due_to_confounding_all, corr_due_to_confounding_all_se, trait_couple_corr_se, trait_couple_corr_se) %>% unique()
+trait_description <- "Place of birth coordinates"
 
-plot_coords <-
+plot_data <- corr_impact_by_traits_causal %>% filter(exposure_ID=="129_irnt" | exposure_ID=="130_irnt") %>% 
+  filter(!(outcome_ID=="129_irnt" | outcome_ID=="130_irnt"))  %>%
+  group_by(outcome_ID) %>% mutate(corr_due_to_confounding_all = sum(corr_due_to_confounding)) %>%
+  mutate(corr_due_to_confounding_all_se = sqrt(sum(corr_due_to_confounding_se^2))) %>%
+  dplyr::select(outcome_ID, outcome_ID_couple_r, outcome_ID_couple_r_se, corr_due_to_confounding_all, corr_due_to_confounding_all_se) %>% unique()
+
+
+plot_data <- replace_Neale_ID(plot_data, traits_corr2_filled, "outcome_ID", "Phenotype")
+coord_plot <-
   ggplot2::ggplot(
     data = plot_data,
-    ggplot2::aes(x = trait_couple_corr,
-                 y = corr_due_to_confounding_all)
+    ggplot2::aes(x = outcome_ID_couple_r,
+                 y = corr_due_to_confounding_all, Phenotype = Phenotype)
   ) +
   theme(plot.title = element_text(hjust = 0.5)) +
-  geom_point(alpha = 3 / 4) +
+  
   
   ggplot2::geom_errorbar(
-    ggplot2::aes(ymin = corr_due_to_confounding_all - corr_due_to_confounding_all_se, ymax = corr_due_to_confounding_all + corr_due_to_confounding_all_se),
+    ggplot2::aes(ymin = corr_due_to_confounding_all - 1.96*corr_due_to_confounding_all_se, ymax = corr_due_to_confounding_all + 1.96*corr_due_to_confounding_all_se),
     colour = "grey",
     width = 0
   ) +
   ggplot2::geom_errorbar(
-    ggplot2::aes(xmin = trait_couple_corr - trait_couple_corr_se, xmax = trait_couple_corr + trait_couple_corr_se),
+    ggplot2::aes(xmin = outcome_ID_couple_r - 1.96*outcome_ID_couple_r_se, xmax = outcome_ID_couple_r + 1.96*outcome_ID_couple_r_se),
     colour = "grey",
     width = 0
   ) +
+  
+  geom_point(alpha = 3 / 4) +
   
   theme_minimal() +
   ggplot2::labs(
     x = paste0("Couple trait correlation"),
     y = paste0("Couple correlation \ndue to confounding"),
-    title = paste0("Place of birth \ncoordinates")
+    title = paste0(trait_description)
     #title = paste0("Impact of ", trait_description, "\n on couple correlation")
   ) +
   xlim(0, 1.0) +
-  theme(plot.title = element_text(size=11, hjust = 0.5)) + theme(axis.title = element_text(size = 10))
-
-i <- 6
-plots[[i]] <- plot_coords 
-
-figures_grid <- plot_grid(plotlist = plots, nrow=3, ncol = 2, byrow = T, labels="AUTO", label_size = 12)
-figures_grid
+  theme(plot.title = element_text(size=11, hjust = 0.5)) + theme(axis.title = element_text(size = 10))  +
+  geom_abline(slope=1, intercept=0) +
+  coord_cartesian(ylim = c(0, NA)) 
 
 
 ```
 
 ```{r causal_confounder_plot, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE, dpi=600, fig.height=7}
 
-confounder_traits_sub <- confounder_traits[c(1,2,4,5)]
+confounder_traits_sub <- confounder_traits[c(1,2,5,10,15)]
 
 
 plots <- list()
@@ -1033,18 +1091,20 @@ for(i in 1:length(confounder_traits_sub)){
                    y = corr_due_to_confounding, Phenotype = Phenotype)
     ) +
     theme(plot.title = element_text(hjust = 0.5)) +
-    geom_point(alpha = 3 / 4) +
     
+        
     ggplot2::geom_errorbar(
-      ggplot2::aes(ymin = corr_due_to_confounding - corr_due_to_confounding_se, ymax = corr_due_to_confounding + corr_due_to_confounding_se),
+      ggplot2::aes(ymin = corr_due_to_confounding - 1.96*corr_due_to_confounding_se, ymax = corr_due_to_confounding + 1.96*corr_due_to_confounding_se),
       colour = "grey",
       width = 0
     ) +
     ggplot2::geom_errorbar(
-      ggplot2::aes(xmin = outcome_ID_couple_r - outcome_ID_couple_r_se, xmax = outcome_ID_couple_r + outcome_ID_couple_r_se),
+      ggplot2::aes(xmin = outcome_ID_couple_r - 1.96*outcome_ID_couple_r_se, xmax = outcome_ID_couple_r + 1.96*outcome_ID_couple_r_se),
       colour = "grey",
       width = 0
     ) +
+    
+    geom_point(alpha = 3 / 4) +
     
     theme_minimal() +
     ggplot2::labs(
@@ -1061,9 +1121,9 @@ for(i in 1:length(confounder_traits_sub)){
   plots[[i]] <- plot 
 }
 
-i <- 5 
-
-figures_grid <- plot_grid(plotlist = plots, nrow=2, ncol = 2, byrow = F, labels="AUTO")
+i <- 6
+plots[[i]] <- coord_plot 
+figures_grid <- plot_grid(plotlist = plots, nrow=3, ncol = 2, byrow = F, labels="AUTO")
 figures_grid
 
 
@@ -1092,6 +1152,22 @@ The results are summarized below (and provided in table "omega_regression_estima
 ```{r regression_summary, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
 
 data <- proxyMR_comparison_summary_yiyp_adj_SNPmeta
+
+data <- data %>%
+  mutate(
+    rho_larger = case_when(
+      gam_vs_rho_BF_sig == TRUE & rho_beta > gam_beta ~ TRUE,
+      gam_vs_rho_BF_sig == TRUE &
+        rho_beta < gam_beta ~ FALSE,
+      gam_vs_rho_BF_sig == FALSE ~ NA
+    )
+  ) %>%
+  mutate(omega_larger = case_when((omega_beta - rho_beta - gam_beta) > max(rho_beta, gam_beta) ~ TRUE, 
+                                  TRUE ~ FALSE))
+  
+
+                
+                
 data$rho_resid <- resid(lm(rho_beta ~ gam_beta, data = data))
 data$gam_rho_resid <- data$rho_resid + data$gam_beta
 
@@ -1119,6 +1195,8 @@ omega_regression_estimates %>%
 
 
 ```
+
+Of note, we found `r  table(data$gam_vs_rho_BF_sig)[[2]]` relationships which were significantly different between $\rho$ and  $\gamma$, whereby `r table(data$rho_larger)[[2]]` (`r (table(data$rho_larger)[[2]]/table(data$gam_vs_rho_BF_sig)[[2]])*100`%) showed larger effects through $\rho$ and the other `r table(data$rho_larger)[[1]]` (`r (table(data$rho_larger)[[1]]/table(data$gam_vs_rho_BF_sig)[[2]])*100`%) showed larger effects through $\gamma$. 
 
 ```{r remove_opp_sign, include = FALSE}
 
@@ -1196,7 +1274,7 @@ boxplot <- data_boxplot %>%
 
 ```{r xy_boxplot_combined, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE, warning = FALSE, fig.height = 10}
 
-figures_grid <- plot_grid(plotlist = list(proxyMR_prod_comparison_fig_yiyp_adj, boxplot), nrow=2, ncol = 1, byrow = T)
+figures_grid <- plot_grid(plotlist = list(proxyMR_prod_comparison_fig_yiyp_adj, boxplot), nrow=2, ncol = 1, byrow = T, labels = c('', 'E'))
 figures_grid
 
 ```
@@ -1250,21 +1328,25 @@ DT::datatable(paths_summary, width = "100%") %>% formatRound(columns=format_roun
 
 ## Pruend paths summary: `paths_summary`
 
-file_name <- "docs/manuscript_tables/manuscript_tables.xlsx"
+main_tables_file <- "docs/manuscript_tables/manuscript_tables.xlsx"
+supplementary_tables_file <- "docs/manuscript_tables/supplementary_tables.xlsx"
 
 write.xlsx_wrapper <- function(dat, ...){
   
   write.xlsx(as.data.frame(dat), ...)
 }
 
-write.xlsx_wrapper(corr_vs_MR_effects_sig_dat, file=file_name, sheetName="sig_corr_vs_MR", row.names=FALSE)
-write.xlsx_wrapper(sig_confounders, file=file_name, sheetName="sig_confounders", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(AM_result_sig.DT, file=file_name, sheetName="BF_sig_same_trait_MR", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(nominally_sig_sex_differences, file=file_name, sheetName="nominally_sig_sex_diff", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(pheno_corr_pearson_sig.DT, file=file_name, sheetName="pheno_binned_corrs", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(corr_impact_by_traits_causal_summary, file=file_name, sheetName="corr_impact_ratios_summary", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(omega_regression_estimates, file=file_name, sheetName="omega_regression_estimates", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(paths_summary, file=file_name, sheetName="paths_summary", append=TRUE, row.names=FALSE)
+## Main tables 
+write.xlsx_wrapper(corr_impact_summary, file=main_tables_file, sheetName="Table 1 corr_impact_ratios_summary", row.names=FALSE)
+write.xlsx_wrapper(omega_regression_estimates, file=main_tables_file, sheetName="Table 2 omega_regression_estimates", append=TRUE, row.names=FALSE)
+
+## Supplementary tables
+write.xlsx_wrapper(AM_result_sig.DT, file=supplementary_tables_file, sheetName="Table 1 BF_sig_same_trait_MR", append=TRUE, row.names=FALSE)
+write.xlsx_wrapper(nominally_sig_sex_differences, file=supplementary_tables_file, sheetName="Table 2 nominally_sig_sex_diff", append=TRUE, row.names=FALSE)
+write.xlsx_wrapper(pheno_corr_pearson_sig.DT, file=supplementary_tables_file, sheetName="Table 3 pheno_binned_corrs", append=TRUE, row.names=FALSE)
+write.xlsx_wrapper(corr_vs_MR_effects_sig_dat, file=supplementary_tables_file, sheetName="Table 4 sig_corr_vs_MR", row.names=FALSE)
+write.xlsx_wrapper(sig_confounders, file=supplementary_tables_file, sheetName="Table 5 sig_confounders", append=TRUE, row.names=FALSE)
+write.xlsx_wrapper(paths_summary, file=supplementary_tables_file, sheetName="Table 6 paths_summary", append=TRUE, row.names=FALSE)
 
 
 
