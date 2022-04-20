@@ -1341,12 +1341,12 @@ write.xlsx_wrapper(corr_impact_summary, file=main_tables_file, sheetName="Table 
 write.xlsx_wrapper(omega_regression_estimates, file=main_tables_file, sheetName="Table 2 omega_regression_estimates", append=TRUE, row.names=FALSE)
 
 ## Supplementary tables
-write.xlsx_wrapper(AM_result_sig.DT, file=supplementary_tables_file, sheetName="Table 1 BF_sig_same_trait_MR", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(nominally_sig_sex_differences, file=supplementary_tables_file, sheetName="Table 2 nominally_sig_sex_diff", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(pheno_corr_pearson_sig.DT, file=supplementary_tables_file, sheetName="Table 3 pheno_binned_corrs", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(corr_vs_MR_effects_sig_dat, file=supplementary_tables_file, sheetName="Table 4 sig_corr_vs_MR", row.names=FALSE)
-write.xlsx_wrapper(sig_confounders, file=supplementary_tables_file, sheetName="Table 5 sig_confounders", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(paths_summary, file=supplementary_tables_file, sheetName="Table 6 paths_summary", append=TRUE, row.names=FALSE)
+write.xlsx_wrapper(AM_result_sig.DT, file=supplementary_tables_file, sheetName="Supp Table 1 BF_sig_same_trait_MR", row.names=FALSE)
+write.xlsx_wrapper(nominally_sig_sex_differences, file=supplementary_tables_file, sheetName="Supp Table 2 nominally_sig_sex_diff", append=TRUE, row.names=FALSE)
+write.xlsx_wrapper(pheno_corr_pearson_sig.DT, file=supplementary_tables_file, sheetName="Supp Table 3 pheno_binned_corrs", append=TRUE, row.names=FALSE)
+write.xlsx_wrapper(corr_vs_MR_effects_sig_dat, file=supplementary_tables_file, sheetName="Supp Table 4 sig_corr_vs_MR", append = TRUE, row.names=FALSE)
+write.xlsx_wrapper(sig_confounders, file=supplementary_tables_file, sheetName="Supp Table 5 sig_confounders", append=TRUE, row.names=FALSE)
+write.xlsx_wrapper(paths_summary, file=supplementary_tables_file, sheetName="Supp Table 6 paths_summary", append=TRUE, row.names=FALSE)
 
 
 
