@@ -693,6 +693,24 @@ list(
     pattern = map(couple_MR_vs_trait_corr_sig)
   ),
 
+  # in response to reviewer comment we run a MVMR to calculate the individual C (but don't sum it up as the original idea below)
+  tar_target(
+    potential_trait_confounders_pos_MVMR_result,
+    {
+      path_outcome_stats
+      path_outcome_stats_filter
+      path_outcome_stats_meta
+      run_MVMR_potential_trait_confounders_pos(corr_potential_trait_confounders_pos, household_MR_summary_AM, prune_threshold)
+    },
+    pattern = map(corr_potential_trait_confounders_pos), iteration= "list",
+  ),
+
+  tar_target(
+    corr_potential_trait_confounders_pos_MVMR_summary,
+    summarize_potential_trait_confounders_pos_MVMR(corr_potential_trait_confounders_pos, potential_trait_confounders_pos_MVMR_result, couple_MR_vs_trait_corr_sig_pos),
+    pattern = map(corr_potential_trait_confounders_pos, potential_trait_confounders_pos_MVMR_result)
+  ),
+
   # decided to scrap the MVMR model with C-sum:
 
   # tar_target(
