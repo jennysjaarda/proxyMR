@@ -3852,7 +3852,7 @@ run_MVMR_potential_trait_confounders_pos <- function(corr_potential_trait_confou
 
     cols <- paste0(grep('_pval', names(rank_matrix), value = TRUE), "_rank")
 
-    rank_matrix_temp <- rank_matrix[,1:3] %>% unique() %>% filter(SNP %in% snps) %>%
+    rank_matrix_temp <- rank_matrix %>% unique() %>% filter(SNP %in% snps) %>%
       mutate_at(vars(ends_with("_pval")), list(rank = ~dense_rank(.))) %>% as_tibble()
 
     if(length(cols)==1) {
