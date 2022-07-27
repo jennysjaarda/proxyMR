@@ -3980,16 +3980,20 @@ run_MVMR_potential_trait_confounders_pos <- function(corr_potential_trait_confou
 
 summarize_potential_trait_confounders_pos_MVMR <- function(corr_potential_trait_confounders_pos, potential_trait_confounders_pos_MVMR_result, couple_MR_vs_trait_corr_sig_pos){
 
-  couple_MR_vs_trait_corr_sig_pos
+  if(dim(corr_potential_trait_confounders_pos)[1]!=0){
+    Neale_pheno_ID <- corr_potential_trait_confounders_pos$outcome_ID[[1]]
+    Neale_pheno_ID_corr <- couple_MR_vs_trait_corr_sig_pos$couple_r[[which(couple_MR_vs_trait_corr_sig_pos$outcome_ID==Neale_pheno_ID)]]
 
-  Neale_pheno_ID <- corr_potential_trait_confounders_pos$outcome_ID[[1]]
-  Neale_pheno_ID_corr <- couple_MR_vs_trait_corr_sig_pos$couple_r[[which(couple_MR_vs_trait_corr_sig_pos$outcome_ID==Neale_pheno_ID)]]
 
+    MVMR_result <- potential_trait_confounders_pos_MVMR_result %>% rename(MVMR_beta = beta) %>% rename(MVMR_se = se) %>% rename(MVMR_pval = pval)
+    result <- corr_potential_trait_confounders_pos %>% left_join(MVMR_result, by = c("exposure_ID" = "exposure")) %>%
+      mutate(corr_due_to_confounding_MVMR = MVMR_beta^2*exposure_ID_AM_IVW_beta) %>%
+      mutate(corr_due_to_confounding_MVMR_ratio = corr_due_to_confounding_MVMR/Neale_pheno_ID_corr)
 
-  MVMR_result <- potential_trait_confounders_pos_MVMR_result %>% rename(MVMR_beta = beta) %>% rename(MVMR_se = se) %>% rename(MVMR_pval = pval)
-  result <- corr_potential_trait_confounders_pos %>% left_join(MVMR_result, by = c("exposure_ID" = "exposure")) %>%
-    mutate(corr_due_to_confounding_MVMR = MVMR_beta^2*exposure_ID_AM_IVW_beta) %>%
-    mutate(corr_due_to_confounding_MVMR_ratio = corr_due_to_confounding_MVMR/Neale_pheno_ID_corr)
+  } else
+    result <- NULL
+
+  return(result)
 
 }
 
