@@ -3619,7 +3619,6 @@ find_potential_trait_confounders_pos <- function(Neale_pheno_ID, Neale_pheno_ID_
 
   ## calculate correlation due to confounding
   ## filter to only confounders with correlation with index trait < `corr_trait_threshold`
-  ## filter to only confounders with
   output <- pheno_i_MR %>% dplyr::select(exposure_ID, outcome_ID, exposure_description, outcome_description, IVW_beta, IVW_se, IVW_pval) %>%
     left_join(AM_MR, by = c("exposure_ID" = "exposure_ID")) %>%
     mutate(corr_due_to_confounding = IVW_beta^2*exposure_ID_AM_IVW_beta) %>%
