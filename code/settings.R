@@ -36,7 +36,7 @@ num_household_bins <- 5
 z_prune_threshold <- 0.8
 reverse_MR_threshold <- 0.001
 corr_trait_threshold <- 0.8
-confoudner_trait_threshold <- 0.3
+confoudner_trait_threshold <- 0.1
 
 num_IVs_threshold <- 5
 household_correlation_threshold <-0.1
