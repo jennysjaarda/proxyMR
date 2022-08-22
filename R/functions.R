@@ -3655,7 +3655,10 @@ find_potential_trait_confounders_pos <- function(Neale_pheno_ID, Neale_pheno_ID_
 
   }
 
-  output_pruned <- output_pruned %>% dplyr::select(-index_vs_trait_correlation)
+  if("index_vs_trait_correlation" %in% colnames(output_pruned)){
+    output_pruned <- output_pruned %>% dplyr::select(-index_vs_trait_correlation)
+
+  }
 
   return(output_pruned)
 
