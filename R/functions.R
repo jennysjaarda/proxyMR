@@ -3626,7 +3626,7 @@ find_potential_trait_confounders_pos <- function(Neale_pheno_ID, Neale_pheno_ID_
     mutate(sig_confounder = ifelse(IVW_pval < 0.05/num_tests_by_PCs, TRUE, FALSE)) %>%
     mutate(exposure_ID_phes = gsub("_irnt", "", exposure_ID)) %>%
     left_join(corr_mat_traits_sub, by = c("exposure_ID_phes" = "exposure_ID")) %>%
-    filter(abs(between_trait_correlation) < corr_trait_threshold) %>% arrange(IVW_pval) %>%
+    arrange(IVW_pval) %>%
     filter(sig_confounder) %>%
     filter(exposure_ID_AM_IVW_beta > 0) %>%
     filter(exposure_ID_AM_IVW_pval < 0.05/n())
@@ -3693,7 +3693,7 @@ find_potential_trait_confounders_neg <- function(Neale_pheno_ID, Neale_pheno_ID_
     mutate(sig_confounder = ifelse(IVW_pval < 0.05/num_tests_by_PCs, TRUE, FALSE)) %>%
     mutate(exposure_ID_phes = gsub("_irnt", "", exposure_ID)) %>%
     left_join(corr_mat_traits_sub, by = c("exposure_ID_phes" = "exposure_ID")) %>%
-    filter(abs(between_trait_correlation) < corr_trait_threshold) %>% arrange(IVW_pval) %>%
+    arrange(IVW_pval) %>%
     filter(sig_confounder) %>%
     filter(exposure_ID_AM_IVW_beta < 0) %>%
     filter(exposure_ID_AM_IVW_pval < 0.05/n())
