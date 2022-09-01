@@ -38,6 +38,7 @@ tar_load(corr_impact_by_PCs)
 tar_load(corr_impact_by_traits)
 tar_load(corr_impact_by_coords)
 tar_load(corr_potential_trait_confounders_pos)
+tar_load(corr_potential_trait_confounders_pos_MVMR_summary)
 tar_load(traits_corr)
 tar_load(PCs_corr)
 tar_load(traits_corr2_filled)
@@ -303,26 +304,26 @@ non_sig_confounders <- corr_potential_trait_confounders_pos %>% filter(!sig_conf
   mutate(mean_C_ratio = NA) %>%
   dplyr::rename(trait_ID = outcome_ID) 
 
-sig_confounders <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %>% group_by(outcome_ID) %>%
-  arrange(-corr_due_to_confounding) %>%
+sig_confounders <- corr_potential_trait_confounders_pos_MVMR_summary %>% filter(sig_confounder) %>% group_by(outcome_ID) %>%
+  arrange(-corr_due_to_confounding_MVMR) %>%
   mutate(total_potential_confounders = n()) %>%
   dplyr::summarize(description = outcome_description[1],
                    total_potential_confounders = total_potential_confounders[1],
                    potential_confounders = paste0(exposure_description, collapse = "; "), 
-                   max_C = max(corr_due_to_confounding)) %>%
+                   max_C = max(corr_due_to_confounding_MVMR)) %>%
   dplyr::rename(trait_ID = outcome_ID) %>%
   dplyr::rename(trait_description = description) %>% 
   dplyr::select(trait_description, trait_ID, everything())
 
-sig_confounders_top5 <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %>% group_by(outcome_ID) %>%
-  arrange(-corr_due_to_confounding) %>%
+sig_confounders_top5 <- corr_potential_trait_confounders_pos_MVMR_summary %>% filter(sig_confounder) %>% group_by(outcome_ID) %>%
+  arrange(-corr_due_to_confounding_MVMR) %>%
   mutate(total_potential_confounders = n()) %>%
   slice_head(n = 5) %>%
   #mutate(potential_confounders = paste0(exposure_description, collapse = "; ")) %>%
   dplyr::summarize(trait_description = outcome_description[1],
                    total_potential_confounders = total_potential_confounders[1],
                    top5_potential_confounders = paste0(exposure_description, collapse = "; "), 
-                   max_C = max(corr_due_to_confounding)) %>%
+                   max_C = max(corr_due_to_confounding_MVMR)) %>%
   dplyr::rename(trait_ID = outcome_ID) %>%
   left_join(corr_vs_MR_effects_sig_dat.DT, by = c("trait_description", "trait_ID")) %>%
   dplyr::select(trait_description, trait_ID, couple_r, IVW_beta, IVW_pval,everything())
@@ -331,17 +332,23 @@ format_round_cols <- colnames(dplyr::select_if(sig_confounders_top5, is.numeric)
 
 DT::datatable(sig_confounders_top5, width = "100%") %>% formatSignif(columns=format_round_cols, digits = 3)
 
+write.table(corr_potential_trait_confounders_pos_MVMR_summary, "output/tables/C_summ_MVMR_result.csv")
+# 
+# corr_potential_trait_confounders_pos_MVMR_summary <- corr_potential_trait_confounders_pos_MVMR_summary %>% 
+#   group_by(outcome_ID) %>%
+#   mutate(corr_due_to_confounding_MVMR_summ = sum(corr_due_to_confounding_MVMR)) %>%
+#   mutate(corr_due_to_confounding_summ = sum(corr_due_to_confounding))
+
 ```
 
 We compared the difference in phenotypic estimate and MR-estimates to the maximum C for each trait, as shown in the figure below: 
 
 ```{r max_C_plot, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE, fig.height=10, dpi=600}
 
-
-max_C_data <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %>% group_by(outcome_ID) %>%
-  arrange(-corr_due_to_confounding_ratio) %>%
+max_C_data <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %>% 
+  #arrange(-corr_due_to_confounding_ratio) %>%
   mutate(total_potential_confounders = n()) %>%
-  slice_head(n = 1) %>%
+  #slice_head(n = 1) %>%
   left_join(couple_MR_vs_trait_corr %>% 
               dplyr::rename(outcome_ID_IVW_beta = IVW_beta) %>%
               dplyr::rename(outcome_ID_IVW_se = IVW_se) %>%
@@ -349,7 +356,6 @@ max_C_data <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %>
               dplyr::rename(outcome_ID_couple_r_se = couple_r_se) %>% 
               dplyr::select(outcome_ID, outcome_ID_IVW_beta, outcome_ID_IVW_se, outcome_ID_couple_r, outcome_ID_couple_r_se)) %>%
   mutate(same_trait_corr_minus_MR_est = abs(outcome_ID_couple_r)- abs(outcome_ID_IVW_beta)) %>%
-
   dplyr::rename(Z_beta = IVW_beta) %>%
   dplyr::rename(Z_se = IVW_se) %>%
   dplyr::rename(Z_pval = IVW_pval) %>%
@@ -360,6 +366,9 @@ max_C_data <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %>
   mutate(Z_prod = Z_sq_beta*Z_AM_beta) %>%
   mutate(Z_prod_var = variance_of_product(Z_sq_beta, Z_sq_se, Z_AM_beta, Z_AM_se)) %>%
   mutate(Z_prod_se = sqrt(Z_prod_var)) %>%
+  group_by(outcome_ID) %>% 
+  mutate(corr_due_to_confounding_summ = sum(corr_due_to_confounding)) %>%
+  mutate(corr_due_to_confounding_summ_SE = sqrt(sum(Z_prod_var))) %>%
   mutate(same_trait_corr_minus_MR_est_se = sqrt(variance_of_sum(outcome_ID_IVW_se, outcome_ID_couple_r_se))) %>%
   mutate(Phenotype = outcome_description) %>% 
   mutate(Phenotype = case_when(Phenotype == "Basal metabolic rate" ~ "BMR",
@@ -384,14 +393,14 @@ max_C_plot <- ggplot2::ggplot(data = max_C_data,
                                            label = Phenotype)) +
   
   ggplot2::geom_errorbar(
-    ggplot2::aes(ymin = same_trait_corr_minus_MR_est - 1.96*same_trait_corr_minus_MR_est_se, 
-                 ymax = same_trait_corr_minus_MR_est + 1.96*same_trait_corr_minus_MR_est_se),
+    ggplot2::aes(ymin = same_trait_corr_minus_MR_est - 1.96*corr_due_to_confounding_summ_SE, 
+                 ymax = same_trait_corr_minus_MR_est + 1.96*corr_due_to_confounding_summ_SE),
     colour = "grey",
     width = 0
   ) +
   ggplot2::geom_errorbar(
-    ggplot2::aes(xmin = corr_due_to_confounding - 1.96*Z_prod_se, 
-                 xmax = corr_due_to_confounding + 1.96*Z_prod_se),
+    ggplot2::aes(xmin = corr_due_to_confounding_summ - 1.96*Z_prod_se, 
+                 xmax = corr_due_to_confounding_summ + 1.96*Z_prod_se),
     colour = "grey",
     width = 0
   ) +
@@ -1306,6 +1315,54 @@ DT::datatable(paths_summary, width = "100%") %>% formatRound(columns=format_roun
 
 ```
 
+```{r large_results_table}
+
+traits_description <- traits_final %>% dplyr::select(Neale_pheno_ID, description, variable_type, category, r2, N_pairs, num_IVs_pass_het) %>% as_tibble() %>% 
+  dplyr::rename(num_IVs = num_IVs_pass_het) %>%
+  dplyr::rename(n_pairs = N_pairs) %>%
+  dplyr::rename(pheno_couple_r2 = r2) %>% dplyr::rename(exposure_ID = Neale_pheno_ID)
+
+# changed diff_p name 
+MR_result_table <- corr_vs_MR_effects_dat %>% dplyr::select(exposure_ID, Correlation, couple_r_se, n_exposure, n_outcome, MR_est, IVW_se, IVW_pval, diff_p) %>%
+  dplyr::rename(pheno_couple_r = Correlation) %>%
+  dplyr::rename(pheno_couple_r_se = couple_r_se) %>%
+  dplyr::rename(IVW_beta = MR_est) %>%
+  dplyr::rename(couple_r_vs_IVW_diff_pval = diff_p) 
+
+AM_sex_spec_result <-
+  household_MR_binned_het_sex_spec %>% filter(same_trait == TRUE) %>% dplyr::select(exposure_ID, exposure_sex, IVW_beta, IVW_se, IVW_pval, sex_het_pval) %>% unique()
+
+AM_binned_result <- 
+  household_MR_binned_het_SNPmeta %>% filter(same_trait) %>% dplyr::select(exposure_ID, grouping_var, bin_slope_beta_wt, bin_slope_se_wt, bin_slope_pval_wt) %>% 
+  mutate(grouping_var_rename = case_when(grouping_var=="age_even_bins" ~ "age",
+                                         grouping_var=="time_together_even_bins" ~ "time_together")) %>% dplyr::select(-grouping_var) %>%
+  dplyr::rename(bin_slope_beta_MR_wt = bin_slope_beta_wt) %>%
+  dplyr::rename(bin_slope_se_MR_wt = bin_slope_se_wt) %>%
+  dplyr::rename(bin_slope_pval_MR_wt = bin_slope_pval_wt)
+
+  
+
+
+sex_differences_summary <- AM_sex_spec_result %>% pivot_wider(names_from = exposure_sex, values_from = c(IVW_beta, IVW_se, IVW_pval)) 
+binned_summary <- AM_binned_result %>% pivot_wider(names_from = grouping_var_rename, values_from = c(bin_slope_beta_MR_wt, bin_slope_se_MR_wt, bin_slope_pval_MR_wt)) 
+
+binned_corr_summary <- binned_pheno_corr_summary %>% 
+  mutate(grouping_var_rename = case_when(group=="age_even_bins" ~ "age",
+                                         group=="time_together_even_bins" ~ "time_together")) %>% unique() %>% dplyr::select(-group) %>%
+  pivot_wider(names_from = grouping_var_rename, values_from = c(bin_slope_beta_pearson, bin_slope_se_pearson, 
+                                                                bin_slope_pval_pearson,
+                                                                bin_slope_beta_spearman, bin_slope_se_spearman, bin_slope_pval_spearman)) %>%
+  dplyr::rename(exposure_ID = trait)
+
+df_list <- list(traits_description, MR_result_table, sex_differences_summary, binned_summary, binned_corr_summary)
+final_table <- df_list %>% reduce(full_join, by='exposure_ID') %>%
+  dplyr::rename(trait_ID = exposure_ID) %>%
+  dplyr::rename(trait_description = description) %>%
+  dplyr::select(trait_description, trait_ID, everything())
+ 
+
+```
+
 ```{r write_tables, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
 
 ################################# 
@@ -1341,12 +1398,13 @@ write.xlsx_wrapper(corr_impact_summary, file=main_tables_file, sheetName="Table 
 write.xlsx_wrapper(omega_regression_estimates, file=main_tables_file, sheetName="Table 2 omega_regression_estimates", append=TRUE, row.names=FALSE)
 
 ## Supplementary tables
-write.xlsx_wrapper(AM_result_sig.DT, file=supplementary_tables_file, sheetName="Supp Table 1 BF_sig_same_trait_MR", row.names=FALSE)
-write.xlsx_wrapper(nominally_sig_sex_differences, file=supplementary_tables_file, sheetName="Supp Table 2 nominally_sig_sex_diff", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(pheno_corr_pearson_sig.DT, file=supplementary_tables_file, sheetName="Supp Table 3 pheno_binned_corrs", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(corr_vs_MR_effects_sig_dat, file=supplementary_tables_file, sheetName="Supp Table 4 sig_corr_vs_MR", append = TRUE, row.names=FALSE)
-write.xlsx_wrapper(sig_confounders, file=supplementary_tables_file, sheetName="Supp Table 5 sig_confounders", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(paths_summary, file=supplementary_tables_file, sheetName="Supp Table 6 paths_summary", append=TRUE, row.names=FALSE)
+write.xlsx_wrapper(final_table, file=supplementary_tables_file, sheetName="Supp Table 1 complete_summary", row.names=FALSE)
+write.xlsx_wrapper(AM_result_sig.DT, file=supplementary_tables_file, sheetName="Supp Table 2 BF_sig_same_trait_MR", append=TRUE, row.names=FALSE)
+write.xlsx_wrapper(nominally_sig_sex_differences, file=supplementary_tables_file, sheetName="Supp Table 3 nominally_sig_sex_diff", row.names=FALSE)
+write.xlsx_wrapper(pheno_corr_pearson_sig.DT, file=supplementary_tables_file, sheetName="Supp Table 4 pheno_binned_corrs", append=TRUE, row.names=FALSE)
+write.xlsx_wrapper(corr_vs_MR_effects_sig_dat, file=supplementary_tables_file, sheetName="Supp Table 5 sig_corr_vs_MR", append = TRUE, row.names=FALSE)
+write.xlsx_wrapper(sig_confounders, file=supplementary_tables_file, sheetName="Supp Table 6 sig_confounders", append=TRUE, row.names=FALSE)
+write.xlsx_wrapper(paths_summary, file=supplementary_tables_file, sheetName="Supp Table 7 paths_summary", append=TRUE, row.names=FALSE)
 
 
 
