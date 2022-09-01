@@ -333,11 +333,11 @@ format_round_cols <- colnames(dplyr::select_if(sig_confounders_top5, is.numeric)
 DT::datatable(sig_confounders_top5, width = "100%") %>% formatSignif(columns=format_round_cols, digits = 3)
 
 write.table(corr_potential_trait_confounders_pos_MVMR_summary, "output/tables/C_summ_MVMR_result.csv")
-# 
-# corr_potential_trait_confounders_pos_MVMR_summary <- corr_potential_trait_confounders_pos_MVMR_summary %>% 
-#   group_by(outcome_ID) %>%
-#   mutate(corr_due_to_confounding_MVMR_summ = sum(corr_due_to_confounding_MVMR)) %>%
-#   mutate(corr_due_to_confounding_summ = sum(corr_due_to_confounding))
+
+corr_potential_trait_confounders_pos_MVMR_summary <- corr_potential_trait_confounders_pos_MVMR_summary %>% 
+  group_by(outcome_ID) %>%
+  mutate(corr_due_to_confounding_MVMR_summ = sum(corr_due_to_confounding_MVMR)) %>%
+  mutate(corr_due_to_confounding_summ = sum(corr_due_to_confounding))
 
 ```
 
@@ -393,14 +393,14 @@ max_C_plot <- ggplot2::ggplot(data = max_C_data,
                                            label = Phenotype)) +
   
   ggplot2::geom_errorbar(
-    ggplot2::aes(ymin = same_trait_corr_minus_MR_est - 1.96*corr_due_to_confounding_summ_SE, 
-                 ymax = same_trait_corr_minus_MR_est + 1.96*corr_due_to_confounding_summ_SE),
+    ggplot2::aes(ymin = same_trait_corr_minus_MR_est - 1.96*same_trait_corr_minus_MR_est_se, 
+                 ymax = same_trait_corr_minus_MR_est + 1.96*same_trait_corr_minus_MR_est_se),
     colour = "grey",
     width = 0
   ) +
   ggplot2::geom_errorbar(
-    ggplot2::aes(xmin = corr_due_to_confounding_summ - 1.96*Z_prod_se, 
-                 xmax = corr_due_to_confounding_summ + 1.96*Z_prod_se),
+    ggplot2::aes(xmin = corr_due_to_confounding_summ - 1.96*corr_due_to_confounding_summ_SE, 
+                 xmax = corr_due_to_confounding_summ + 1.96*corr_due_to_confounding_summ_SE),
     colour = "grey",
     width = 0
   ) +
