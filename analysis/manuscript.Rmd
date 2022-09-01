@@ -388,7 +388,7 @@ max_C_data <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %>
 
 
 max_C_plot <- ggplot2::ggplot(data = max_C_data, 
-                              ggplot2::aes(x = corr_due_to_confounding, 
+                              ggplot2::aes(x = corr_due_to_confounding_summ, 
                                            y = same_trait_corr_minus_MR_est, 
                                            label = Phenotype)) +
   
