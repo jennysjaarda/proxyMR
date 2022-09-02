@@ -383,7 +383,9 @@ max_C_data <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %>
                                Phenotype == "Red blood cell (erythrocyte) count" ~ "RBC count",
                                Phenotype == "Place of birth in UK - north co-ordinate" ~ "Place of birth, NC",
                                TRUE ~ Phenotype)) %>%
-  mutate(label_phenos = case_when(outcome_description %in% interesting_phenotypes ~ TRUE, TRUE ~ FALSE))
+  mutate(label_phenos = case_when(outcome_description %in% interesting_phenotypes ~ TRUE, TRUE ~ FALSE)) %>% 
+  dplyr::select(Phenotype, label_phenos, same_trait_corr_minus_MR_est, corr_due_to_confounding_summ, 
+                same_trait_corr_minus_MR_est_se, corr_due_to_confounding_summ_SE) %>% unique()
 
 
 
