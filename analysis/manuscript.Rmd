@@ -413,7 +413,7 @@ max_C_plot <- ggplot2::ggplot(data = max_C_data,
   geom_abline(slope=1, intercept=0) +
 
   theme_minimal() +
-  ggplot2::labs(x = paste0("max C"),
+  ggplot2::labs(x = paste0("C sum"),
                 y = paste("Correlation - MR-estimate")) +
   theme(legend.title=element_blank()) +
   geom_text_repel(data = subset(max_C_data, label_phenos==TRUE),
