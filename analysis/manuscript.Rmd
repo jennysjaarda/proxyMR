@@ -1298,8 +1298,9 @@ A summary of the $\omega$, $\rho$, $\gamma$ and $\rho_{resid} + \gamma$ estimate
 ```{r paths_summary, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), echo = FALSE}
 
 tar_load(proxyMR_comparison_summary_yiyp_adj_SNPmeta_prune)
+tar_load(proxyMR_comparison_summary_yiyp_adj_SNPmeta)
 
-data <- proxyMR_comparison_summary_yiyp_adj_SNPmeta_prune
+data <- proxyMR_comparison_summary_yiyp_adj_SNPmeta
 data$rho_resid <- resid(lm(rho_beta ~ gam_beta, data = data))
 data$gam_rho_resid <- data$rho_resid + data$gam_beta
 
@@ -1357,10 +1358,11 @@ binned_corr_summary <- binned_pheno_corr_summary %>%
   dplyr::rename(exposure_ID = trait)
 
 df_list <- list(traits_description, MR_result_table, sex_differences_summary, binned_summary, binned_corr_summary)
-final_table <- df_list %>% reduce(full_join, by='exposure_ID') %>%
+final_table <- df_list %>% reduce(full_join, by='exposure_ID') %>% 
   dplyr::rename(trait_ID = exposure_ID) %>%
   dplyr::rename(trait_description = description) %>%
-  dplyr::select(trait_description, trait_ID, everything())
+  dplyr::select(trait_description, trait_ID, variable_type, category, n_pairs, 
+                pheno_couple_r2, pheno_couple_r, pheno_couple_r_se, everything()) 
  
 
 ```
@@ -1402,7 +1404,7 @@ write.xlsx_wrapper(omega_regression_estimates, file=main_tables_file, sheetName=
 ## Supplementary tables
 write.xlsx_wrapper(final_table, file=supplementary_tables_file, sheetName="Supp Table 1 complete_summary", row.names=FALSE)
 write.xlsx_wrapper(AM_result_sig.DT, file=supplementary_tables_file, sheetName="Supp Table 2 BF_sig_same_trait_MR", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(nominally_sig_sex_differences, file=supplementary_tables_file, sheetName="Supp Table 3 nominally_sig_sex_diff", row.names=FALSE)
+write.xlsx_wrapper(nominally_sig_sex_differences, file=supplementary_tables_file, sheetName="Supp Table 3 nominally_sig_sex_diff", append=TRUE, row.names=FALSE)
 write.xlsx_wrapper(pheno_corr_pearson_sig.DT, file=supplementary_tables_file, sheetName="Supp Table 4 pheno_binned_corrs", append=TRUE, row.names=FALSE)
 write.xlsx_wrapper(corr_vs_MR_effects_sig_dat, file=supplementary_tables_file, sheetName="Supp Table 5 sig_corr_vs_MR", append = TRUE, row.names=FALSE)
 write.xlsx_wrapper(sig_confounders, file=supplementary_tables_file, sheetName="Supp Table 6 sig_confounders", append=TRUE, row.names=FALSE)
