@@ -308,9 +308,10 @@ sig_confounders <- corr_potential_trait_confounders_pos_MVMR_summary %>% filter(
   arrange(-corr_due_to_confounding_MVMR) %>%
   mutate(total_potential_confounders = n()) %>%
   dplyr::summarize(description = outcome_description[1],
+                   
                    total_potential_confounders = total_potential_confounders[1],
                    potential_confounders = paste0(exposure_description, collapse = "; "), 
-                   C_summ = corr_due_to_confounding_summ[1]) %>%
+                   max_C = max(corr_due_to_confounding_MVMR)) %>%
   dplyr::rename(trait_ID = outcome_ID) %>%
   dplyr::rename(trait_description = description) %>% 
   dplyr::select(trait_description, trait_ID, everything())
@@ -339,13 +340,26 @@ corr_potential_trait_confounders_pos_MVMR_summary <- corr_potential_trait_confou
   mutate(corr_due_to_confounding_MVMR_summ = sum(corr_due_to_confounding_MVMR)) %>%
   mutate(corr_due_to_confounding_summ = sum(corr_due_to_confounding))
 
+sig_confounders <- corr_potential_trait_confounders_pos_MVMR_summary %>% filter(sig_confounder) %>% group_by(outcome_ID) %>%
+  arrange(-corr_due_to_confounding_MVMR) %>%
+  mutate(total_potential_confounders = n()) %>%
+  dplyr::summarize(description = outcome_description[1],
+                   
+                   total_potential_confounders = total_potential_confounders[1],
+                   potential_confounders = paste0(exposure_description, collapse = "; "), 
+                   max_C = max(corr_due_to_confounding_MVMR)) %>%
+  dplyr::rename(trait_ID = outcome_ID) %>%
+  dplyr::rename(trait_description = description) %>% 
+  dplyr::select(trait_description, trait_ID, everything())
+
+
 ```
 
 We compared the difference in phenotypic estimate and MR-estimates to the maximum C for each trait, as shown in the figure below: 
 
-```{r max_C_plot, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE, fig.height=10, dpi=600}
+```{r summ_C_plot, echo = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE), message=FALSE, fig.height=10, dpi=600}
 
-max_C_data <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %>% 
+summ_C_data <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %>% 
   #arrange(-corr_due_to_confounding_ratio) %>%
   mutate(total_potential_confounders = n()) %>%
   #slice_head(n = 1) %>%
@@ -389,7 +403,7 @@ max_C_data <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %>
 
 
 
-max_C_plot <- ggplot2::ggplot(data = max_C_data, 
+max_C_plot <- ggplot2::ggplot(data = summ_C_data, 
                               ggplot2::aes(x = corr_due_to_confounding_summ, 
                                            y = same_trait_corr_minus_MR_est, 
                                            label = Phenotype)) +
