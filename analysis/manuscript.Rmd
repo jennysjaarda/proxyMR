@@ -310,7 +310,7 @@ sig_confounders <- corr_potential_trait_confounders_pos_MVMR_summary %>% filter(
   dplyr::summarize(description = outcome_description[1],
                    total_potential_confounders = total_potential_confounders[1],
                    potential_confounders = paste0(exposure_description, collapse = "; "), 
-                   max_C = max(corr_due_to_confounding_MVMR)) %>%
+                   C_summ = corr_due_to_confounding_summ[1]) %>%
   dplyr::rename(trait_ID = outcome_ID) %>%
   dplyr::rename(trait_description = description) %>% 
   dplyr::select(trait_description, trait_ID, everything())
@@ -1403,10 +1403,10 @@ write.xlsx_wrapper(omega_regression_estimates, file=main_tables_file, sheetName=
 
 ## Supplementary tables
 write.xlsx_wrapper(final_table, file=supplementary_tables_file, sheetName="Supp Table 1 complete_summary", row.names=FALSE)
-write.xlsx_wrapper(AM_result_sig.DT, file=supplementary_tables_file, sheetName="Supp Table 2 BF_sig_same_trait_MR", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(nominally_sig_sex_differences, file=supplementary_tables_file, sheetName="Supp Table 3 nominally_sig_sex_diff", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(pheno_corr_pearson_sig.DT, file=supplementary_tables_file, sheetName="Supp Table 4 pheno_binned_corrs", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(corr_vs_MR_effects_sig_dat, file=supplementary_tables_file, sheetName="Supp Table 5 sig_corr_vs_MR", append = TRUE, row.names=FALSE)
+#write.xlsx_wrapper(AM_result_sig.DT, file=supplementary_tables_file, sheetName="Supp Table 2 BF_sig_same_trait_MR", append=TRUE, row.names=FALSE)
+#write.xlsx_wrapper(nominally_sig_sex_differences, file=supplementary_tables_file, sheetName="Supp Table 3 nominally_sig_sex_diff", append=TRUE, row.names=FALSE)
+#write.xlsx_wrapper(pheno_corr_pearson_sig.DT, file=supplementary_tables_file, sheetName="Supp Table 4 pheno_binned_corrs", append=TRUE, row.names=FALSE)
+#write.xlsx_wrapper(corr_vs_MR_effects_sig_dat, file=supplementary_tables_file, sheetName="Supp Table 5 sig_corr_vs_MR", append = TRUE, row.names=FALSE)
 write.xlsx_wrapper(sig_confounders, file=supplementary_tables_file, sheetName="Supp Table 6 sig_confounders", append=TRUE, row.names=FALSE)
 write.xlsx_wrapper(paths_summary, file=supplementary_tables_file, sheetName="Supp Table 7 paths_summary", append=TRUE, row.names=FALSE)
 
