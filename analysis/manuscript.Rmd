@@ -437,9 +437,9 @@ summ_C_plot <- ggplot2::ggplot(data = summ_C_data,
 
 summ_C_plot
 
-## combine `max_C_plot` with `corr_vs_MR_effects_plot`
+## combine `summ_C_plot` with `corr_vs_MR_effects_plot`
 
-corr_vs_MR_comb <- plot_grid(plotlist = list(corr_vs_MR_effects_plot, max_C_plot), nrow=2, ncol = 1, byrow = T, labels="AUTO")
+corr_vs_MR_comb <- plot_grid(plotlist = list(corr_vs_MR_effects_plot, summ_C_plot), nrow=2, ncol = 1, byrow = T, labels="AUTO")
 
 corr_vs_MR_comb
 
