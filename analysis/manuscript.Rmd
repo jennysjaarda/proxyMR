@@ -340,14 +340,14 @@ corr_potential_trait_confounders_pos_MVMR_summary <- corr_potential_trait_confou
   mutate(corr_due_to_confounding_MVMR_summ = sum(corr_due_to_confounding_MVMR)) %>%
   mutate(corr_due_to_confounding_summ = sum(corr_due_to_confounding))
 
-sig_confounders <- corr_potential_trait_confounders_pos_MVMR_summary %>% filter(sig_confounder) %>% group_by(outcome_ID) %>%
-  arrange(-corr_due_to_confounding_MVMR) %>%
+sig_confounders <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %>% group_by(outcome_ID) %>%
+  arrange(-corr_due_to_confounding) %>%
   mutate(total_potential_confounders = n()) %>%
   dplyr::summarize(description = outcome_description[1],
                    
                    total_potential_confounders = total_potential_confounders[1],
                    potential_confounders = paste0(exposure_description, collapse = "; "), 
-                   max_C = max(corr_due_to_confounding_MVMR)) %>%
+                   summ_C = sum(corr_due_to_confounding)) %>%
   dplyr::rename(trait_ID = outcome_ID) %>%
   dplyr::rename(trait_description = description) %>% 
   dplyr::select(trait_description, trait_ID, everything())
@@ -1421,8 +1421,8 @@ write.xlsx_wrapper(final_table, file=supplementary_tables_file, sheetName="Supp 
 #write.xlsx_wrapper(nominally_sig_sex_differences, file=supplementary_tables_file, sheetName="Supp Table 3 nominally_sig_sex_diff", append=TRUE, row.names=FALSE)
 #write.xlsx_wrapper(pheno_corr_pearson_sig.DT, file=supplementary_tables_file, sheetName="Supp Table 4 pheno_binned_corrs", append=TRUE, row.names=FALSE)
 #write.xlsx_wrapper(corr_vs_MR_effects_sig_dat, file=supplementary_tables_file, sheetName="Supp Table 5 sig_corr_vs_MR", append = TRUE, row.names=FALSE)
-write.xlsx_wrapper(sig_confounders, file=supplementary_tables_file, sheetName="Supp Table 6 sig_confounders", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(paths_summary, file=supplementary_tables_file, sheetName="Supp Table 7 paths_summary", append=TRUE, row.names=FALSE)
+write.xlsx_wrapper(sig_confounders, file=supplementary_tables_file, sheetName="Supp Table 3 sig_confounders", append=TRUE, row.names=FALSE)
+write.xlsx_wrapper(paths_summary, file=supplementary_tables_file, sheetName="Supp Table 4 paths_summary", append=TRUE, row.names=FALSE)
 
 
 
