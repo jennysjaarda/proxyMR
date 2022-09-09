@@ -403,7 +403,7 @@ summ_C_data <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %
 
 
 
-max_C_plot <- ggplot2::ggplot(data = summ_C_data, 
+summ_C_plot <- ggplot2::ggplot(data = summ_C_data, 
                               ggplot2::aes(x = corr_due_to_confounding_summ, 
                                            y = same_trait_corr_minus_MR_est, 
                                            label = Phenotype)) +
@@ -430,12 +430,12 @@ max_C_plot <- ggplot2::ggplot(data = summ_C_data,
   ggplot2::labs(x = paste0("C-sum"),
                 y = paste("Correlation - MR-estimate")) +
   theme(legend.title=element_blank()) +
-  geom_text_repel(data = subset(max_C_data, label_phenos==TRUE),
-                  nudge_y = -0.25 - subset(max_C_data, label_phenos==TRUE)$same_trait_corr_minus_MR_est, size = 3.25,
+  geom_text_repel(data = subset(summ_C_data, label_phenos==TRUE),
+                  nudge_y = -0.25 - subset(summ_C_data, label_phenos==TRUE)$same_trait_corr_minus_MR_est, size = 3.25,
                   direction = "x", show.legend = FALSE, box.padding = 0.5)
 
 
-max_C_plot
+summ_C_plot
 
 ## combine `max_C_plot` with `corr_vs_MR_effects_plot`
 
