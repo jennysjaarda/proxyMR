@@ -5,7 +5,7 @@ date: "2022-01-04"
 output: workflowr::wflow_html
 ---
 
-```{r setup, include = FALSE}
+```{r setup, include = FALSE, dev=c('png', 'pdf')}
 
 options(scipen=999)
 source("code/settings.R")
@@ -27,6 +27,12 @@ library(ggpubr)
 library(broom)
 library(data.table)
 library(xlsx)
+library(rstatix)
+
+knitr::opts_chunk$set(dev =c('png', 'pdf'))
+
+```
+
 ```
 
 ```{r load_targets, include = FALSE, eval = ifelse(Sys.info()["sysname"]=="Linux", TRUE, FALSE)}
@@ -230,7 +236,7 @@ corr_vs_MR_effects_plot <- ggplot2::ggplot(data = corr_vs_MR_effects_dat, ggplot
   theme_minimal() +
   theme(legend.text=element_text(size=11)) +
   #geom_text(aes(x=1,y=2,label=""),show.legend=F) +
-  ggplot2::labs(x = paste0("Couple correlation"),
+  ggplot2::labs(x = paste0("Partner correlation"),
                 y = paste("MR-estimate")) +
   theme(legend.position="bottom") + theme(legend.title=element_blank()) +
   geom_text_repel(data = subset(corr_vs_MR_effects_dat, label_phenos==TRUE),
@@ -401,7 +407,8 @@ summ_C_data <- corr_potential_trait_confounders_pos %>% filter(sig_confounder) %
   dplyr::select(Phenotype, label_phenos, same_trait_corr_minus_MR_est, corr_due_to_confounding_summ, 
                 same_trait_corr_minus_MR_est_se, corr_due_to_confounding_summ_SE) %>% unique()
 
-
+sig_confounder_plus_SE <- left_join(sig_confounders, summ_C_data %>% dplyr::select(outcome_ID, corr_due_to_confounding_summ_SE), by = c("trait_ID"="outcome_ID")) %>%
+dplyr::rename(summ_C_se = summ_C) 
 
 summ_C_plot <- ggplot2::ggplot(data = summ_C_data, 
                               ggplot2::aes(x = corr_due_to_confounding_summ, 
@@ -1269,14 +1276,22 @@ data_boxplot$data <- factor(data_boxplot$data,levels=position)
 data_boxplot <- data_boxplot %>% filter(data != "Gamma_Rho")
 pairwise.t.test(data_boxplot$beta, data_boxplot$data, p.adjust = "none", paired = T)
 
+stat.test <- data_boxplot %>% 
+  t_test(beta ~ data, comparisons = cmpr, paired = T) %>%
+  mutate(myformatted.p = paste0(pretty_round(p))) %>% 
+  mutate(y.position = c(0.6, 0.4, 0.5))
+  
+  
 boxplot <- data_boxplot %>%
   ggplot( aes(x=data, y=beta)) +
   geom_boxplot(outlier.shape = NA) +
 
-  stat_compare_means(data = data_boxplot, comparisons = cmpr, label.y = c(0.6, 0.4, 0.5), method = "t.test" , paired =T) + #,
-                     # label = "p.signif",
-                     # symnum.args = list(cutpoints = c(0, 0.05, 1),
-                     #                    symbols = c("*", "ns"))) +
+  stat_pvalue_manual(stat.test, label = "myformatted.p") +
+  
+  # stat_compare_means(data = data_boxplot, comparisons = cmpr, label.y = c(0.6, 0.4, 0.5), method = "t.test" , paired =T,
+  #                   label = "p.format") +
+  #                   # symnum.args = list(cutpoints = c(0, 0.05, 1),
+  #                   #                    symbols = c("*", "ns"))) +
 
 
 
@@ -1421,8 +1436,8 @@ write.xlsx_wrapper(final_table, file=supplementary_tables_file, sheetName="Supp 
 #write.xlsx_wrapper(nominally_sig_sex_differences, file=supplementary_tables_file, sheetName="Supp Table 3 nominally_sig_sex_diff", append=TRUE, row.names=FALSE)
 #write.xlsx_wrapper(pheno_corr_pearson_sig.DT, file=supplementary_tables_file, sheetName="Supp Table 4 pheno_binned_corrs", append=TRUE, row.names=FALSE)
 #write.xlsx_wrapper(corr_vs_MR_effects_sig_dat, file=supplementary_tables_file, sheetName="Supp Table 5 sig_corr_vs_MR", append = TRUE, row.names=FALSE)
-write.xlsx_wrapper(sig_confounders, file=supplementary_tables_file, sheetName="Supp Table 3 sig_confounders", append=TRUE, row.names=FALSE)
-write.xlsx_wrapper(paths_summary, file=supplementary_tables_file, sheetName="Supp Table 4 paths_summary", append=TRUE, row.names=FALSE)
+write.xlsx_wrapper(sig_confounder_plus_SE, file=supplementary_tables_file, sheetName="Supp Table 2 sig_confounders", append=TRUE, row.names=FALSE)
+write.xlsx_wrapper(paths_summary, file=supplementary_tables_file, sheetName="Supp Table 3 paths_summary", append=TRUE, row.names=FALSE)
 
 
 
