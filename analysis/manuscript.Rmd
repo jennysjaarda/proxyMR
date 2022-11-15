@@ -5,7 +5,7 @@ date: "2022-01-04"
 output: workflowr::wflow_html
 ---
 
-```{r setup, include = FALSE, dev=c('png', 'pdf')}
+```{r setup, include = FALSE}
 
 options(scipen=999)
 source("code/settings.R")
@@ -29,7 +29,7 @@ library(data.table)
 library(xlsx)
 library(rstatix)
 
-knitr::opts_chunk$set(dev =c('png', 'pdf'))
+#knitr::opts_chunk$set(dev =c('png', 'pdf'))
 
 ```
 
@@ -112,6 +112,8 @@ pearson_vs_spearman_plot <-
   )
 
 pearson_vs_spearman_plot
+ggsave("docs/figure/manuscript.Rmd/pearson_vs_spearman_plot.pdf", pearson_vs_spearman_plot, device = cairo_pdf)
+
 ```
 
 # Relationship between causal effects and raw phenotypic correlation in couples.
@@ -161,15 +163,17 @@ pheno_corr_plot <- ggplot2::ggplot(data = pheno_corr_dat, ggplot2::aes(x = trait
   #geom_text(show.legend = FALSE) +
   #geom_abline(slope=1, intercept=0) +
   
-  theme_minimal() +
+  #theme_minimal() +
 
   #geom_text(aes(x=1,y=2,label=""),show.legend=F) +
   ggplot2::labs(x = paste0("Male place of birth (NC)"),
                 y = paste("Female place of birth (NC)")) + 
   geom_smooth(method=lm , color="red", fill="#69b3a2", se=TRUE) +
-  theme_ipsum()
+  theme_ipsum_rc() 
 
 pheno_corr_plot
+
+ggsave("docs/figure/manuscript.Rmd/pheno_corr_plot.pdf", pheno_corr_plot, device = cairo_pdf)
 
 ```
 
@@ -244,6 +248,8 @@ corr_vs_MR_effects_plot <- ggplot2::ggplot(data = corr_vs_MR_effects_dat, ggplot
                   direction = "x", show.legend = FALSE, box.padding = 0.5 ) 
 
 corr_vs_MR_effects_plot
+
+ggsave("docs/figure/manuscript.Rmd/corr_vs_MR_effects_plot.pdf", corr_vs_MR_effects_plot, device = cairo_pdf)
 
 
 corr_vs_MR_effects_sig_dat <- corr_vs_MR_effects_dat %>% dplyr::rename(IVW_beta = MR_est) %>% 
@@ -444,11 +450,15 @@ summ_C_plot <- ggplot2::ggplot(data = summ_C_data,
 
 summ_C_plot
 
+ggsave("docs/figure/manuscript.Rmd/summ_C_plot.pdf", summ_C_plot, device = cairo_pdf)
+
 ## combine `summ_C_plot` with `corr_vs_MR_effects_plot`
 
 corr_vs_MR_comb <- plot_grid(plotlist = list(corr_vs_MR_effects_plot, summ_C_plot), nrow=2, ncol = 1, byrow = T, labels="AUTO")
 
 corr_vs_MR_comb
+
+ggsave("docs/figure/manuscript.Rmd/corr_vs_MR_comb.pdf", corr_vs_MR_comb, device = cairo_pdf)
 
 ```
 
@@ -831,6 +841,9 @@ DT::datatable(pheno_corr_pearson_sig.DT, width = "100%") %>% formatRound(columns
 
 pheno_binned_figures
 
+
+ggsave("docs/figure/manuscript.Rmd/pheno_binned_figures.pdf", pheno_binned_figures, device = cairo_pdf)
+
 ```
 
 # Impact of confounders on couple correlation.
@@ -1000,6 +1013,9 @@ i <- 5
 
 figures_grid <- plot_grid(plotlist = plots, nrow=2, ncol = 2, byrow = F, labels="AUTO")
 figures_grid
+
+
+
 ```
 
 ```{r PC_confounder_plot, echo = FALSE, eval = TRUE, message=FALSE}
@@ -1158,6 +1174,7 @@ plots[[i]] <- coord_plot
 figures_grid <- plot_grid(plotlist = plots, nrow=3, ncol = 2, byrow = F, labels="AUTO")
 figures_grid
 
+ggsave("docs/figure/manuscript.Rmd/causal_confounder_plot.pdf", figures_grid, device = cairo_pdf)
 
 ```
 
@@ -1297,7 +1314,7 @@ boxplot <- data_boxplot %>%
 
   coord_cartesian(ylim=c(-0.5, 0.75)) +
   scale_fill_viridis(discrete = TRUE, alpha=0.6, option="A") +
-  theme_ipsum() +
+  theme_ipsum_rc() +
   theme(
     legend.position="none",
     plot.title = element_text(size=11)
@@ -1316,6 +1333,8 @@ boxplot <- data_boxplot %>%
 
 figures_grid <- plot_grid(plotlist = list(proxyMR_prod_comparison_fig_yiyp_adj, boxplot), nrow=2, ncol = 1, byrow = T, labels = c('', 'E'))
 figures_grid
+
+ggsave("docs/figure/manuscript.Rmd/boxplot_combined.pdf", figures_grid, device = cairo_pdf)
 
 ```
 
